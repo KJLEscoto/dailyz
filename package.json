@@ -10,7 +10,10 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "@lucide/vue": "^1.7.0",
+    "@nuxt/fonts": "^0.14.0",
     "@tailwindcss/vite": "^4.2.2",
+    "kinwebb-attribute": "^1.0.4",
     "nuxt": "^4.4.2",
     "tailwindcss": "^4.2.2",
     "vue": "^3.5.30",

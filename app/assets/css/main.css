@@ -1,1 +1,20 @@
 @import "tailwindcss";
+
+@theme {
+  --font-primary: "Hanken Grotesk", "sans-serif";
+  --font-secondary: "Roboto Condensed", "sans-serif";
+  --color-primary: #D97757;
+  --color-black: #131313;
+  --color-muted: rgba(0, 0, 0, 0.5);
+  --color-foreground: #f9f9f9;
+}
+
+@layer base {
+  body {
+    @apply bg-foreground text-white font-primary selection:text-white selection:bg-primary;
+  }
+
+  .color-muted {
+    @apply text-white/70;
+  }
+}
