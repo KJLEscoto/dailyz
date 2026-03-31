@@ -76,7 +76,7 @@ function onBlur(e: FocusEvent) {
 
       <!-- Input field -->
       <input :id="inputId" :type="inputType" :value="modelValue" :placeholder="placeholder" :disabled="disabled" autocomplete="off" :class="[
-          'h-11 w-full rounded-xl bg-transparent text-sm text-black outline-none placeholder:text-muted font-primary',
+          'h-11 w-full rounded-xl bg-transparent text-sm text-black outline-none placeholder:text-muted/50 font-primary',
           $slots.icon ? 'pl-9' : 'pl-4',
           type === 'password' || $slots.suffix ? 'pr-10' : 'pr-4',
         ]" @input="onInput" @focus="onFocus" @blur="onBlur" />
