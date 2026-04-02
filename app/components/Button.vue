@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { twMerge } from 'tailwind-merge'
+
 interface Props {
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'success'
   size?: 'sm' | 'md' | 'lg'
@@ -7,6 +9,7 @@ interface Props {
   type?: 'button' | 'submit' | 'reset'
   block?: boolean
   to?: string
+  class?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -16,6 +19,7 @@ const props = withDefaults(defineProps<Props>(), {
   disabled: false,
   type: 'button',
   block: false,
+  class: '',
 })
 
 const emit = defineEmits<{
@@ -43,34 +47,31 @@ const spinnerSize: Record<string, string> = {
   md: 'size-4',
   lg: 'size-5',
 }
+
+const computedClass = computed(() =>
+  twMerge(
+    'inline-flex items-center justify-center font-primary font-semibold tracking-wide select-none',
+    'transition-all duration-150 outline-none cursor-pointer',
+    variantClasses[props.variant],
+    sizeClasses[props.size],
+    props.block ? 'w-full' : 'w-auto',
+    isDisabled.value && 'opacity-50 cursor-not-allowed',
+    props.class,
+  )
+)
 </script>
 
 <template>
   <!-- NuxtLink when `to` is provided -->
-  <NuxtLink v-if="to" :to="to" :class="[
-    'inline-flex items-center justify-center font-semibold tracking-wide select-none',
-    'transition-all duration-150 outline-none',
-    'focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950',
-    variantClasses[variant],
-    sizeClasses[size],
-    block ? 'w-full' : 'w-auto',
-    isDisabled && 'opacity-50 pointer-events-none',
-  ]">
+  <NuxtLink v-if="to" :to="to" :class="computedClass">
     <slot name="icon-left" />
     <slot />
     <slot name="icon-right" />
   </NuxtLink>
 
   <!-- Regular button -->
-  <button v-else :type="type" :disabled="isDisabled" :class="[
-    'inline-flex items-center font-primary justify-center font-semibold tracking-wide select-none',
-    'transition-all duration-150 outline-none cursor-pointer',
-    variantClasses[variant],
-    sizeClasses[size],
-    block ? 'w-full' : 'w-auto',
-    isDisabled && 'opacity-50 cursor-not-allowed',
-  ]" @click="!isDisabled && emit('click', $event)">
-    <!-- Loading spinner -->
+  <button v-else :type="type" :disabled="isDisabled" :class="computedClass"
+    @click="!isDisabled && emit('click', $event)">
     <svg v-if="loading" :class="['animate-spin shrink-0', spinnerSize[size]]" xmlns="http://www.w3.org/2000/svg"
       fill="none" viewBox="0 0 24 24">
       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />

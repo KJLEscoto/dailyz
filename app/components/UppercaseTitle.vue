@@ -9,7 +9,7 @@ const props = withDefaults(defineProps<Props>(), {
 </script>
 
 <template>
-  <h1 class="uppercase text-muted font-secondary" :class="{
+  <h1 class="uppercase text-muted font-secondary text-nowrap select-none" :class="{
     'text-sm': size === 'sm',
     'text-base': size === 'md',
     'text-lg': size === 'lg'

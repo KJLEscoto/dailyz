@@ -15,6 +15,12 @@
     @apply bg-foreground text-black font-primary selection:text-white selection:bg-primary;
   }
 
+  /* hide scrollbar */
+
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+
   .color-muted {
     @apply text-white/70;
   }

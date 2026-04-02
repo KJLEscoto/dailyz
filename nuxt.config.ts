@@ -27,5 +27,9 @@ export default defineNuxtConfig({
       },
     ],
   },
-
+  runtimeConfig: {  
+    public: {
+      unsplashKey: process.env.NUXT_PUBLIC_UNSPLASH_KEY,
+    },
+  },
 })
