@@ -1,7 +1,6 @@
 // composables/useDailyNature.ts
 export const useDailyNature = () => {
-  const config = useRuntimeConfig()
-  const today = new Date().toISOString().split('T')[0]
+  const today = new Date().toISOString().split('T')[0] as string
 
   const cached = useCookie<{
     date: string
@@ -26,22 +25,12 @@ export const useDailyNature = () => {
     error.value   = false
 
     try {
-      const data = await $fetch<any>('https://api.unsplash.com/photos/random', {
-        query: { query: 'nature', orientation: 'landscape' },
-        headers: { Authorization: `Client-ID ${config.public.unsplashKey}` },
-      })
-      const today = new Date().toISOString().split('T')[0] as string
+      const data = await $fetch<{ url: string; author: string; authorLink: string }>('/api/daily-nature')
 
-      cached.value = {
-        date:       today,
-        url:        data.urls.full,
-        author:     data.user.name,
-        authorLink: data.user.links.html,
-      }
-
-      imageUrl.value   = cached.value.url
-      author.value     = cached.value.author
-      authorLink.value = cached.value.authorLink
+      cached.value = { date: today, url: data.url, author: data.author, authorLink: data.authorLink }
+      imageUrl.value   = data.url
+      author.value     = data.author
+      authorLink.value = data.authorLink
     } catch {
       error.value = true
     } finally {
