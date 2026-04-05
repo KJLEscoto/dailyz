@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { CalendarRange, ChevronDown, Flame, PanelsTopLeft, PlusCircle } from '@lucide/vue';
 
+// accordions
+const todoOpen = ref(true)
+const completedOpen = ref(true)
+
 type HabitTime = 'morning' | 'afternoon' | 'evening' | 'anytime'
 
 interface Habit {
@@ -12,8 +16,6 @@ interface Habit {
   completed: boolean
 }
 
-const todoOpen = ref(true)
-const completedOpen = ref(true)
 
 const habits = ref<Habit[]>([
   { id: 1, title: 'Cardio Workout', time: 'morning', streak: 0, streakSince: '', completed: false },
@@ -29,72 +31,34 @@ const habits = ref<Habit[]>([
 const todoHabits = computed(() => habits.value.filter(h => !h.completed))
 const completedHabits = computed(() => habits.value.filter(h => h.completed))
 
-// ── Toggle: move between sections ───────────────────────
-function toggleHabit(id: string | number) {
+function toggleHabit(id: number) {
   const habit = habits.value.find(h => h.id === id)
-  if (!habit) return
-
-  habit.completed = !habit.completed
-
-  // Remove from current position
-  habits.value = habits.value.filter(h => h.id !== id)
-
-  if (habit.completed) {
-    // Checked → add to the TOP of completed
-    const firstCompletedIndex = habits.value.findIndex(h => h.completed)
-    if (firstCompletedIndex === -1) {
-      habits.value.push(habit)
-    } else {
-      habits.value.splice(firstCompletedIndex, 0, habit)
-    }
-  } else {
-    // Unchecked → add to the BOTTOM of todo
-    const lastTodoIndex = habits.value.reduce((acc, h, i) => (!h.completed ? i : acc), -1)
-    habits.value.splice(lastTodoIndex + 1, 0, habit)
+  if (habit) {
+    habit.completed = !habit.completed
+    habit.streak = habit.completed ? habit.streak + 1 : habit.streak - 1
   }
 }
 
-// ── Drag & Drop ─────────────────────────────────────────
-const dragId = ref<number | null>(null)
-
-function onDragStart(id: string | number) {
-  dragId.value = Number(id)
+function getHabitsCount() {
+  return habits.value.length
 }
 
-function onDragEnd() {
-  dragId.value = null
+function getToDoCount() {
+  return todoHabits.value.length
 }
 
-function onDragOver(e: DragEvent, targetId: string | number) {
-  e.preventDefault()
-  if (dragId.value === null || dragId.value === targetId) return
-
-  const fromIndex = habits.value.findIndex(h => h.id === dragId.value)
-  const toIndex = habits.value.findIndex(h => h.id === targetId)
-
-  if (fromIndex === -1 || toIndex === -1) return
-
-  const fromHabit = habits.value[fromIndex]
-  const toHabit = habits.value[toIndex]
-
-  // Guard against undefined
-  if (!fromHabit || !toHabit) return
-
-  // Only allow swapping within the same section
-  if (fromHabit.completed !== toHabit.completed) return
-
-  const updated = [...habits.value]
-  updated.splice(fromIndex, 1)
-  updated.splice(toIndex, 0, fromHabit)
-  habits.value = updated
+function getCompletedCount() {
+  return completedHabits.value.length
 }
 
-function editHabit(id: string | number) {
-  console.log('edit', id)
+function getPercentageCompleted() {
+  const total = habits.value.length
+  const completed = habits.value.filter(h => h.completed).length
+  return total === 0 ? 0 : Math.round((completed / total) * 100)
 }
 
-function deleteHabit(id: string | number) {
-  habits.value = habits.value.filter(h => h.id !== id)
+function getHighestStreak() {
+  return habits.value.reduce((max, h) => h.streak > max ? h.streak : max, 0)
 }
 </script>
 
@@ -108,7 +72,7 @@ function deleteHabit(id: string | number) {
           <h1 class="text-4xl">Today's Habits</h1>
           <div class="text-base font-secondary text-danger bg-danger/10 px-4 rounded-full py-2 flex items-center">
             <Flame class="size-5 pointer-events-none" />
-            <p class="text-nowrap">14d streak</p>
+            <p class="text-nowrap">{{ getHighestStreak() }}-day highest streak</p>
           </div>
         </section>
         <UppercaseTitle size="lg">saturday, mar 28</UppercaseTitle>
@@ -117,11 +81,18 @@ function deleteHabit(id: string | number) {
       <div class="flex items-center gap-4 px-5 py-3 bg-black/3 rounded-3xl">
         <section class="flex flex-col items-end gap-2">
           <UppercaseTitle size="md">daily progress</UppercaseTitle>
-          <h1 class="text-3xl text-primary font-semibold">3/4 done</h1>
+          <h1 class="text-3xl text-primary font-semibold">{{ getCompletedCount() }}/{{ getHabitsCount() }} done</h1>
         </section>
-        <section class="ring-4 ring-black/5 rounded-full size-14 flex items-center justify-center">
-          <div class="ring-4 ring-primary rounded-full size-12 flex items-center justify-center">
-            <p class="text-primary font-semibold">100%</p>
+        <section class="rounded-full size-14 flex items-center justify-center select-none relative ring-3 ring-muted/10 shrink-0">
+          <svg class="absolute inset-0 -rotate-90" viewBox="0 0 56 56" fill="none">
+            <circle cx="28" cy="28" r="24" stroke="var(--color-foreground)" stroke-width="4" stroke-opacity="0.1" />
+            <circle cx="28" cy="28" r="24" stroke="var(--color-primary)" stroke-width="4" stroke-linecap="round"
+              :stroke-dasharray="`${2 * Math.PI * 24}`"
+              :stroke-dashoffset="`${2 * Math.PI * 24 * (1 - getPercentageCompleted() / 100)}`"
+              class="transition-all duration-500" />
+          </svg>
+          <div class="bg-transparent rounded-full w-12 h-12 flex items-center justify-center">
+            <p class="text-primary font-semibold text-sm">{{ getPercentageCompleted() }}%</p>
           </div>
         </section>
       </div>
@@ -139,7 +110,7 @@ function deleteHabit(id: string | number) {
             @click="todoOpen = !todoOpen">
             <UppercaseTitle class="font-primary! font-semibold!" size="md">to do</UppercaseTitle>
             <div class="p-2 rounded-full bg-muted/5 size-8 shrink-0 flex items-center justify-center">
-              <p class="text-base font-bold text-muted font-secondary text-nowrap">1</p>
+              <p class="text-base font-bold text-muted font-secondary text-nowrap">{{ getToDoCount() }}</p>
             </div>
             <hr class="w-full border-muted/5" />
             <ChevronDown class="pointer-events-none size-5 text-muted transition-transform duration-300"
@@ -150,10 +121,7 @@ function deleteHabit(id: string | number) {
             :class="todoOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'">
             <div class="overflow-hidden">
               <ul class="space-y-5 pt-1">
-                <HabitTest v-for="habit in todoHabits" :key="habit.id" :id="habit.id" :title="habit.title"
-                  :time="habit.time" :streak="habit.streak" :streak-since="habit.streakSince"
-                  :completed="habit.completed" @toggle="toggleHabit" @edit="editHabit" @delete="deleteHabit"
-                  @drag-start="onDragStart" @drag-end="onDragEnd" @dragover="onDragOver($event, habit.id)" />
+                <HabitCard v-for="habit in todoHabits" :key="habit.id" :habit="habit" @toggle="toggleHabit" />
               </ul>
             </div>
           </div>
@@ -161,11 +129,11 @@ function deleteHabit(id: string | number) {
 
         <!-- Completed Section -->
         <div class="w-full">
-          <button class="flex items-center gap-2 w-full cursor-pointer sticky top-55 bg-foreground pb-2"
+          <button class="flex items-center z-20 gap-2 w-full cursor-pointer sticky top-55 bg-foreground pb-2"
             @click="completedOpen = !completedOpen">
             <UppercaseTitle class="font-primary! font-semibold!" size="md">completed</UppercaseTitle>
             <div class="p-2 rounded-full bg-muted/5 size-8 shrink-0 flex items-center justify-center">
-              <p class="text-base font-bold text-muted font-secondary text-nowrap">2</p>
+              <p class="text-base font-bold text-muted font-secondary text-nowrap">{{ getCompletedCount() }}</p>
             </div>
             <hr class="w-full border-muted/5" />
             <ChevronDown class="pointer-events-none size-5 text-muted transition-transform duration-300"
@@ -174,12 +142,11 @@ function deleteHabit(id: string | number) {
 
           <div class="grid transition-all duration-300 ease-in-out"
             :class="completedOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'">
-            <ul class="overflow-hidden space-y-3">
-              <HabitTest v-for="habit in completedHabits" :key="habit.id" :id="habit.id" :title="habit.title"
-                :time="habit.time" :streak="habit.streak" :streak-since="habit.streakSince" :completed="habit.completed"
-                @toggle="toggleHabit" @edit="editHabit" @delete="deleteHabit" @drag-start="onDragStart"
-                @drag-end="onDragEnd" @dragover="onDragOver($event, habit.id)" />
-            </ul>
+            <div class="overflow-hidden">
+              <ul class="space-y-5 pt-1">
+                <HabitCard v-for="habit in completedHabits" :key="habit.id" :habit="habit" @toggle="toggleHabit" />
+              </ul>
+            </div>
           </div>
         </div>
 
@@ -205,18 +172,18 @@ function deleteHabit(id: string | number) {
           <section class="flex items-center gap-4 w-full">
             <div class="space-y-1 rounded-3xl p-5 border-b border-primary bg-foreground w-full">
               <UppercaseTitle class="text-muted" size="sm">habits</UppercaseTitle>
-              <p class="font-bold text-primary text-2xl">4</p>
+              <p class="font-bold text-primary text-2xl">{{ getHabitsCount() }}</p>
             </div>
             <div class="space-y-1 rounded-3xl p-5 border-b border-primary bg-foreground w-full">
               <UppercaseTitle class="text-muted" size="sm">done</UppercaseTitle>
-              <p class="font-bold text-primary text-2xl">3</p>
+              <p class="font-bold text-primary text-2xl">{{ getCompletedCount() }}</p>
             </div>
           </section>
 
           <section class="rounded-3xl p-5 border-b border-primary bg-foreground w-full flex items-end justify-between">
             <div class="space-y-1">
               <UppercaseTitle class="text-muted" size="sm">current streak</UppercaseTitle>
-              <p class="font-bold text-primary text-2xl">14 days</p>
+              <p class="font-bold text-primary text-2xl">{{ getHighestStreak() }} days</p>
             </div>
             <CalendarRange class="size-10 text-primary pointer-events-none" />
           </section>
