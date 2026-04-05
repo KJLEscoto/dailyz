@@ -23,7 +23,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <main :class="['w-full h-auto rounded-3xl overflow-hidden flex items-center justify-center relative p-6 group gap-4 border border-transparent hover:border-primary/20 transition-all duration-200 active:scale-95 select-none',
+  <main :class="['w-full h-auto rounded-3xl flex items-center justify-center relative p-6 group gap-4 border border-transparent hover:border-primary/20 transition-all duration-200 select-none',
     habit.completed ? 'bg-muted/5' : 'bg-white',
   ]">
     <GripVertical class="size-6 text-muted cursor-grab active:cursor-grabbing" />
@@ -59,10 +59,11 @@ const emit = defineEmits<{
         <Leaf v-else class="size-3.5 pointer-events-none" />
         {{ habit.streak }}
       </button>
-      <button
+      <!-- <button 
         class="size-auto flex items-center justify-center rounded-xl text-muted transition-all duration-150 cursor-pointer opacity-0 group-hover:opacity-70">
         <MoreVertical class="size-4 pointer-events-none" />
-      </button>
+      </button> -->
+      <KebabMenu trigger-class="opacity-0 group-hover:opacity-70 transition-opacity duration-200" />
     </div>
   </main>
 </template>

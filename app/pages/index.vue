@@ -102,7 +102,7 @@ function getHighestStreak() {
     <div class="grid grid-cols-12 gap-10 items-start">
 
       <!-- Left section — scrolls naturally with the page -->
-      <section class="col-span-8 w-full space-y-8">
+      <section class="col-span-8 w-full space-y-8 isolate">
 
         <!-- TO DO Section -->
         <div class="w-full">
@@ -182,7 +182,7 @@ function getHighestStreak() {
 
           <section class="rounded-3xl p-5 border-b border-primary bg-foreground w-full flex items-end justify-between">
             <div class="space-y-1">
-              <UppercaseTitle class="text-muted" size="sm">current streak</UppercaseTitle>
+              <UppercaseTitle class="text-muted" size="sm">streak calendar</UppercaseTitle>
               <p class="font-bold text-primary text-2xl">{{ getHighestStreak() }} days</p>
             </div>
             <CalendarRange class="size-10 text-primary pointer-events-none" />
