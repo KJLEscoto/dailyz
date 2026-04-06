@@ -60,6 +60,15 @@ function getPercentageCompleted() {
 function getHighestStreak() {
   return habits.value.reduce((max, h) => h.streak > max ? h.streak : max, 0)
 }
+
+const editHabit = (id: number) => {
+  // open edit modal, router.push, etc.
+  console.log('edit', id)
+}
+
+const deleteHabit = (id: number) => {
+  habits.value = habits.value.filter(h => h.id !== id)
+}
 </script>
 
 <template>
@@ -121,7 +130,7 @@ function getHighestStreak() {
             :class="todoOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'">
             <div class="overflow-hidden">
               <ul class="space-y-5 pt-1">
-                <HabitCard v-for="habit in todoHabits" :key="habit.id" :habit="habit" @toggle="toggleHabit" />
+                <HabitCard v-for="habit in todoHabits" :key="habit.id" :habit="habit" @toggle="toggleHabit" @edit="editHabit" @delete="deleteHabit" />
               </ul>
             </div>
           </div>
@@ -144,7 +153,7 @@ function getHighestStreak() {
             :class="completedOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'">
             <div class="overflow-hidden">
               <ul class="space-y-5 pt-1">
-                <HabitCard v-for="habit in completedHabits" :key="habit.id" :habit="habit" @toggle="toggleHabit" />
+                <HabitCard v-for="habit in completedHabits" :key="habit.id" :habit="habit" @toggle="toggleHabit"                   @edit="editHabit" @delete="deleteHabit" />
               </ul>
             </div>
           </div>

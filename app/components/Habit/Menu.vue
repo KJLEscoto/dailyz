@@ -1,9 +1,17 @@
 <script setup lang="ts">
+import { Settings2, SquarePen, Trash } from '@lucide/vue'
 import { ref, onMounted, onUnmounted } from 'vue'
+
+// Map icon name strings to actual components
+const iconMap: Record<string, unknown> = {
+  SquarePen,
+  Trash,
+  Settings2,
+}
 
 interface MenuItem {
   label: string
-  icon: string
+  icon: keyof typeof iconMap
   action?: () => void
   danger?: boolean
   divider?: boolean
@@ -19,14 +27,15 @@ const props = withDefaults(defineProps<{
   position: 'right',
   menuWidth: 190,
   items: () => [
-    { label: 'Edit', icon: '✎' },
-    { label: 'Duplicate', icon: '⎘' },
-    { label: 'Share', icon: '↗' },
-    { label: 'Move to', icon: '⇥', divider: true },
-    { label: 'Archive', icon: '⊡', disabled: true },
-    { label: 'Delete', icon: '⌫', danger: true },
+    { label: 'Edit', icon: 'SquarePen' },
+    { label: 'Delete', icon: 'Trash', danger: true },
   ]
 })
+
+const emit = defineEmits<{
+  edit: []
+  delete: []
+}>()
 
 const isOpen = ref(false)
 const triggerRef = ref<HTMLButtonElement | null>(null)
@@ -85,7 +94,6 @@ const handleClickOutside = (e: MouseEvent) => {
   isOpen.value = false
 }
 
-// Close on any scroll — menu should not follow when user scrolls
 const handleScroll = () => {
   if (isOpen.value) isOpen.value = false
 }
@@ -115,24 +123,23 @@ onUnmounted(() => {
 
 const handleAction = (item: MenuItem) => {
   if (item.disabled) return
+
+  // Call the item's own action if provided
   item.action?.()
+
+  // Also emit named events for Edit / Delete so parent can just use @edit / @delete
+  if (item.label === 'Edit') emit('edit')
+  if (item.label === 'Delete') emit('delete')
+
   isOpen.value = false
 }
 </script>
 
 <template>
-  <div :class="['relative inline-flex', triggerClass, isOpen ? 'opacity-70' : '']">
-    <button ref="triggerRef" :class="[
-      'flex flex-col items-center justify-center gap-1 w-9 h-9 rounded-lg p-0 border-none',
-      'bg-transparent cursor-pointer outline-none transition-all duration-150',
-      isOpen
-        ? 'bg-violet-100 scale-95'
-        : 'hover:bg-violet-50 focus-visible:bg-violet-50'
-    ]" @click="toggle" :aria-expanded="isOpen" aria-haspopup="true" aria-label="Options">
-      <span v-for="n in 3" :key="n" :class="[
-        'block w-1 h-1 rounded-full transition-colors duration-150',
-        isOpen ? 'bg-violet-800' : 'bg-violet-600'
-      ]" />
+  <div :class="['relative inline-flex', triggerClass, isOpen ? 'opacity-80' : '']">
+    <button ref="triggerRef" class="cursor-pointer" @click="toggle" :aria-expanded="isOpen" aria-haspopup="true"
+      aria-label="Options">
+      <Settings2 class="size-5 pointer-events-none text-muted" />
     </button>
   </div>
 
@@ -156,22 +163,22 @@ const handleAction = (item: MenuItem) => {
         ),
         zIndex: 9999,
         minWidth: `${props.menuWidth}px`,
-      }" class="drop-shadow-[0_8px_24px_rgba(109,40,217,0.18)]" role="menu">
-        <div class="bg-[#0f0d1a] border border-[#2d2545] rounded-[14px] p-1.5 overflow-hidden">
+      }" class="drop-shadow-2xl" role="menu">
+        <div class="bg-white border border-muted/10 rounded-[14px] p-1.5 overflow-hidden">
           <template v-for="(item, index) in items" :key="index">
-            <div v-if="item.divider" class="h-px bg-[#2d2545] mx-2 my-1.5 rounded-sm" />
+            <div v-if="item.divider" class="h-px bg-muted/20 mx-2 my-1.5 rounded-sm" />
             <button :class="[
               'flex items-center gap-2.5 w-full px-3 py-2 rounded-[9px] border-none text-left',
-              'font-mono text-[13px] tracking-wide cursor-pointer',
+              'font-primary text-sm tracking-wide cursor-pointer',
               'transition-all duration-140',
               item.danger
-                ? 'text-red-400 bg-transparent hover:bg-red-950/60 hover:text-red-300'
-                : 'text-violet-200 bg-transparent hover:bg-[#1e1535] hover:text-violet-100',
+                ? 'text-red-400 bg-transparent hover:bg-red-50 hover:text-red-500'
+                : 'text-muted bg-transparent hover:bg-foreground hover:text-black',
               item.disabled
                 ? 'opacity-30 cursor-not-allowed pointer-events-none'
-                : 'hover:translate-x-0.5 active:translate-x-0.5 active:scale-[0.98]'
+                : 'active:scale-[0.98]'
             ]" role="menuitem" :disabled="item.disabled" @click="handleAction(item)">
-              <span class="text-[15px] min-w-4.5 text-center leading-none">{{ item.icon }}</span>
+              <component :is="iconMap[item.icon]" class="size-4 shrink-0" />
               <span class="flex-1">{{ item.label }}</span>
             </button>
           </template>

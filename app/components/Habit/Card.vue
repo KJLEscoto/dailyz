@@ -1,6 +1,6 @@
 <!-- HabitCard.vue -->
 <script setup lang="ts">
-import { Check, Flame, GripVertical, Leaf, MoreVertical } from '@lucide/vue';
+import { Check, Flame, GripVertical, Leaf } from '@lucide/vue';
 
 type HabitTime = 'morning' | 'afternoon' | 'evening' | 'anytime'
 
@@ -19,7 +19,18 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   toggle: [id: number]
+  edit: [id: number]
+  delete: [id: number]
 }>()
+
+const editHabit = () => {
+  emit('edit', props.habit.id)
+}
+
+const deleteHabit = () => {
+  emit('delete', props.habit.id)
+}
+
 </script>
 
 <template>
@@ -59,11 +70,8 @@ const emit = defineEmits<{
         <Leaf v-else class="size-3.5 pointer-events-none" />
         {{ habit.streak }}
       </button>
-      <!-- <button 
-        class="size-auto flex items-center justify-center rounded-xl text-muted transition-all duration-150 cursor-pointer opacity-0 group-hover:opacity-70">
-        <MoreVertical class="size-4 pointer-events-none" />
-      </button> -->
-      <KebabMenu trigger-class="opacity-0 group-hover:opacity-70 transition-opacity duration-200" />
+      <HabitMenu trigger-class="opacity-0 group-hover:opacity-70 transition-opacity duration-200" @edit="editHabit"
+        @delete="deleteHabit" />
     </div>
   </main>
 </template>

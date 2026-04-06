@@ -4,7 +4,7 @@ const { quote, author, loading, error } = $dailyQuote
 </script>
 
 <template>
-  <div class="flex flex-col gap-3 rounded-2xl text-sm">
+  <div class="flex flex-col gap-3 rounded-2xl text-sm select-none">
 
     <!-- Loading -->
     <div v-if="loading" class="animate-pulse flex items-start gap-2">
@@ -24,7 +24,10 @@ const { quote, author, loading, error } = $dailyQuote
     <template v-else-if="quote">
       <div class="flex gap-3">
         <span class="text-primary text-3xl font-serif italic leading-none mt-0.5 select-none">"</span>
-        <p class="text-muted leading-relaxed italic">{{ quote }}</p>
+        <section class="space-y-1">
+          <p class="text-muted">{{ quote }}</p>
+          <h4 class="text-xs text-muted/50 font-semibold">by {{ author }}</h4>
+        </section>
       </div>
     </template>
 
