@@ -7,10 +7,10 @@ const { quote, author, loading, error } = $dailyQuote
   <div class="flex flex-col gap-3 rounded-2xl text-sm select-none">
 
     <!-- Loading -->
-    <div v-if="loading" class="animate-pulse flex items-start gap-2">
-      <div class="w-5 h-5 bg-muted/20 rounded-2xl"></div>
+    <div v-if="loading" class="animate-pulse flex items-start gap-2 ">
+      <div class="w-5 h-5 bg-muted/20 rounded-full"></div>
       <section class="space-y-2 w-full">
-        <div class="w-full h-5 bg-muted/20 rounded-2xl"></div>
+        <div class="w-full h-10 bg-muted/20 rounded-2xl"></div>
         <div class="w-1/2 h-5 bg-muted/20 rounded-2xl"></div>
       </section>
     </div>

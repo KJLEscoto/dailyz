@@ -61,6 +61,13 @@ function getHighestStreak() {
   return habits.value.reduce((max, h) => h.streak > max ? h.streak : max, 0)
 }
 
+const modalAddRef = ref()
+
+// replace your old addHabit() or point the button to this
+function addHabit() {
+  modalAddRef.value?.addHabit()
+}
+
 const editHabit = (id: number) => {
   // open edit modal, router.push, etc.
   console.log('edit', id)
@@ -163,7 +170,7 @@ const deleteHabit = (id: number) => {
 
       <!-- Right section — sticks while left scrolls -->
       <aside class="sticky top-55 col-span-4 space-y-4 max-h-[calc(100vh-5rem)] overflow-y-auto scrollbar-none">
-        <Button size="lg" class="group rounded-3xl! py-8! group" block>
+        <Button @click="addHabit" size="lg" class="group rounded-3xl! py-8! group" block>
           <template #icon-left>
             <PlusCircle
               class="size-5 opacity-20 rotate-0 group-hover:rotate-90 duration-200 ease-in transition-all group-hover:opacity-100 pointer-events-none" />
@@ -207,4 +214,8 @@ const deleteHabit = (id: number) => {
 
     </div>
   </main>
+
+  <!-- modals -->
+  <ModalAdd ref="modalAddRef" />
+  
 </template>
