@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { CalendarRange, ChevronDown, Flame, PanelsTopLeft, PlusCircle } from '@lucide/vue';
 
+const { formatted } = useDate()
+
 // accordions
 const todoOpen = ref(true)
 const completedOpen = ref(true)
@@ -14,18 +16,19 @@ interface Habit {
   streak: number
   streakSince: string
   completed: boolean
+  color: string
+  created_at: string
 }
 
-
 const habits = ref<Habit[]>([
-  { id: 1, title: 'Cardio Workout', time: 'morning', streak: 0, streakSince: '', completed: false },
-  { id: 2, title: 'Read for 20 minutes', time: 'evening', streak: 1, streakSince: 'MAR 28', completed: true },
-  { id: 3, title: 'Glass of water', time: 'anytime', streak: 14, streakSince: 'MAR 15', completed: true },
-  { id: 4, title: 'Morning meditation', time: 'morning', streak: 2, streakSince: 'MAR 27', completed: true },
-  { id: 5, title: 'Journal entry', time: 'evening', streak: 7, streakSince: 'MAR 22', completed: false },
-  { id: 6, title: 'Stretch for 10 mins', time: 'morning', streak: 3, streakSince: 'MAR 26', completed: false },
-  { id: 7, title: 'No social media', time: 'anytime', streak: 21, streakSince: 'MAR 8', completed: true },
-  { id: 8, title: 'Drink 8 glasses water', time: 'afternoon', streak: 5, streakSince: 'MAR 24', completed: false },
+  { id: 1, title: 'Cardio Workout', time: 'morning', streak: 0, streakSince: '', completed: false, color: '#E07B6A', created_at: 'MAR 1, 2025' },
+  { id: 2, title: 'Read for 20 minutes', time: 'evening', streak: 1, streakSince: 'MAR 28', completed: true, color: '#7EB8D4', created_at: 'MAR 5, 2025' },
+  { id: 3, title: 'Glass of water', time: 'anytime', streak: 14, streakSince: 'MAR 15', completed: true, color: '#7DC47D', created_at: 'MAR 8, 2025' },
+  { id: 4, title: 'Morning meditation', time: 'morning', streak: 2, streakSince: 'MAR 27', completed: true, color: '#C47DBC', created_at: 'MAR 10, 2025' },
+  { id: 5, title: 'Journal entry', time: 'evening', streak: 7, streakSince: 'MAR 22', completed: false, color: '#D4B84A', created_at: 'MAR 15, 2025' },
+  { id: 6, title: 'Stretch for 10 mins', time: 'morning', streak: 3, streakSince: 'MAR 26', completed: false, color: '#4AC4B8', created_at: 'MAR 18, 2025' },
+  { id: 7, title: 'No social media', time: 'anytime', streak: 21, streakSince: 'MAR 8', completed: true, color: '#E07B6A', created_at: 'MAR 20, 2025' },
+  { id: 8, title: 'Drink 8 glasses water', time: 'afternoon', streak: 5, streakSince: 'MAR 24', completed: false, color: '#7EB8D4', created_at: 'MAR 22, 2025' },
 ])
 
 const todoHabits = computed(() => habits.value.filter(h => !h.completed))
@@ -62,6 +65,7 @@ function getHighestStreak() {
 }
 
 const modalAddRef = ref()
+const modalEditRef = ref()
 
 // replace your old addHabit() or point the button to this
 function addHabit() {
@@ -69,8 +73,8 @@ function addHabit() {
 }
 
 const editHabit = (id: number) => {
-  // open edit modal, router.push, etc.
-  console.log('edit', id)
+  const habit = habits.value.find(h => h.id === id)
+  modalEditRef.value?.editHabit(habit)
 }
 
 const deleteHabit = (id: number) => {
@@ -91,7 +95,7 @@ const deleteHabit = (id: number) => {
             <p class="text-nowrap">{{ getHighestStreak() }}-day highest streak</p>
           </div>
         </section>
-        <UppercaseTitle size="lg">saturday, mar 28</UppercaseTitle>
+        <UppercaseTitle size="lg">{{ formatted }}</UppercaseTitle>
       </div>
 
       <div class="flex items-center gap-4 px-5 py-3 bg-black/3 rounded-3xl">
@@ -217,5 +221,6 @@ const deleteHabit = (id: number) => {
 
   <!-- modals -->
   <ModalAdd ref="modalAddRef" />
+  <ModalEdit ref="modalEditRef" />
   
 </template>

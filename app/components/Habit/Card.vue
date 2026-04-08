@@ -11,6 +11,8 @@ interface Habit {
   streak: number
   streakSince: string
   completed: boolean
+  color: string
+  created_at: string
 }
 
 const props = defineProps<{
@@ -53,7 +55,7 @@ const deleteHabit = () => {
             {{ habit.title }}
           </h2>
           <div class="flex items-center gap-2">
-            <div class="size-2 rounded-full bg-red-500"></div>
+            <div class="size-2 rounded-full" :style="{ backgroundColor: habit.color }"></div>
             <UppercaseTitle size="sm">{{ habit.time }}</UppercaseTitle>
           </div>
         </section>
