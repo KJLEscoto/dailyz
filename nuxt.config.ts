@@ -69,6 +69,13 @@ export default defineNuxtConfig({
   runtimeConfig: {  
     unsplashKey: process.env.NUXT_PUBLIC_UNSPLASH_KEY,
     public: {
+      firebaseApiKey: '',
+      firebaseAuthDomain: '',
+      firebaseProjectId: '',
+      firebaseStorageBucket: '',
+      firebaseMessagingSenderId: '',
+      firebaseAppId: '',
+      firebaseMeasurementId: '',
     },
   },
 })
