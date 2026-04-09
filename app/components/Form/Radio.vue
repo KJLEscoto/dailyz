@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Info } from '@lucide/vue'
+
 interface Option {
   label: string
   value: string | number
@@ -43,7 +45,6 @@ const groupName = `radio-${Math.random().toString(36).slice(2, 7)}`
         modelValue === option.value
           ? 'border-primary text-primary bg-primary/10'
           : 'border-muted/20 text-muted hover:border-primary',
-        error && 'border-red-500'
       ]">
         <input type="radio" :name="groupName" :value="option.value" :checked="modelValue === option.value"
           :disabled="disabled" class="hidden" @change="emit('update:modelValue', option.value)" />

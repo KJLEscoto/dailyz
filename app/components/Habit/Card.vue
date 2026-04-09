@@ -1,19 +1,7 @@
 <!-- HabitCard.vue -->
 <script setup lang="ts">
 import { Check, Flame, GripVertical, Leaf } from '@lucide/vue';
-
-type HabitTime = 'morning' | 'afternoon' | 'evening' | 'anytime'
-
-interface Habit {
-  id: number
-  title: string
-  time: HabitTime
-  streak: number
-  streakSince: string
-  completed: boolean
-  color: string
-  created_at: string
-}
+import type { Habit, HabitTime } from '~/types/habit'
 
 const props = defineProps<{
   habit: Habit
@@ -26,11 +14,11 @@ const emit = defineEmits<{
 }>()
 
 const editHabit = () => {
-  emit('edit', props.habit.id)
+  emit('edit', Number(props.habit.id))
 }
 
 const deleteHabit = () => {
-  emit('delete', props.habit.id)
+  emit('delete', Number(props.habit.id))
 }
 
 </script>
@@ -44,7 +32,7 @@ const deleteHabit = () => {
       <section class="flex items-center gap-4">
         <section
           class="ring-2 ring-black/5 rounded-full size-12 flex items-center justify-center cursor-pointer transition-all duration-200"
-          @click="emit('toggle', habit.id)">
+          @click="emit('toggle', Number(habit.id))">
           <div v-if="habit.completed"
             class="ring-4 ring-primary rounded-full size-9 flex items-center justify-center bg-primary">
             <Check class="size-8 text-white" />
@@ -52,7 +40,7 @@ const deleteHabit = () => {
         </section>
         <section :class="['space-y-1', habit.completed ? 'opacity-50' : 'opacity-100']">
           <h2 :class="['text-xl font-semibold', habit.completed ? 'line-through' : '']">
-            {{ habit.title }}
+            {{ habit.name }}
           </h2>
           <div class="flex items-center gap-2">
             <div class="size-2 rounded-full" :style="{ backgroundColor: habit.color }"></div>

@@ -1,34 +1,25 @@
 <script setup lang="ts">
 import { CalendarRange, ChevronDown, Flame, PanelsTopLeft, PlusCircle } from '@lucide/vue';
+import type { Habit, HabitTime } from '~/types/habit'
 
 const { formatted } = useDate()
+
+const habitStore = useHabitStore()  
 
 // accordions
 const todoOpen = ref(true)
 const completedOpen = ref(true)
 
-type HabitTime = 'morning' | 'afternoon' | 'evening' | 'anytime'
-
-interface Habit {
-  id: number
-  title: string
-  time: HabitTime
-  streak: number
-  streakSince: string
-  completed: boolean
-  color: string
-  created_at: string
-}
 
 const habits = ref<Habit[]>([
-  { id: 1, title: 'Cardio Workout', time: 'morning', streak: 0, streakSince: '', completed: false, color: '#E07B6A', created_at: 'MAR 1, 2025' },
-  { id: 2, title: 'Read for 20 minutes', time: 'evening', streak: 1, streakSince: 'MAR 28', completed: true, color: '#7EB8D4', created_at: 'MAR 5, 2025' },
-  { id: 3, title: 'Glass of water', time: 'anytime', streak: 14, streakSince: 'MAR 15', completed: true, color: '#7DC47D', created_at: 'MAR 8, 2025' },
-  { id: 4, title: 'Morning meditation', time: 'morning', streak: 2, streakSince: 'MAR 27', completed: true, color: '#C47DBC', created_at: 'MAR 10, 2025' },
-  { id: 5, title: 'Journal entry', time: 'evening', streak: 7, streakSince: 'MAR 22', completed: false, color: '#D4B84A', created_at: 'MAR 15, 2025' },
-  { id: 6, title: 'Stretch for 10 mins', time: 'morning', streak: 3, streakSince: 'MAR 26', completed: false, color: '#4AC4B8', created_at: 'MAR 18, 2025' },
-  { id: 7, title: 'No social media', time: 'anytime', streak: 21, streakSince: 'MAR 8', completed: true, color: '#E07B6A', created_at: 'MAR 20, 2025' },
-  { id: 8, title: 'Drink 8 glasses water', time: 'afternoon', streak: 5, streakSince: 'MAR 24', completed: false, color: '#7EB8D4', created_at: 'MAR 22, 2025' },
+  { id: 1, name: 'Cardio Workout', time: 'morning', streak: 0, streakStarted: '', completed: false, color: '#E07B6A', createdAt: 'MAR 1, 2025' },
+  { id: 2, name: 'Read for 20 minutes', time: 'evening', streak: 1, streakStarted: 'MAR 28', completed: true, color: '#7EB8D4', createdAt: 'MAR 5, 2025' },
+  { id: 3, name: 'Glass of water', time: 'anytime', streak: 14, streakStarted: 'MAR 15', completed: true, color: '#7DC47D', createdAt: 'MAR 8, 2025' },
+  { id: 4, name: 'Morning meditation', time: 'morning', streak: 2, streakStarted: 'MAR 27', completed: true, color: '#C47DBC', createdAt: 'MAR 10, 2025' },
+  { id: 5, name: 'Journal entry', time: 'evening', streak: 7, streakStarted: 'MAR 22', completed: false, color: '#D4B84A', createdAt: 'MAR 15, 2025' },
+  { id: 6, name: 'Stretch for 10 mins', time: 'morning', streak: 3, streakStarted: 'MAR 26', completed: false, color: '#4AC4B8', createdAt: 'MAR 18, 2025' },
+  { id: 7, name: 'No social media', time: 'anytime', streak: 21, streakStarted: 'MAR 8', completed: true, color: '#E07B6A', createdAt: 'MAR 20, 2025' },
+  { id: 8, name: 'Drink 8 glasses water', time: 'afternoon', streak: 5, streakStarted: 'MAR 24', completed: false, color: '#7EB8D4', createdAt: 'MAR 22, 2025' },
 ])
 
 const todoHabits = computed(() => habits.value.filter(h => !h.completed))

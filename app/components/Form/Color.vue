@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Info } from '@lucide/vue'
+
 interface Props {
   modelValue?: string
   label?: string
