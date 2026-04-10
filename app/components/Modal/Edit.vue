@@ -8,8 +8,8 @@ const habitColor = ref('')
 const habitColorError = ref('')
 const habitCreatedAt = ref('')
 
-const editHabit = (habit: { id: number, title: string, time: string, color: string, created_at: string }) => {
-  habitName.value = habit.title    // 👈 pre-fill
+const editHabit = (habit: { id: number, name: string, time: string, color: string, created_at: string }) => {
+  habitName.value = habit.name    // 👈 pre-fill
   habitTime.value = habit.time
   habitColor.value = habit.color
   habitCreatedAt.value = habit.created_at

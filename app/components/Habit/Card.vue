@@ -1,7 +1,7 @@
 <!-- HabitCard.vue -->
 <script setup lang="ts">
 import { Check, Flame, GripVertical, Leaf } from '@lucide/vue';
-import type { Habit, HabitTime } from '~/types/habit'
+import type { Habit } from '~/types/habit'
 
 const props = defineProps<{
   habit: Habit

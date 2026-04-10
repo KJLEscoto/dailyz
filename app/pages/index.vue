@@ -4,23 +4,14 @@ import type { Habit, HabitTime } from '~/types/habit'
 
 const { formatted } = useDate()
 
-const habitStore = useHabitStore()  
+const habitStore = useHabitStore()
+console.log(habitStore.fetchHabits().then(() => console.log(habitStore.habits)))
+
+const habits = computed(() => habitStore.habits)
 
 // accordions
 const todoOpen = ref(true)
 const completedOpen = ref(true)
-
-
-const habits = ref<Habit[]>([
-  { id: 1, name: 'Cardio Workout', time: 'morning', streak: 0, streakStarted: '', completed: false, color: '#E07B6A', createdAt: 'MAR 1, 2025' },
-  { id: 2, name: 'Read for 20 minutes', time: 'evening', streak: 1, streakStarted: 'MAR 28', completed: true, color: '#7EB8D4', createdAt: 'MAR 5, 2025' },
-  { id: 3, name: 'Glass of water', time: 'anytime', streak: 14, streakStarted: 'MAR 15', completed: true, color: '#7DC47D', createdAt: 'MAR 8, 2025' },
-  { id: 4, name: 'Morning meditation', time: 'morning', streak: 2, streakStarted: 'MAR 27', completed: true, color: '#C47DBC', createdAt: 'MAR 10, 2025' },
-  { id: 5, name: 'Journal entry', time: 'evening', streak: 7, streakStarted: 'MAR 22', completed: false, color: '#D4B84A', createdAt: 'MAR 15, 2025' },
-  { id: 6, name: 'Stretch for 10 mins', time: 'morning', streak: 3, streakStarted: 'MAR 26', completed: false, color: '#4AC4B8', createdAt: 'MAR 18, 2025' },
-  { id: 7, name: 'No social media', time: 'anytime', streak: 21, streakStarted: 'MAR 8', completed: true, color: '#E07B6A', createdAt: 'MAR 20, 2025' },
-  { id: 8, name: 'Drink 8 glasses water', time: 'afternoon', streak: 5, streakStarted: 'MAR 24', completed: false, color: '#7EB8D4', createdAt: 'MAR 22, 2025' },
-])
 
 const todoHabits = computed(() => habits.value.filter(h => !h.completed))
 const completedHabits = computed(() => habits.value.filter(h => h.completed))
@@ -68,9 +59,9 @@ const editHabit = (id: number) => {
   modalEditRef.value?.editHabit(habit)
 }
 
-const deleteHabit = (id: number) => {
-  habits.value = habits.value.filter(h => h.id !== id)
-}
+// const deleteHabit = (id: number) => {
+//   habits.value = habits.value.filter(h => h.id !== id)
+// }
 </script>
 
 <template>
@@ -94,7 +85,8 @@ const deleteHabit = (id: number) => {
           <UppercaseTitle size="md">daily progress</UppercaseTitle>
           <h1 class="text-3xl text-primary font-semibold">{{ getCompletedCount() }}/{{ getHabitsCount() }} done</h1>
         </section>
-        <section class="rounded-full size-14 flex items-center justify-center select-none relative ring-3 ring-muted/10 shrink-0">
+        <section
+          class="rounded-full size-14 flex items-center justify-center select-none relative ring-3 ring-muted/10 shrink-0">
           <svg class="absolute inset-0 -rotate-90" viewBox="0 0 56 56" fill="none">
             <circle cx="28" cy="28" r="24" stroke="var(--color-foreground)" stroke-width="4" stroke-opacity="0.1" />
             <circle cx="28" cy="28" r="24" stroke="var(--color-primary)" stroke-width="4" stroke-linecap="round"
@@ -132,7 +124,9 @@ const deleteHabit = (id: number) => {
             :class="todoOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'">
             <div class="overflow-hidden">
               <ul class="space-y-5 pt-1">
-                <HabitCard v-for="habit in todoHabits" :key="habit.id" :habit="habit" @toggle="toggleHabit" @edit="editHabit" @delete="deleteHabit" />
+                <!-- <HabitCard v-for="habit in todoHabits" :key="habit.id" :habit="habit" @toggle="toggleHabit" @edit="editHabit" @delete="deleteHabit" /> -->
+                <HabitCard v-for="habit in todoHabits" :key="habit.id" :habit="habit" @toggle="toggleHabit"
+                  @edit="editHabit" />
               </ul>
             </div>
           </div>
@@ -155,7 +149,10 @@ const deleteHabit = (id: number) => {
             :class="completedOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'">
             <div class="overflow-hidden">
               <ul class="space-y-5 pt-1">
-                <HabitCard v-for="habit in completedHabits" :key="habit.id" :habit="habit" @toggle="toggleHabit"                   @edit="editHabit" @delete="deleteHabit" />
+                <!-- <HabitCard v-for="habit in completedHabits" :key="habit.id" :habit="habit" @toggle="toggleHabit"
+                  @edit="editHabit" @delete="deleteHabit" /> -->
+                <HabitCard v-for="habit in completedHabits" :key="habit.id" :habit="habit" @toggle="toggleHabit"
+                  @edit="editHabit" />
               </ul>
             </div>
           </div>
@@ -213,5 +210,5 @@ const deleteHabit = (id: number) => {
   <!-- modals -->
   <ModalAdd ref="modalAddRef" />
   <ModalEdit ref="modalEditRef" />
-  
+
 </template>
