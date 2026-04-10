@@ -1,7 +1,7 @@
 export type HabitTime = 'morning' | 'afternoon' | 'evening' | 'anytime'
 
 export interface Habit {
-  id: number | string
+  id: any
   name: string
   time: HabitTime
   streak: number

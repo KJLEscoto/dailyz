@@ -59,9 +59,9 @@ const editHabit = (id: number) => {
   modalEditRef.value?.editHabit(habit)
 }
 
-// const deleteHabit = (id: number) => {
-//   habits.value = habits.value.filter(h => h.id !== id)
-// }
+const deleteHabit = async (id: number) => {
+  await habitStore.deleteHabit(id)
+}
 </script>
 
 <template>
@@ -124,9 +124,7 @@ const editHabit = (id: number) => {
             :class="todoOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'">
             <div class="overflow-hidden">
               <ul class="space-y-5 pt-1">
-                <!-- <HabitCard v-for="habit in todoHabits" :key="habit.id" :habit="habit" @toggle="toggleHabit" @edit="editHabit" @delete="deleteHabit" /> -->
-                <HabitCard v-for="habit in todoHabits" :key="habit.id" :habit="habit" @toggle="toggleHabit"
-                  @edit="editHabit" />
+                <HabitCard v-for="habit in todoHabits" :key="habit.id" :habit="habit" @toggle="toggleHabit" @edit="editHabit" @delete="deleteHabit" />
               </ul>
             </div>
           </div>

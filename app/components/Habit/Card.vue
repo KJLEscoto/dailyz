@@ -14,11 +14,11 @@ const emit = defineEmits<{
 }>()
 
 const editHabit = () => {
-  emit('edit', Number(props.habit.id))
+  emit('edit', props.habit.id)
 }
 
 const deleteHabit = () => {
-  emit('delete', Number(props.habit.id))
+  emit('delete', props.habit.id)
 }
 
 </script>
@@ -32,7 +32,7 @@ const deleteHabit = () => {
       <section class="flex items-center gap-4">
         <section
           class="ring-2 ring-black/5 rounded-full size-12 flex items-center justify-center cursor-pointer transition-all duration-200"
-          @click="emit('toggle', Number(habit.id))">
+          @click="emit('toggle', habit.id)">
           <div v-if="habit.completed"
             class="ring-4 ring-primary rounded-full size-9 flex items-center justify-center bg-primary">
             <Check class="size-8 text-white" />

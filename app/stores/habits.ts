@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import type { Habit, HabitTime } from '~/types/habit'
-import { addDoc, getDocs, collection, type Firestore } from 'firebase/firestore'
+import { addDoc, getDocs, doc, deleteDoc, collection, type Firestore } from 'firebase/firestore'
 
 export const useHabitStore = defineStore('habitStore', {
   state: () => ({
@@ -34,12 +34,19 @@ export const useHabitStore = defineStore('habitStore', {
 
       const docRef =await addDoc(collection(db, 'habits'), habit)
       this.habits.push({ id: docRef.id, ...habit })
-    }
+    },
 
     // update habit
     // updateHabit
 
     // delete habit
-    // deleteHabit
+    async deleteHabit(id: any) {
+      const { $firebase } = useNuxtApp()
+      const db = $firebase.db as Firestore
+
+      const docRef = doc(db, 'habits', id)
+      await deleteDoc(docRef)
+      this.habits = this.habits.filter((habit) => habit.id !== id)
+    }
   }
 })
