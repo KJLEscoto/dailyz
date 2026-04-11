@@ -58,6 +58,7 @@ function addHabit() {
 
 const editHabit = (id: Habit['id']) => {
   const habit = habits.value.find(h => h.id === id)
+  if (!habit) return
   modalEditRef.value?.editHabit(habit)
 }
 

@@ -43,25 +43,36 @@ const confirmAdd = async () => {
     time: habitTime.value as HabitTime,
     streak: 0,                      
     streakStarted: '',               
-    completed: false,              
+    completions: [],              
     color: habitColor.value,
     createdAt: new Date().toISOString(),  
   })
 
+  showAddHabitModal.value = false  
+  
   // reset fields
   habitName.value = ''
   habitTime.value = ''
   habitColor.value = ''
-
-  showAddHabitModal.value = false  
 }
+
+const cancelAdd = () => {
+  showAddHabitModal.value = false
+  // reset fields and errors
+  habitName.value = ''
+  habitTime.value = ''
+  habitColor.value = ''
+  habitNameError.value = ''
+  habitTimeError.value = ''
+  habitColorError.value = ''
+} 
 
 defineExpose({ addHabit })
 </script>
 
 <template>
   <Modal v-model="showAddHabitModal" title="New Habit"
-    description="Daily routine? Anything you want to do consistently!" primary-label="Add Habit" @primary="confirmAdd">
+    description="Daily routine? Anything you want to do consistently!" primary-label="Add Habit" @primary="confirmAdd" @cancel="cancelAdd">
     <form class="space-y-6">
       <FormField v-model="habitName" label="habit name" type="text" placeholder="e.g, Exercise for 30 minutes"
         :error="habitNameError" required>
