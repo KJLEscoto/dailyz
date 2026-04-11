@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { CalendarRange, ChevronDown, Flame, PanelsTopLeft, PlusCircle } from '@lucide/vue';
-import type { Habit, HabitTime } from '~/types/habit'
+import type { Habit } from '~/types/habit'
+import { format } from 'date-fns'
 
 const { formatted } = useDate()
 
 const habitStore = useHabitStore()
-console.log(habitStore.fetchHabits().then(() => console.log(habitStore.habits)))
 
 const habits = computed(() => habitStore.habits)
 
@@ -13,16 +13,18 @@ const habits = computed(() => habitStore.habits)
 const todoOpen = ref(true)
 const completedOpen = ref(true)
 
-const todoHabits = computed(() => habits.value.filter(h => !h.completed))
-const completedHabits = computed(() => habits.value.filter(h => h.completed))
+// const todoHabits = computed(() => habits.value.filter(h => !h.completed))
+// const completedHabits = computed(() => habits.value.filter(h => h.completed))
 
-function toggleHabit(id: number) {
-  const habit = habits.value.find(h => h.id === id)
-  if (habit) {
-    habit.completed = !habit.completed
-    habit.streak = habit.completed ? habit.streak + 1 : habit.streak - 1
-  }
-}
+const todoHabits = computed(() => habits.value.filter(h => {
+  const today = format(new Date(), 'yyyy-MM-dd')
+  return !h.completions?.includes(today)
+}))
+
+const completedHabits = computed(() => habits.value.filter(h => {
+  const today = format(new Date(), 'yyyy-MM-dd')
+  return h.completions?.includes(today)
+}))
 
 function getHabitsCount() {
   return habits.value.length
@@ -38,7 +40,7 @@ function getCompletedCount() {
 
 function getPercentageCompleted() {
   const total = habits.value.length
-  const completed = habits.value.filter(h => h.completed).length
+  const completed = habits.value.filter(h => h.completions.includes(format(new Date(), 'yyyy-MM-dd'))).length
   return total === 0 ? 0 : Math.round((completed / total) * 100)
 }
 
@@ -54,14 +56,23 @@ function addHabit() {
   modalAddRef.value?.addHabit()
 }
 
-const editHabit = (id: number) => {
+const editHabit = (id: Habit['id']) => {
   const habit = habits.value.find(h => h.id === id)
   modalEditRef.value?.editHabit(habit)
 }
 
-const deleteHabit = async (id: number) => {
+const deleteHabit = async (id: Habit['id']) => {
   await habitStore.deleteHabit(id)
 }
+
+const toggleCompletion = async (habit: Habit) => {
+  await habitStore.toggleCompletion(habit)
+}
+
+onMounted(async () => {
+  await habitStore.fetchHabits()
+  console.log(habitStore.habits)
+})
 </script>
 
 <template>
@@ -124,7 +135,7 @@ const deleteHabit = async (id: number) => {
             :class="todoOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'">
             <div class="overflow-hidden">
               <ul class="space-y-5 pt-1">
-                <HabitCard v-for="habit in todoHabits" :key="habit.id" :habit="habit" @toggle="toggleHabit" @edit="editHabit" @delete="deleteHabit" />
+                <HabitCard v-for="habit in todoHabits" :key="habit.id" :habit="habit" @toggle="toggleCompletion" @edit="editHabit" @delete="deleteHabit" />
               </ul>
             </div>
           </div>
@@ -149,7 +160,7 @@ const deleteHabit = async (id: number) => {
               <ul class="space-y-5 pt-1">
                 <!-- <HabitCard v-for="habit in completedHabits" :key="habit.id" :habit="habit" @toggle="toggleHabit"
                   @edit="editHabit" @delete="deleteHabit" /> -->
-                <HabitCard v-for="habit in completedHabits" :key="habit.id" :habit="habit" @toggle="toggleHabit"
+                <HabitCard v-for="habit in completedHabits" :key="habit.id" :habit="habit" @toggle="toggleCompletion"
                   @edit="editHabit" />
               </ul>
             </div>
@@ -189,7 +200,10 @@ const deleteHabit = async (id: number) => {
           <section class="rounded-3xl p-5 border-b border-primary bg-foreground w-full flex items-end justify-between">
             <div class="space-y-1">
               <UppercaseTitle class="text-muted" size="sm">streak calendar</UppercaseTitle>
-              <p class="font-bold text-primary text-2xl">{{ getHighestStreak() }} days</p>
+              <p class="font-bold text-primary text-2xl">{{ getHighestStreak() }} 
+                <span v-if="getHighestStreak() < 2">day</span>
+                <span v-else>days</span>
+              </p>
             </div>
             <CalendarRange class="size-10 text-primary pointer-events-none" />
           </section>
