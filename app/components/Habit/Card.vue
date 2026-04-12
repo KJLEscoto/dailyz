@@ -32,6 +32,15 @@ const toggleCompletion = () => {
   emit('toggle', props.habit)
 }
 
+const streakStarted = computed(() => {
+  if (!props.habit.completions?.length) {
+    return 'Complete to start a streak'
+  } else {
+    const firstCompletion = format(new Date(props.habit.completions[props.habit.completions.length - 1]!), 'MMM d')
+    return 'Streak since ' + firstCompletion
+  }
+})
+
 </script>
 
 <template>
@@ -61,16 +70,18 @@ const toggleCompletion = () => {
       </section>
     </div>
     <div class="flex items-center gap-2">
-      <button :class="[
-        'flex items-center gap-0.5 px-3 py-1.5 rounded-full font-secondary text-xs font-bold transition-all duration-200',
-        habit.streak >= 3
-          ? 'bg-danger/10 text-danger'
-          : 'bg-emerald-500/10 text-emerald-500',
-      ]">
-        <Flame v-if="habit.streak >= 3" class="size-3.5 pointer-events-none" />
-        <Leaf v-else class="size-3.5 pointer-events-none" />
-        {{ habit.streak }}
-      </button>
+      <Tooltip :text="`${streakStarted ? streakStarted : 'No streak yet'}`" position="top">
+        <button :class="[
+          'flex items-center gap-0.5 px-3 py-1.5 rounded-full font-secondary text-xs font-bold transition-all duration-200',
+          habit.streak >= 3
+            ? 'bg-danger/10 text-danger'
+            : 'bg-emerald-500/10 text-emerald-500',
+        ]">
+          <Flame v-if="habit.streak >= 3" class="size-3.5 pointer-events-none" />
+          <Leaf v-else class="size-3.5 pointer-events-none" />
+          {{ habit.streak }}
+        </button>
+      </Tooltip>
       <HabitMenu trigger-class="opacity-0 group-hover:opacity-70 transition-opacity duration-200" @edit="editHabit"
         @delete="deleteHabit" />
     </div>

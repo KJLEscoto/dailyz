@@ -62,6 +62,14 @@ const confirmEdit = async () => {
   showEditHabitModal.value = false
 }
 
+const cancelAdd = () => {
+  showEditHabitModal.value = false
+  // reset errors
+  habitNameError.value = ''
+  habitTimeError.value = ''
+  habitColorError.value = ''
+} 
+
 const dateCreated = computed(() => 'Created on ' + format(habitCreatedAt.value ? new Date(habitCreatedAt.value) : new Date(), 'MMM d, yyyy'))
 
 defineExpose({ editHabit })
@@ -69,7 +77,7 @@ defineExpose({ editHabit })
 
 <template>
   <Modal v-model="showEditHabitModal" title="Edit Habit"
-    :description="dateCreated" primary-label="Update Habit" @primary="confirmEdit()">
+    :description="dateCreated" primary-label="Update Habit" @primary="confirmEdit()" @cancel="cancelAdd">
     <form class="space-y-6">
       <FormField v-model="habitName" label="habit name" type="text" placeholder="e.g, Exercise for 30 minutes"
         :error="habitNameError" required>

@@ -5,7 +5,6 @@ export interface Habit {
   name: string
   time: HabitTime
   streak: number
-  streakStarted: string
   completions: string[]
   color: string
   createdAt: string

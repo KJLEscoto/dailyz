@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CalendarRange, ChevronDown, Flame, PanelsTopLeft, PlusCircle } from '@lucide/vue';
+import { CalendarRange, ChevronDown, PanelsTopLeft, PlusCircle } from '@lucide/vue';
 import type { Habit } from '~/types/habit'
 import { format } from 'date-fns'
 
@@ -12,9 +12,6 @@ const habits = computed(() => habitStore.habits)
 // accordions
 const todoOpen = ref(true)
 const completedOpen = ref(true)
-
-// const todoHabits = computed(() => habits.value.filter(h => !h.completed))
-// const completedHabits = computed(() => habits.value.filter(h => h.completed))
 
 const todoHabits = computed(() => habits.value.filter(h => {
   const today = format(new Date(), 'yyyy-MM-dd')
@@ -82,13 +79,7 @@ onMounted(async () => {
     <!-- Sticky Header -->
     <header class="sticky top-0 z-30 bg-foreground flex items-center justify-between gap-10 py-16">
       <div class="space-y-2">
-        <section class="flex items-center gap-4 font-semibold">
-          <h1 class="text-4xl">Today's Habits</h1>
-          <div class="text-base font-secondary text-danger bg-danger/10 px-4 rounded-full py-2 flex items-center">
-            <Flame class="size-5 pointer-events-none" />
-            <p class="text-nowrap">{{ getHighestStreak() }}-day highest streak</p>
-          </div>
-        </section>
+        <h1 class="text-4xl font-semibold">Today's Habits</h1>
         <UppercaseTitle size="lg">{{ formatted }}</UppercaseTitle>
       </div>
 

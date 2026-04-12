@@ -63,9 +63,7 @@ function onBlur(e: FocusEvent) {
     <!-- Input container -->
     <div :class="[
       'relative flex items-center rounded-xl border bg-white transition-all duration-150',
-      error
-        ? 'border-red-500'
-        : isFocused
+      isFocused
           ? 'border-primary'
           : 'border-muted/20 hover:border-primary',
     ]">

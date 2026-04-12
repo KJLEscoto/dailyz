@@ -42,7 +42,6 @@ export const useHabitStore = defineStore('habitStore', {
         name: Habit.name,
         time: Habit.time as HabitTime,
         streak: 0,
-        streakStarted: '',
         completions: [],
         color: Habit.color,
         createdAt: new Date().toISOString(),
@@ -84,7 +83,6 @@ export const useHabitStore = defineStore('habitStore', {
 
       if (habit.completions.includes(today)) {
         habit.completions = habit.completions.filter(date => date !== today)
-        // habit.streak = Math.max(0, habit.streak - 1)
       } else {
         habit.completions.push(today)
       }
