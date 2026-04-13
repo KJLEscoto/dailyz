@@ -13,15 +13,31 @@ const habits = computed(() => habitStore.habits)
 const todoOpen = ref(true)
 const completedOpen = ref(true)
 
-const todoHabits = computed(() => habits.value.filter(h => {
-  const today = format(new Date(), 'yyyy-MM-dd')
-  return !h.completions?.includes(today)
-}))
+const habitOrder = ref<string[]>([])
 
-const completedHabits = computed(() => habits.value.filter(h => {
+// sync order when habits load
+watch(() => habitStore.habits, (newHabits) => {
+  newHabits.forEach(h => {
+    if (!habitOrder.value.includes(h.id)) {
+      habitOrder.value.push(h.id)   // 👈 new habits go to the end
+    }
+  })
+}, { immediate: true })
+
+const sortByOrder = (list: Habit[]) =>
+  [...list].sort((a, b) => habitOrder.value.indexOf(a.id) - habitOrder.value.indexOf(b.id))
+
+const todoHabits = computed(() => {
   const today = format(new Date(), 'yyyy-MM-dd')
-  return h.completions?.includes(today)
-}))
+  const filtered = habits.value.filter(h => !h.completions?.includes(today))
+  return sortByOrder(filtered)
+})
+
+const completedHabits = computed(() => {
+  const today = format(new Date(), 'yyyy-MM-dd')
+  const filtered = habits.value.filter(h => h.completions?.includes(today))
+  return sortByOrder(filtered)
+})
 
 function getHabitsCount() {
   return habits.value.length
@@ -65,6 +81,10 @@ const deleteHabit = async (id: Habit['id']) => {
 
 const toggleCompletion = async (habit: Habit) => {
   await habitStore.toggleCompletion(habit)
+
+  // move to end of order so it appears last in its new section
+  habitOrder.value = habitOrder.value.filter(id => id !== habit.id)
+  habitOrder.value.push(habit.id)   // 👈 push to last
 }
 
 onMounted(async () => {

@@ -33,12 +33,30 @@ const toggleCompletion = () => {
 }
 
 const streakStarted = computed(() => {
-  if (!props.habit.completions?.length) {
+  if (!props.habit.completions?.length || props.habit.streak === 0) {
     return 'Complete to start a streak'
-  } else {
-    const firstCompletion = format(new Date(props.habit.completions[props.habit.completions.length - 1]!), 'MMM d')
-    return 'Streak since ' + firstCompletion
   }
+
+  // sort descending (latest first)
+  const sorted = [...props.habit.completions].sort((a, b) => b.localeCompare(a))
+
+  // walk backwards to find where the current consecutive streak starts
+  let streakStart = sorted[0]!
+  for (let i = 0; i < sorted.length - 1; i++) {
+    const current = new Date(sorted[i]!)
+    const next = new Date(sorted[i + 1]!)
+
+    // check if next date is exactly 1 day before current
+    const diffDays = (current.getTime() - next.getTime()) / (1000 * 60 * 60 * 24)
+
+    if (diffDays === 1) {
+      streakStart = sorted[i + 1]!  // keep going back
+    } else {
+      break  // gap found, stop here
+    }
+  }
+
+  return 'Streak since ' + format(new Date(streakStart), 'MMM d')
 })
 
 </script>
