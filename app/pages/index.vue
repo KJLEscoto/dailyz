@@ -1,3 +1,4 @@
+<!-- index -->
 <script setup lang="ts">
 import { CalendarRange, ChevronDown, PanelsTopLeft, PlusCircle } from '@lucide/vue';
 import type { Habit } from '~/types/habit'
@@ -13,30 +14,28 @@ const habits = computed(() => habitStore.habits)
 const todoOpen = ref(true)
 const completedOpen = ref(true)
 
-const habitOrder = ref<string[]>([])
+// const habitOrder = ref<string[]>([])
 
 // sync order when habits load
-watch(() => habitStore.habits, (newHabits) => {
-  newHabits.forEach(h => {
-    if (!habitOrder.value.includes(h.id)) {
-      habitOrder.value.push(h.id)   // 👈 new habits go to the end
-    }
-  })
-}, { immediate: true })
+// watch(() => habitStore.habits, (newHabits) => {
+//   newHabits.forEach(h => {
+//     if (!habitOrder.value.includes(h.id)) {
+//       habitOrder.value.push(h.id)   // 👈 new habits go to the end
+//     }
+//   })
+// }, { immediate: true })
 
-const sortByOrder = (list: Habit[]) =>
-  [...list].sort((a, b) => habitOrder.value.indexOf(a.id) - habitOrder.value.indexOf(b.id))
+// const sortByOrder = (list: Habit[]) =>
+//   [...list].sort((a, b) => habitOrder.value.indexOf(a.id) - habitOrder.value.indexOf(b.id))
 
 const todoHabits = computed(() => {
   const today = format(new Date(), 'yyyy-MM-dd')
-  const filtered = habits.value.filter(h => !h.completions?.includes(today))
-  return sortByOrder(filtered)
+  return habits.value.filter(h => !h.completions?.includes(today))
 })
 
 const completedHabits = computed(() => {
   const today = format(new Date(), 'yyyy-MM-dd')
-  const filtered = habits.value.filter(h => h.completions?.includes(today))
-  return sortByOrder(filtered)
+  return habits.value.filter(h => h.completions?.includes(today))
 })
 
 function getHabitsCount() {
@@ -81,10 +80,12 @@ const deleteHabit = async (id: Habit['id']) => {
 
 const toggleCompletion = async (habit: Habit) => {
   await habitStore.toggleCompletion(habit)
+}
 
-  // move to end of order so it appears last in its new section
-  habitOrder.value = habitOrder.value.filter(id => id !== habit.id)
-  habitOrder.value.push(habit.id)   // 👈 push to last
+// New: handle reorder events from HabitList
+const handleReorder = (newOrder: string[]) => {
+  // persist or use newOrder as needed — e.g. store it if your habitStore supports it
+  console.log('new order:', newOrder)
 }
 
 onMounted(async () => {
@@ -146,9 +147,8 @@ onMounted(async () => {
           <div class="grid transition-all duration-300 ease-in-out"
             :class="todoOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'">
             <div class="overflow-hidden">
-              <ul class="space-y-5 pt-1">
-                <HabitCard v-for="habit in todoHabits" :key="habit.id" :habit="habit" @toggle="toggleCompletion" @edit="editHabit" @delete="deleteHabit" />
-              </ul>
+              <HabitList :habits="todoHabits" @toggle="toggleCompletion" @edit="editHabit" @delete="deleteHabit"
+                @reorder="handleReorder" />
             </div>
           </div>
         </div>
@@ -169,12 +169,7 @@ onMounted(async () => {
           <div class="grid transition-all duration-300 ease-in-out"
             :class="completedOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'">
             <div class="overflow-hidden">
-              <ul class="space-y-5 pt-1">
-                <!-- <HabitCard v-for="habit in completedHabits" :key="habit.id" :habit="habit" @toggle="toggleHabit"
-                  @edit="editHabit" @delete="deleteHabit" /> -->
-                <HabitCard v-for="habit in completedHabits" :key="habit.id" :habit="habit" @toggle="toggleCompletion"
-                  @edit="editHabit" />
-              </ul>
+              <HabitList :habits="completedHabits" @toggle="toggleCompletion" @edit="editHabit" />
             </div>
           </div>
         </div>

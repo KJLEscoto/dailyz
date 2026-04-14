@@ -6,6 +6,7 @@ import { format } from 'date-fns'
 
 const props = defineProps<{
   habit: Habit
+  isHolding?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -62,18 +63,19 @@ const streakStarted = computed(() => {
 </script>
 
 <template>
-  <main :class="['w-full h-auto rounded-3xl flex items-center justify-center relative p-6 group gap-4 border border-transparent hover:border-primary/20 transition-all duration-200 select-none',
-    isCompletedToday ? 'bg-muted/5' : 'bg-white',
-  ]">
-    <GripVertical class="size-6 text-muted cursor-grab active:cursor-grabbing" />
+  <main :class="['w-full h-auto rounded-3xl! flex items-center justify-center relative p-6 group gap-4 border border-transparent hover:border-primary/20 transition-all duration-200 select-none cursor-move',
+    isCompletedToday ? 'bg-[#f3f3f3]' : 'bg-white',
+  ]" 
+  :style="{ transform: isHolding ? 'scale(0.95)' : 'scale(1)' }">
+    <GripVertical class="size-6 text-muted cursor-move" />
     <div class="w-full">
       <section class="flex items-center gap-4">
         <section
-          class="ring-2 ring-black/5 rounded-full size-12 flex items-center justify-center cursor-pointer transition-all duration-200"
+          class="ring-2 ring-black/5 rounded-full! size-12 flex items-center shrink-0 justify-center cursor-pointer transition-all duration-200"
           @click="toggleCompletion">
-          <div v-if="isCompletedToday"
-            class="ring-4 ring-primary rounded-full size-9 flex items-center justify-center bg-primary">
-            <Check class="size-8 text-white" />
+          <div v-if="isCompletedToday" data-swapy-no-drag
+            class="ring-4 ring-primary rounded-full! size-9 flex items-center justify-center bg-primary">
+            <Check class="size-8 text-white" data-swapy-no-drag />
           </div>
         </section>
         <section :class="['space-y-1', isCompletedToday ? 'opacity-50' : 'opacity-100']">
@@ -81,7 +83,7 @@ const streakStarted = computed(() => {
             {{ habit.name }}
           </h2>
           <div class="flex items-center gap-2">
-            <div class="size-2 rounded-full" :style="{ backgroundColor: habit.color }"></div>
+            <div class="size-2 rounded-full!" :style="{ backgroundColor: habit.color }"></div>
             <UppercaseTitle size="sm">{{ habit.time }}</UppercaseTitle>
           </div>
         </section>
@@ -90,7 +92,7 @@ const streakStarted = computed(() => {
     <div class="flex items-center gap-2">
       <Tooltip :text="`${streakStarted ? streakStarted : 'No streak yet'}`" position="top">
         <button :class="[
-          'flex items-center gap-0.5 px-3 py-1.5 rounded-full font-secondary text-xs font-bold transition-all duration-200',
+          'flex items-center gap-0.5 px-3 py-1.5 rounded-full! font-secondary text-xs font-bold transition-all duration-200',
           habit.streak >= 3
             ? 'bg-danger/10 text-danger'
             : 'bg-emerald-500/10 text-emerald-500',
@@ -100,8 +102,20 @@ const streakStarted = computed(() => {
           {{ habit.streak }}
         </button>
       </Tooltip>
-      <HabitMenu trigger-class="opacity-0 group-hover:opacity-70 transition-opacity duration-200" @edit="editHabit"
+      <HabitMenu data-swapy-no-drag trigger-class="opacity-0 group-hover:opacity-70 transition-opacity duration-200" @edit="editHabit"
         @delete="deleteHabit" />
     </div>
   </main>
 </template>
+
+<style scoped>
+/* the card itself gets the scale transition always */
+main {
+  transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+}
+
+/* when THIS card's parent item is being dragged, scale it down */
+[data-swapy-item][data-swapy-dragging] main {
+  transform: scale(0.95);
+}
+</style>
