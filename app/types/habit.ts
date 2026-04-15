@@ -1,3 +1,4 @@
+// types/habit.ts
 export type HabitTime = 'morning' | 'afternoon' | 'evening' | 'anytime'
 
 export interface Habit {
