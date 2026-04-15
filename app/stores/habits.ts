@@ -1,3 +1,4 @@
+// stores/habits.ts
 import { defineStore } from 'pinia'
 import type { Habit, HabitTime } from '~/types/habit'
 import { addDoc, getDocs, doc, deleteDoc, updateDoc, collection, type Firestore } from 'firebase/firestore'
@@ -96,21 +97,25 @@ export const useHabitStore = defineStore('habitStore', {
     },
 
     calculateStreak(completions: Habit['completions']) {
-      const sortedDates = completions.sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
+      const sortedDates = [...completions].sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
 
       let streak = 0
       let currentDate = new Date()
+      currentDate.setHours(0, 0, 0, 0) // 👈 normalize to midnight
 
       for (const date of sortedDates) {
-        const diff = differenceInDays(currentDate, new Date(date))
-        if (diff > 1) {
-          break
-        }
-        streak+= 1
-        currentDate = new Date(date)
+        const completionDate = new Date(date)
+        completionDate.setHours(0, 0, 0, 0) // 👈 normalize too
+
+        const diff = differenceInDays(currentDate, completionDate)
+
+        if (diff > 1) break
+
+        streak += 1
+        currentDate = completionDate
       }
-      
+
       return streak
-    }
+    },
   }
 })

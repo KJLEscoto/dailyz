@@ -14,20 +14,6 @@ const habits = computed(() => habitStore.habits)
 const todoOpen = ref(true)
 const completedOpen = ref(true)
 
-// const habitOrder = ref<string[]>([])
-
-// sync order when habits load
-// watch(() => habitStore.habits, (newHabits) => {
-//   newHabits.forEach(h => {
-//     if (!habitOrder.value.includes(h.id)) {
-//       habitOrder.value.push(h.id)   // 👈 new habits go to the end
-//     }
-//   })
-// }, { immediate: true })
-
-// const sortByOrder = (list: Habit[]) =>
-//   [...list].sort((a, b) => habitOrder.value.indexOf(a.id) - habitOrder.value.indexOf(b.id))
-
 const todoHabits = computed(() => {
   const today = format(new Date(), 'yyyy-MM-dd')
   return habits.value.filter(h => !h.completions?.includes(today))
