@@ -1,6 +1,7 @@
 <!-- pages/index.vue -->
 <script setup lang="ts">
 import type { Habit } from '~/types/habit'
+import { onAuthStateChanged } from 'firebase/auth'
 
 const { formatted } = useDate()
 const habitStore = useHabitStore()
@@ -21,7 +22,18 @@ const deleteHabit = (id: Habit['id']) => habitStore.deleteHabit(id)
 const toggleCompletion = (habit: Habit) => habitStore.toggleCompletion(habit)
 const handleReorder = (newOrder: string[]) => console.log('new order:', newOrder)
 
-onMounted(() => habitStore.fetchHabits())
+// ✅ Replace onMounted fetchHabits with auth-aware fetching
+onMounted(() => {
+  const { $firebase } = useNuxtApp()
+
+  onAuthStateChanged($firebase.auth, async (firebaseUser) => {
+    if (firebaseUser) {
+      await habitStore.fetchHabits() // ✅ fetches from users/{uid}/habits
+    } else {
+      habitStore.habits = [] // clear on logout
+    }
+  })
+})
 </script>
 
 <template>
@@ -34,7 +46,7 @@ onMounted(() => habitStore.fetchHabits())
         <HabitSection title="to do" :count="todoCount" :habits="todoHabits" @toggle="toggleCompletion" @edit="editHabit"
           @delete="deleteHabit" @reorder="handleReorder" />
         <HabitSection title="completed" :count="completedCount" :habits="completedHabits" @toggle="toggleCompletion"
-          @edit="editHabit" />
+          @edit="editHabit" @delete="deleteHabit" @reorder="handleReorder" />
       </section>
 
       <HabitSidebar :habits-count="habitsCount" :completed-count="completedCount" :highest-streak="highestStreak"

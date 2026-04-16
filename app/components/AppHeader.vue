@@ -29,10 +29,10 @@ const { user, signIn, signOut } = useAuth()
       </div>
 
       <button v-if="!user" @click="signIn"
-        class="size-20 shrink-0 bg-white rounded-full flex items-center justify-center cursor-pointer">
-        <img src="" alt="Sign in with Google" class="size-8" />
+        class="size-20 shrink-0 bg-white rounded-full flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95 transition-transform hover:shadow-lg">
+        <img src="/images/webp/google.webp" alt="Sign in with Google" class="size-8" />
       </button>
-      <button v-else @click="signOut" class="size-20 shrink-0 rounded-full overflow-hidden cursor-pointer">
+      <button v-else @click="signOut" class="size-20 shrink-0 rounded-full overflow-hidden cursor-pointer hover:scale-105 active:scale-95 transition-transform hover:shadow-lg">
         <img :src="user.photoURL ?? undefined" :alt="user.displayName ?? undefined" class="w-full h-full object-cover"
           referrerpolicy="no-referrer" />
       </button>

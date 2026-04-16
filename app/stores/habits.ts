@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 import type { Habit, HabitTime } from '~/types/habit'
 import { addDoc, getDocs, doc, deleteDoc, updateDoc, collection, type Firestore } from 'firebase/firestore'
 import { format, differenceInDays } from 'date-fns'
+import type { Auth } from 'firebase/auth'
 
 export const useHabitStore = defineStore('habitStore', {
   state: () => ({
@@ -11,16 +12,37 @@ export const useHabitStore = defineStore('habitStore', {
   }),
   actions: {
 
+    // helper to get the habits collection path for the current user
+    getHabitsCollection() {
+      const { $firebase } = useNuxtApp()
+      const db = $firebase.db as Firestore
+      const auth = $firebase.auth as Auth
+
+      const uid = auth.currentUser?.uid
+      if (!uid) throw new Error('User not logged in')
+
+      return collection(db, 'users', uid, 'habits') // 👈 users/{uid}/habits
+    },
+
+    // helper to get a single habit doc ref
+    getHabitDoc(id: Habit['id']) {
+      const { $firebase } = useNuxtApp()
+      const db = $firebase.db as Firestore
+      const auth = $firebase.auth as Auth
+
+      const uid = auth.currentUser?.uid
+      if (!uid) throw new Error('User not logged in')
+
+      return doc(db, 'users', uid, 'habits', id) // 👈 users/{uid}/habits/{id}
+    },
+
     // fetch all habits
     async fetchHabits() {
       if (!import.meta.client) return
 
       this.loading = true
       try {
-        const { $firebase } = useNuxtApp()
-        const db = $firebase.db as Firestore
-
-        const snapshot = await getDocs(collection(db, 'habits'))
+        const snapshot = await getDocs(this.getHabitsCollection())
         this.habits = snapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data(),
@@ -36,9 +58,6 @@ export const useHabitStore = defineStore('habitStore', {
     async addHabit(Habit: Habit) {
       if (!import.meta.client) return
 
-      const { $firebase } = useNuxtApp()
-      const db = $firebase.db as Firestore
-
       const habit = {
         name: Habit.name,
         time: Habit.time as HabitTime,
@@ -48,16 +67,13 @@ export const useHabitStore = defineStore('habitStore', {
         createdAt: new Date().toISOString(),
       }
 
-      const docRef = await addDoc(collection(db, 'habits'), habit)
+      const docRef = await addDoc(this.getHabitsCollection(), habit)
       this.habits.push({ id: docRef.id, ...habit })
     },
 
     // update habit
     async updateHabit(id: Habit['id'], updates: any) {
-      const { $firebase } = useNuxtApp()
-      const db = $firebase.db as Firestore
-
-      const docRef = doc(db, 'habits', id)
+      const docRef = this.getHabitDoc(id)
       await updateDoc(docRef, updates)
 
       const index = this.habits.findIndex((habit) => habit.id === id)
@@ -70,10 +86,7 @@ export const useHabitStore = defineStore('habitStore', {
     async deleteHabit(id: Habit['id']) {
       if (!import.meta.client) return
 
-      const { $firebase } = useNuxtApp()
-      const db = $firebase.db as Firestore
-
-      const docRef = doc(db, 'habits', id)
+      const docRef = this.getHabitDoc(id)
       await deleteDoc(docRef)
       this.habits = this.habits.filter((habit) => habit.id !== id)
     },
@@ -90,7 +103,7 @@ export const useHabitStore = defineStore('habitStore', {
 
       habit.streak = this.calculateStreak(habit.completions)
 
-      this.updateHabit(habit.id, { 
+      this.updateHabit(habit.id, {
         completions: habit.completions,
         streak: habit.streak
       })
@@ -101,14 +114,13 @@ export const useHabitStore = defineStore('habitStore', {
 
       let streak = 0
       let currentDate = new Date()
-      currentDate.setHours(0, 0, 0, 0) // 👈 normalize to midnight
+      currentDate.setHours(0, 0, 0, 0)
 
       for (const date of sortedDates) {
         const completionDate = new Date(date)
-        completionDate.setHours(0, 0, 0, 0) // 👈 normalize too
+        completionDate.setHours(0, 0, 0, 0)
 
         const diff = differenceInDays(currentDate, completionDate)
-
         if (diff > 1) break
 
         streak += 1
