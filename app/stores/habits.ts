@@ -92,22 +92,22 @@ export const useHabitStore = defineStore('habitStore', {
     },
 
     // complete a habit for today
-    async toggleCompletion(habit: Habit) {
-      const today = format(new Date(), 'yyyy-MM-dd')
+  async toggleCompletion(habit: Habit) {
+    const today = format(new Date(), 'yyyy-MM-dd')
 
-      if (habit.completions.includes(today)) {
-        habit.completions = habit.completions.filter(date => date !== today)
-      } else {
-        habit.completions.push(today)
-      }
+    // 👈 work on a copy, not the original
+    const updatedCompletions = habit.completions.includes(today)
+      ? habit.completions.filter(date => date !== today)
+      : [...habit.completions, today]
 
-      habit.streak = this.calculateStreak(habit.completions)
+    const updatedStreak = this.calculateStreak(updatedCompletions)
 
-      this.updateHabit(habit.id, {
-        completions: habit.completions,
-        streak: habit.streak
-      })
-    },
+    // 👈 await the update
+    await this.updateHabit(habit.id, {
+      completions: updatedCompletions,
+      streak: updatedStreak
+    })
+  },
 
     calculateStreak(completions: Habit['completions']) {
       const sortedDates = [...completions].sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
@@ -128,6 +128,36 @@ export const useHabitStore = defineStore('habitStore', {
       }
 
       return streak
+    },
+
+    async resetStaleStreaks() {
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+
+      for (const habit of this.habits) {
+        if (!habit.completions?.length) {
+          if (habit.streak !== 0) await this.updateHabit(habit.id, { streak: 0 })
+          continue
+        }
+
+        const sortedDates = [...habit.completions].sort((a, b) =>
+          new Date(b).getTime() - new Date(a).getTime()
+        )
+        const lastCompletion = new Date(sortedDates[0] as string)
+        lastCompletion.setHours(0, 0, 0, 0)
+
+        const diffDays = Math.floor((today.getTime() - lastCompletion.getTime()) / (1000 * 60 * 60 * 24))
+
+        if (diffDays > 1) {
+          if (habit.streak !== 0) await this.updateHabit(habit.id, { streak: 0 })
+          continue
+        }
+
+        const recalculated = this.calculateStreak(habit.completions)
+        if (habit.streak !== recalculated) {
+          await this.updateHabit(habit.id, { streak: recalculated })
+        }
+      }
     },
   }
 })

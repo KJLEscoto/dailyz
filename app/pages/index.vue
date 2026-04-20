@@ -1,8 +1,8 @@
-<!-- pages/index.vue -->
+<!-- index.vue -->
 <script setup lang="ts">
 import type { Habit } from '~/types/habit'
-import { onAuthStateChanged } from 'firebase/auth'
 
+const { user, authReady, initAuth, signIn } = useAuth()
 const { formatted } = useDate()
 const habitStore = useHabitStore()
 const habits = computed(() => habitStore.habits)
@@ -22,36 +22,64 @@ const deleteHabit = (id: Habit['id']) => habitStore.deleteHabit(id)
 const toggleCompletion = (habit: Habit) => habitStore.toggleCompletion(habit)
 const handleReorder = (newOrder: string[]) => console.log('new order:', newOrder)
 
-// ✅ Replace onMounted fetchHabits with auth-aware fetching
 onMounted(() => {
-  const { $firebase } = useNuxtApp()
-
-  onAuthStateChanged($firebase.auth, async (firebaseUser) => {
-    if (firebaseUser) {
-      await habitStore.fetchHabits() // ✅ fetches from users/{uid}/habits
-    } else {
-      habitStore.habits = [] // clear on logout
+  initAuth(
+    // onLogin — fires every time auth state confirms a logged-in user
+    async () => {
+      await habitStore.fetchHabits()
+      await habitStore.resetStaleStreaks()
+    },
+    // onLogout
+    () => {
+      habitStore.habits = []
     }
-  })
+  )
+})
+
+watch(user, async (newUser) => {
+  if (newUser) {
+    await habitStore.fetchHabits()
+    await habitStore.resetStaleStreaks()
+  } else {
+    habitStore.habits = []
+  }
 })
 </script>
 
 <template>
   <main class="w-full max-w-6xl mx-auto px-4 pb-16 relative">
-    <AppHeader :formatted="formatted" :completed-count="completedCount" :habits-count="habitsCount"
-      :percentage-completed="percentageCompleted" />
 
-    <div class="grid grid-cols-12 gap-10 items-start">
-      <section class="col-span-8 w-full space-y-8 isolate">
-        <HabitSection title="to do" :count="todoCount" :habits="todoHabits" @toggle="toggleCompletion" @edit="editHabit"
-          @delete="deleteHabit" @reorder="handleReorder" />
-        <HabitSection title="completed" :count="completedCount" :habits="completedHabits" @toggle="toggleCompletion"
-          @edit="editHabit" @delete="deleteHabit" @reorder="handleReorder" />
-      </section>
+    <!-- Auth not ready yet — show nothing or a spinner -->
+    <section v-if="!authReady" class="flex items-center justify-center h-screen">
+      <div class="size-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+    </section>
 
-      <HabitSidebar :habits-count="habitsCount" :completed-count="completedCount" :highest-streak="highestStreak"
-        @add-habit="addHabit" />
-    </div>
+    <!-- Not logged in -->
+    <section v-else-if="!user">
+      <button @click="signIn"
+        class="size-20 shrink-0 bg-white rounded-full flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95 transition-transform hover:shadow-lg">
+        <img src="/images/webp/google.webp" alt="Sign in with Google" class="size-8" />
+      </button>
+    </section>
+
+    <!-- Logged in -->
+    <section v-else>
+      <AppHeader :formatted="formatted" :completed-count="completedCount" :habits-count="habitsCount"
+        :percentage-completed="percentageCompleted" />
+
+      <div class="grid grid-cols-12 gap-10 items-start">
+        <section class="col-span-8 w-full space-y-8 isolate">
+          <HabitSection title="to do" :count="todoCount" :habits="todoHabits" @toggle="toggleCompletion"
+            @edit="editHabit" @delete="deleteHabit" @reorder="handleReorder" />
+          <HabitSection title="completed" :count="completedCount" :habits="completedHabits" @toggle="toggleCompletion"
+            @edit="editHabit" @delete="deleteHabit" @reorder="handleReorder" />
+        </section>
+
+        <HabitSidebar :habits-count="habitsCount" :completed-count="completedCount" :highest-streak="highestStreak"
+          @add-habit="addHabit" />
+      </div>
+    </section>
+
   </main>
 
   <ModalAdd ref="modalAddRef" />

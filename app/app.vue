@@ -2,6 +2,6 @@
   <div>
     <NuxtRouteAnnouncer />
     <NuxtPage />
-    <KinwebbAttribute />
+    <!-- <KinwebbAttribute /> -->
   </div>
 </template>

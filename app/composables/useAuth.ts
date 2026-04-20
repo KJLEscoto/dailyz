@@ -1,22 +1,37 @@
 // composables/useAuth.ts
-import { ref, onMounted } from 'vue'
 import { signInWithPopup, onAuthStateChanged } from 'firebase/auth'
 import type { User } from 'firebase/auth'
 
 export function useAuth() {
-  const user = ref<User | null>(null)
+  const user = useState<User | null>('auth-user', () => null)
+  const authReady = useState<boolean>('auth-ready', () => false)
 
-  onMounted(() => {
+  const initAuth = (onLogin?: (user: User) => void, onLogout?: () => void) => {
     const { $firebase } = useNuxtApp()
     onAuthStateChanged($firebase.auth, (firebaseUser) => {
       user.value = firebaseUser
+      authReady.value = true
+
+      if (firebaseUser) {
+        onLogin?.(firebaseUser) // 👈 callback when logged in
+      } else {
+        onLogout?.()            // 👈 callback when logged out
+      }
     })
-  })
+  }
 
   const signIn = async () => {
-    const { $firebase } = useNuxtApp()
-    const result = await signInWithPopup($firebase.auth, $firebase.provider)
-    user.value = result.user
+    try {
+      const { $firebase } = useNuxtApp()
+      // console.log('signing in...')
+      const result = await signInWithPopup($firebase.auth, $firebase.provider)
+      // console.log('signed in:', result.user.uid) // 👈 does this log?
+      user.value = result.user
+      // console.log('user ref updated:', user.value) // 👈 does this log?
+    } catch (error: any) {
+      if (error.code === 'auth/popup-closed-by-user') return
+      console.error('Sign in error:', error)
+    }
   }
 
   const signOut = async () => {
@@ -25,5 +40,5 @@ export function useAuth() {
     user.value = null
   }
 
-  return { user, signIn, signOut }
+  return { user, authReady, initAuth, signIn, signOut }
 }
