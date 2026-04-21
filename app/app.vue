@@ -1,7 +1,7 @@
 <template>
-  <div>
+  <NuxtLayout>
     <NuxtRouteAnnouncer />
     <NuxtPage />
     <!-- <KinwebbAttribute /> -->
-  </div>
+  </NuxtLayout>
 </template>
