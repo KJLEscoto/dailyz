@@ -7,6 +7,7 @@ import { format } from 'date-fns'
 const props = defineProps<{
   habit: Habit
   isHolding?: boolean
+  hasMenu?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -102,7 +103,7 @@ const streakStarted = computed(() => {
           {{ habit.streak }}
         </button>
       </Tooltip>
-      <HabitMenu data-swapy-no-drag trigger-class="opacity-0 group-hover:opacity-70 transition-opacity duration-200" @edit="editHabit"
+      <HabitMenu v-if="hasMenu" data-swapy-no-drag trigger-class="opacity-0 group-hover:opacity-70 transition-opacity duration-200" @edit="editHabit"
         @delete="deleteHabit" />
     </div>
   </main>
