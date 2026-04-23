@@ -1,10 +1,5 @@
-<!-- components/Modal/Add.vue -->
 <script setup lang="ts">
-import type { Habit, HabitTime } from '~/types/habit'
-
-const emit = defineEmits<{
-  add: [habit: Habit] // 👈 emit instead of saving directly
-}>()
+import type { HabitTime } from '~/types/habit'
 
 const showAddHabitModal = ref(false)
 const habitName = ref('')
@@ -14,15 +9,19 @@ const habitTimeError = ref('')
 const habitColor = ref('')
 const habitColorError = ref('')
 
+const habitStore = useHabitStore()
+
 const addHabit = () => {
   showAddHabitModal.value = true
 }
 
 const confirmAdd = async () => {
+  // reset errors
   habitNameError.value = ''
   habitTimeError.value = ''
   habitColorError.value = ''
 
+  // validate
   let hasError = false
   if (!habitName.value.trim()) {
     habitNameError.value = 'Habit name is required.'
@@ -38,18 +37,19 @@ const confirmAdd = async () => {
   }
   if (hasError) return
 
-  // 👈 emit the habit instead of saving directly
-  emit('add', {
-    id: '',
+  await habitStore.addHabit({
+    id: '',                          
     name: habitName.value,
     time: habitTime.value as HabitTime,
-    streak: 0,
-    completions: [],
+    streak: 0,                   
+    completions: [],              
     color: habitColor.value,
-    createdAt: new Date().toISOString(),
+    createdAt: new Date().toISOString(),  
   })
 
-  showAddHabitModal.value = false
+  showAddHabitModal.value = false  
+  
+  // reset fields
   habitName.value = ''
   habitTime.value = ''
   habitColor.value = ''
@@ -57,13 +57,14 @@ const confirmAdd = async () => {
 
 const cancelAdd = () => {
   showAddHabitModal.value = false
+  // reset fields and errors
   habitName.value = ''
   habitTime.value = ''
   habitColor.value = ''
   habitNameError.value = ''
   habitTimeError.value = ''
   habitColorError.value = ''
-}
+} 
 
 defineExpose({ addHabit })
 </script>
