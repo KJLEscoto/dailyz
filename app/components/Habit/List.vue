@@ -1,9 +1,11 @@
+<!-- components/Habit/List.vue -->
 <script setup lang="ts">
 import { createSwapy, utils } from 'swapy'
 import type { Habit } from '~/types/habit'
 
 const props = defineProps<{
   habits: Habit[]
+  hasMenu?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -110,7 +112,7 @@ onUnmounted(() => {
     @pointercancel="onPointerUp">
     <li v-for="{ slotId, itemId, item: habit } in slottedItems" :key="slotId" :data-swapy-slot="slotId">
       <div :key="itemId" :data-swapy-item="itemId">
-        <HabitCard v-if="habit" :habit="habit" :is-holding="holdingItemId === itemId" @toggle="emit('toggle', $event)"
+        <HabitCard :has-menu="props.hasMenu !== false" v-if="habit" :habit="habit" :is-holding="holdingItemId === itemId" @toggle="emit('toggle', $event)"
           @edit="emit('edit', $event)" @delete="emit('delete', $event)" />
       </div>
     </li>

@@ -56,28 +56,9 @@ watch(user, async (newUser) => {
   <template v-else>
     <main>
       <!-- Not logged in -->
-      <section v-if="!user" class="flex items-center justify-center h-auto py-20">
-        <div class="w-full flex flex-col items-center gap-10">
-          <div class="w-full h-full">
-            <NatureImage />
-          </div>
-          <section class="space-y-3 text-center">
-            <h1 class="text-4xl font-bold text-primary">Your path to serenity begins here.</h1>
-            <p class="text-muted">Create your first habit and start building a more mindful life.</p>
-          </section>
-          <!-- <button @click="signIn"
-            class="w-fit h-auto py-3 px-10 shrink-0 bg-white rounded-2xl flex items-center justify-center gap-3 cursor-pointer hover:scale-105 active:scale-95 transition-transform hover:shadow-lg">
-            <img src="/images/webp/google.webp" alt="Sign in with Google" class="size-6" />
-            <p class="text-nowrap">Sign in with Google</p>
-          </button> -->
-          <Button size="lg">
-            <Plus class="size-5 pointer-events-none" />
-            <p>Add your First Habit</p>
-          </Button>
-
-          <section>
-            <UppercaseTitle size="sm">suggested habits</UppercaseTitle>
-          </section>
+      <section v-if="!user" class="flex items-center justify-center min-h-screen py-20">
+        <div class="w-full space-y-10">
+          <Guest />
         </div>
       </section>
 

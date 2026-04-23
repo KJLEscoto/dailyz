@@ -27,6 +27,7 @@ export function useAuth() {
       const result = await signInWithPopup($firebase.auth, $firebase.provider)
       // console.log('signed in:', result.user.uid) // 👈 does this log?
       user.value = result.user
+      await navigateTo('/')
       // console.log('user ref updated:', user.value) // 👈 does this log?
     } catch (error: any) {
       if (error.code === 'auth/popup-closed-by-user') return
@@ -38,6 +39,7 @@ export function useAuth() {
     const { $firebase } = useNuxtApp()
     await $firebase.auth.signOut()
     user.value = null
+    await navigateTo('/login')
   }
 
   return { user, authReady, initAuth, signIn, signOut }
