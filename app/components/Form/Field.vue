@@ -1,3 +1,4 @@
+<!-- components/Form/Field.vue -->
 <script setup lang="ts">
 import { Eye, EyeClosed, Info } from '@lucide/vue'
 
@@ -55,14 +56,14 @@ function onBlur(e: FocusEvent) {
 
     <!-- Label -->
     <label v-if="label" :for="inputId"
-      class="flex font-secondary items-center gap-1 text-sm font-medium uppercase text-muted select-none">
+      class="flex items-center gap-1 text-xs font-bold uppercase text-muted select-none">
       {{ label }}
       <span v-if="required" class="text-sm leading-none text-primary">*</span>
     </label>
 
     <!-- Input container -->
     <div :class="[
-      'relative flex items-center rounded-xl border bg-white transition-all duration-150',
+      'relative flex items-center rounded-2xl border bg-white transition-all duration-150',
       isFocused
           ? 'border-primary'
           : 'border-muted/20 hover:border-primary',

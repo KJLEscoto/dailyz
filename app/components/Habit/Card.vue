@@ -103,7 +103,7 @@ const streakStarted = computed(() => {
           {{ habit.streak }}
         </button>
       </Tooltip>
-      <HabitMenu v-if="hasMenu !== false" data-swapy-no-drag trigger-class="opacity-0 group-hover:opacity-70 transition-opacity duration-200" @edit="editHabit"
+      <HabitMenu v-if="hasMenu !== false" data-swapy-no-drag trigger-class="opacity-0 shrink-0 group-hover:opacity-70 transition-opacity duration-200" @edit="editHabit"
         @delete="deleteHabit" />
     </div>
   </main>

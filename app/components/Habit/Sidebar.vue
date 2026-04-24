@@ -12,7 +12,7 @@ defineEmits<{ addHabit: [] }>()
 </script>
 
 <template>
-  <aside class="sticky top-55 col-span-4 space-y-4 max-h-[calc(100vh-5rem)] overflow-y-auto scrollbar-none">
+  <aside class="sticky top-55 col-span-12 space-y-4 max-h-[calc(100vh-5rem)] overflow-y-auto scrollbar-none w-full">
     <Button @click="$emit('addHabit')" size="lg" class="group rounded-3xl! py-8! group" block>
       <template #icon-left>
         <PlusCircle

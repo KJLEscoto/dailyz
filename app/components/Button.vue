@@ -31,7 +31,7 @@ const isDisabled = computed(() => props.disabled || props.loading)
 const variantClasses: Record<string, string> = {
   primary: 'bg-primary text-white',
   secondary: 'bg-slate-800 text-slate-100 border border-slate-700 hover:bg-slate-700 hover:border-slate-500 active:bg-slate-800',
-  ghost: 'bg-transparent text-slate-300 hover:bg-slate-800 hover:text-white active:bg-slate-700',
+  ghost: 'bg-transparent text-slate-300 hover:bg-gray-200 active:bg-gray-200',
   danger: 'bg-red-600 text-white hover:bg-red-500 active:bg-red-700 shadow-[0_1px_12px_rgba(239,68,68,0.3)] hover:shadow-[0_1px_18px_rgba(239,68,68,0.45)]',
   success: 'bg-emerald-600 text-white hover:bg-emerald-500 active:bg-emerald-700 shadow-[0_1px_12px_rgba(16,185,129,0.3)] hover:shadow-[0_1px_18px_rgba(16,185,129,0.45)]',
 }
@@ -39,7 +39,7 @@ const variantClasses: Record<string, string> = {
 const sizeClasses: Record<string, string> = {
   sm: 'h-8  px-3.5 text-xs  gap-1.5 rounded-lg',
   md: 'h-10 px-5   text-sm  gap-2   rounded-xl',
-  lg: 'h-12 px-7   text-base gap-2.5 rounded-xl',
+  lg: 'h-12 px-7   text-base gap-2.5 rounded-2xl',
 }
 
 const spinnerSize: Record<string, string> = {

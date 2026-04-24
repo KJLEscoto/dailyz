@@ -6,13 +6,12 @@ const { sampleHabits, toggleCompletion, reorder } = useSampleHabits()
 </script>
 
 <template>
-
-
-  <section class="space-y-5 text-center w-full">
-    <h1 class="text-4xl font-bold text-primary">Your path to serenity begins here.</h1>
+  <section class="space-y-3 text-center w-full">
+    <h1 class="text-3xl font-bold text-primary">Your path to serenity begins here.</h1>
     <p class="text-muted">Create your habits and start building a more mindful life.</p>
-    <HabitList :habits="sampleHabits" :has-menu="false" @toggle="toggleCompletion" @reorder="reorder" />
   </section>
+
+  <HabitList :habits="sampleHabits" :has-menu="false" @toggle="toggleCompletion" @reorder="reorder" />
 
   <section class="flex items-center gap-3 justify-center w-full">
     <hr class="border-muted/20 w-full" />

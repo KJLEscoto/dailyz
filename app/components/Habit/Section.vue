@@ -34,7 +34,7 @@ const isOpen = ref(true)
 
     <div class="grid transition-all duration-300 ease-in-out" :class="isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'">
       <div class="overflow-hidden">
-        <HabitList :habits="habits" @toggle="$emit('toggle', $event)" @edit="$emit('edit', $event)"
+        <HabitList :has-menu="true" :habits="habits" @toggle="$emit('toggle', $event)" @edit="$emit('edit', $event)"
           @delete="$emit('delete', $event)" @reorder="$emit('reorder', $event)" />
       </div>
     </div>

@@ -1,18 +1,74 @@
 <!-- pages/login.vue -->
 <script setup lang="ts">
-
 const { signIn } = useAuth()
 
+const emailAddress = ref('')
+const emailError = ref('')
+const password = ref('')
+const passwordError = ref('')
+
+const handleLogin = () => {
+  emailError.value = ''
+  passwordError.value = ''
+
+  let hasError = false
+  if (!emailAddress.value.trim()) {
+    emailError.value = 'Email address is required.'
+    hasError = true
+  }
+  if (!password.value.trim()) {
+    passwordError.value = 'Password is required.'
+    hasError = true
+  }
+  if (hasError) return
+
+  // TODO: handle email/password login
+}
 </script>
 
 <template>
-  <!-- <div class="w-full h-full">
-    <NatureImage />
-  </div> -->
+  <main class="flex items-center flex-col justify-center min-h-screen py-20 gap-10">
+    <section class="text-center space-y-3">
+      <h1 class="text-4xl font-bold text-primary">Welcome back!</h1>
+      <p class="text-muted">Sign in to continue building your habits.</p>
+    </section>
 
-  <button @click="signIn"
-    class="w-fit h-auto py-3 px-10 shrink-0 bg-white rounded-2xl flex items-center justify-center gap-3 cursor-pointer hover:scale-105 active:scale-95 transition-transform hover:shadow-lg">
-    <img src="/images/webp/google.webp" alt="Sign in with Google" class="size-6" />
-    <p class="text-nowrap">Sign in with Google</p>
-  </button>
+    <form class="w-full bg-white rounded-4xl p-10 space-y-10 h-full shadow-lg" @submit.prevent="handleLogin">
+      <!-- Google Sign In -->
+      <button @click="signIn" type="button"
+        class="w-full h-auto py-3 px-10 shrink-0 bg-muted/10 rounded-2xl flex items-center justify-center gap-3 cursor-pointer hover:bg-muted/20 transition-colors duration-150">
+        <img src="/images/webp/google.webp" alt="Sign in with Google" class="size-6" />
+        <p class="text-nowrap">Sign in with Google</p>
+      </button>
+
+      <!-- Divider -->
+      <div class="flex items-center gap-3">
+        <hr class="border-muted/20 w-full" />
+        <UppercaseTitle size="sm">or sign in with email</UppercaseTitle>
+        <hr class="border-muted/20 w-full" />
+      </div>
+
+      <!-- Email & Password -->
+      <section class="space-y-6">
+        <div class="space-y-5">
+          <FormField v-model="emailAddress" label="email address" type="email" placeholder="hello@example.com"
+            :error="emailError" required />
+          <FormField v-model="password" label="password" type="password" placeholder="••••••••" :error="passwordError"
+            required />
+          <button type="button" class="text-sm text-primary cursor-pointer w-fit hover:underline">Forgot Password?</button>
+        </div>
+
+        <!-- Submit -->
+        <Button type="submit" size="lg" block>
+          <p>Sign In</p>
+        </Button>
+
+        <p class="text-sm text-muted text-center">
+          Don't have an account?
+          <NuxtLink to="/register" class="text-primary hover:underline">Sign Up</NuxtLink>
+        </p>
+      </section>
+
+    </form>
+  </main>
 </template>

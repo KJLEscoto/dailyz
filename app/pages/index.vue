@@ -67,8 +67,8 @@ watch(user, async (newUser) => {
         <AppHeader :formatted="formatted" :completed-count="completedCount" :habits-count="habitsCount"
           :percentage-completed="percentageCompleted" />
 
-        <div class="grid grid-cols-12 gap-10 items-start">
-          <section class="col-span-8 w-full space-y-8 isolate">
+        <div class="grid gap-10 items-start">
+          <section class="w-full space-y-8 isolate col-span-12">
             <HabitSection title="to do" :count="todoCount" :habits="todoHabits" @toggle="toggleCompletion"
               @edit="editHabit" @delete="deleteHabit" @reorder="handleReorder" />
             <HabitSection title="completed" :count="completedCount" :habits="completedHabits" @toggle="toggleCompletion"
