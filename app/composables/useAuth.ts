@@ -1,5 +1,5 @@
 // composables/useAuth.ts
-import { signInWithPopup, onAuthStateChanged } from 'firebase/auth'
+import { signInWithPopup, signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth'
 import type { User } from 'firebase/auth'
 
 export function useAuth() {
@@ -13,25 +13,46 @@ export function useAuth() {
       authReady.value = true
 
       if (firebaseUser) {
-        onLogin?.(firebaseUser) // 👈 callback when logged in
+        onLogin?.(firebaseUser)
       } else {
-        onLogout?.()            // 👈 callback when logged out
+        onLogout?.()
       }
     })
   }
 
-  const signIn = async () => {
+  // Google sign in
+  const signInWithGoogle = async () => {
     try {
       const { $firebase } = useNuxtApp()
-      // console.log('signing in...')
       const result = await signInWithPopup($firebase.auth, $firebase.provider)
-      // console.log('signed in:', result.user.uid) // 👈 does this log?
       user.value = result.user
+
+      // save google user to firestore if first time
+      const userStore = useUserStore()
+      await userStore.createUser(result.user.uid, {
+        fullName: result.user.displayName ?? '',
+        email: result.user.email ?? '',
+        photoURL: result.user.photoURL ?? '',
+        createdAt: new Date().toISOString(),
+      })
+
       await navigateTo('/')
-      // console.log('user ref updated:', user.value) // 👈 does this log?
     } catch (error: any) {
       if (error.code === 'auth/popup-closed-by-user') return
+      console.error('Google sign in error:', error)
+    }
+  }
+
+  // Email/password sign in
+  const signIn = async (email: string, password: string) => {
+    try {
+      const { $firebase } = useNuxtApp()
+      const result = await signInWithEmailAndPassword($firebase.auth, email, password)
+      user.value = result.user
+      await navigateTo('/')
+    } catch (error: any) {
       console.error('Sign in error:', error)
+      throw error // 👈 throw so the page can handle the error message
     }
   }
 
@@ -42,5 +63,5 @@ export function useAuth() {
     await navigateTo('/login')
   }
 
-  return { user, authReady, initAuth, signIn, signOut }
+  return { user, authReady, initAuth, signIn, signInWithGoogle, signOut }
 }

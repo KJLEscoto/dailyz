@@ -1,13 +1,13 @@
-<!-- pages/login.vue -->
 <script setup lang="ts">
-const { signIn } = useAuth()
+const { signIn, signInWithGoogle } = useAuth()
 
 const emailAddress = ref('')
 const emailError = ref('')
 const password = ref('')
 const passwordError = ref('')
+const isLoading = ref(false)
 
-const handleLogin = () => {
+const handleLogin = async () => {
   emailError.value = ''
   passwordError.value = ''
 
@@ -22,7 +22,22 @@ const handleLogin = () => {
   }
   if (hasError) return
 
-  // TODO: handle email/password login
+  isLoading.value = true
+  try {
+    await signIn(emailAddress.value, password.value)
+  } catch (error: any) {
+    if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
+      passwordError.value = 'Incorrect email or password.'
+    } else if (error.code === 'auth/user-not-found') {
+      emailError.value = 'No account found with this email.'
+    } else if (error.code === 'auth/invalid-email') {
+      emailError.value = 'Invalid email address.'
+    } else {
+      console.error('Login error:', error)
+    }
+  } finally {
+    isLoading.value = false
+  }
 }
 </script>
 
@@ -34,9 +49,11 @@ const handleLogin = () => {
     </section>
 
     <form class="w-full bg-white rounded-4xl p-10 space-y-10 h-full shadow-lg" @submit.prevent="handleLogin">
+
       <!-- Google Sign In -->
-      <button @click="signIn" type="button"
-        class="w-full h-auto py-3 px-10 shrink-0 bg-muted/10 rounded-2xl flex items-center justify-center gap-3 cursor-pointer hover:bg-muted/20 transition-colors duration-150">
+      <button @click="signInWithGoogle" type="button"
+        class="w-full h-auto py-3 px-10 shrink-0 bg-muted/10 rounded-2xl flex items-center justify-center gap-3
+        cursor-pointer hover:bg-muted/20 transition-colors duration-150">
         <img src="/images/webp/google.webp" alt="Sign in with Google" class="size-6" />
         <p class="text-nowrap">Sign in with Google</p>
       </button>
@@ -55,12 +72,12 @@ const handleLogin = () => {
             :error="emailError" required />
           <FormField v-model="password" label="password" type="password" placeholder="••••••••" :error="passwordError"
             required />
-          <button type="button" class="text-sm text-primary cursor-pointer w-fit hover:underline">Forgot Password?</button>
+          <button type="button" class="text-sm text-primary cursor-pointer w-fit hover:underline">Forgot
+            Password?</button>
         </div>
 
-        <!-- Submit -->
-        <Button type="submit" size="lg" block>
-          <p>Sign In</p>
+        <Button type="submit" size="lg" block :disabled="isLoading">
+          <p>{{ isLoading ? 'Signing in...' : 'Sign In' }}</p>
         </Button>
 
         <p class="text-sm text-muted text-center">
