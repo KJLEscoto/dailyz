@@ -27,7 +27,7 @@ const emit = defineEmits<{
 
     <!-- Label -->
     <label v-if="label"
-      class="flex items-center gap-1 text-sm font-medium uppercase text-muted select-none font-secondary">
+      class="flex items-center gap-1 text-sm font-medium uppercase text-muted select-none">
       {{ label }}
       <span v-if="required" class="text-sm leading-none text-primary">*</span>
     </label>

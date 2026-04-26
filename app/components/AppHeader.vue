@@ -1,6 +1,9 @@
 <!-- components/AppHeader.vue -->
 <script setup lang="ts">
-import { useAuth } from '~/composables/useAuth'
+import { LogOut, UserRound } from '@lucide/vue'
+import type { MenuItem } from '~/components/MainMenu.vue'
+
+const { user, signOut } = useAuth()
 
 defineProps<{
   formatted: string
@@ -9,33 +12,36 @@ defineProps<{
   percentageCompleted: number
 }>()
 
-const { user, signIn, signOut } = useAuth()
+const userMenuItems: MenuItem[] = [
+  { label: 'Profile', icon: UserRound, action: () => navigateTo('/profile') },
+  { label: 'Logout', icon: LogOut, action: () => signOut(), danger: true },
+]
+
 </script>
 
 <template>
   <header class="sticky top-0 z-30 bg-foreground flex items-center justify-between gap-10 py-16">
     <div class="space-y-2">
-      <h1 class="text-4xl font-semibold">Today's Habits</h1>
+      <h1 class="text-3xl font-semibold">Today's Habits</h1>
       <UppercaseTitle size="lg">{{ formatted }}</UppercaseTitle>
     </div>
 
     <section class="flex items-center justify-center gap-5">
       <div class="flex items-center gap-4 px-5 py-3 bg-black/3 rounded-3xl">
         <section class="flex flex-col items-end gap-2">
-          <UppercaseTitle size="md">daily progress</UppercaseTitle>
-          <h1 class="text-3xl text-primary font-semibold">{{ completedCount }}/{{ habitsCount }} done</h1>
+          <UppercaseTitle size="sm">daily progress</UppercaseTitle>
+          <h1 class="text-3xl text-primary font-semibold text-nowrap">{{ completedCount }}/{{ habitsCount }} done</h1>
         </section>
         <ProgressRing :percentage="percentageCompleted" :completed="completedCount" :total="habitsCount" />
       </div>
-
-      <button v-if="!user" @click="signIn"
-        class="size-20 shrink-0 bg-white rounded-full flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95 transition-transform hover:shadow-lg">
-        <img src="/images/webp/google.webp" alt="Sign in with Google" class="size-8" />
-      </button>
-      <button v-else @click="signOut" class="size-20 shrink-0 rounded-full overflow-hidden cursor-pointer hover:scale-105 active:scale-95 transition-transform hover:shadow-lg">
-        <img :src="user.photoURL ?? undefined" :alt="user.displayName ?? undefined" class="w-full h-full object-cover"
-          referrerpolicy="no-referrer" />
-      </button>
+    
+      <MainMenu :items="userMenuItems" :menu-width="200">
+        <template #trigger>
+          <img :src="user?.photoURL ?? '/images/default_user.svg'" :alt="user?.displayName ?? undefined"
+            class="size-20 shrink-0 rounded-full object-cover hover:ring-2 hover:ring-primary transition-all"
+            referrerpolicy="no-referrer" />
+        </template>
+      </MainMenu>
     </section>
   </header>
 </template>

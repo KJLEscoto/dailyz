@@ -25,7 +25,7 @@ const isOpen = ref(true)
       @click="isOpen = !isOpen">
       <UppercaseTitle class="font-primary! font-semibold!" size="md">{{ title }}</UppercaseTitle>
       <div class="p-2 rounded-full bg-muted/5 size-8 shrink-0 flex items-center justify-center">
-        <p class="text-base font-bold text-muted font-secondary text-nowrap">{{ count }}</p>
+        <p class="text-base font-bold text-muted text-nowrap">{{ count }}</p>
       </div>
       <hr class="w-full border-muted/5" />
       <ChevronDown class="pointer-events-none size-5 text-muted transition-transform duration-300"

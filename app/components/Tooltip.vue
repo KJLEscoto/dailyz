@@ -83,7 +83,7 @@ onUnmounted(() => {
     <Transition enter-active-class="transition-opacity duration-150" enter-from-class="opacity-0"
       leave-active-class="transition-opacity duration-100" leave-to-class="opacity-0">
       <div v-if="isVisible" :style="tooltipStyles" class="drop-shadow-xl fixed z-9999 pointer-events-none whitespace-nowrap">
-        <div class="bg-white text-muted text-sm font-medium border-muted/10 border font-secondary px-2.5 py-1.5 rounded-lg">
+        <div class="bg-white text-muted text-sm font-medium border-muted/10 border px-2.5 py-1.5 rounded-lg">
           {{ text }}
         </div>
         <!-- <div :class="['absolute border-4', arrowClasses[position]]" /> -->

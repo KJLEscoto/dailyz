@@ -93,9 +93,9 @@ const handleRegister = async () => {
     <form class="w-full bg-white rounded-4xl p-10 space-y-10 h-full shadow-lg" @submit.prevent="handleRegister">
       <section class="space-y-6">
         <div class="space-y-5">
-          <FormField v-model="fullName" label="Full Name" type="text" placeholder="John Doe" :error="fullNameError"
+          <FormField v-model="fullName" label="Full Name" type="text" placeholder="Xyle Ignacio" :error="fullNameError"
             required />
-          <FormField v-model="emailAddress" label="Email Address" type="email" placeholder="hello@example.com"
+          <FormField v-model="emailAddress" label="Email Address" type="email" placeholder="xyle@example.com"
             :error="emailError" required />
           <FormField v-model="password" label="Password" type="password" placeholder="••••••••" :error="passwordError"
             required />
