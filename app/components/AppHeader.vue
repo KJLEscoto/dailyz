@@ -29,8 +29,8 @@ const userMenuItems: MenuItem[] = [
     <section class="flex items-center justify-center gap-5">
       <div class="flex items-center gap-4 px-5 py-3 bg-black/3 rounded-3xl">
         <section class="flex flex-col items-end gap-2">
+          <h1 class="text-3xl text-primary font-semibold text-nowrap">{{ completedCount }}/{{ habitsCount }}</h1>
           <UppercaseTitle size="sm">daily progress</UppercaseTitle>
-          <h1 class="text-3xl text-primary font-semibold text-nowrap">{{ completedCount }}/{{ habitsCount }} done</h1>
         </section>
         <ProgressRing :percentage="percentageCompleted" :completed="completedCount" :total="habitsCount" />
       </div>
