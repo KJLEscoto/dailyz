@@ -109,7 +109,7 @@ const handleAction = (item: MenuItem) => {
 </script>
 
 <template>
-  <div :class="['relative inline-flex  shrink-0', triggerClass, isOpen ? 'opacity-80' : '']">
+  <div :class="['relative inline-flex  shrink-0', triggerClass]">
     <button ref="triggerRef" class="cursor-pointer" @click="toggle" :aria-expanded="isOpen" aria-haspopup="true"
       aria-label="Options">
       <slot name="trigger">
