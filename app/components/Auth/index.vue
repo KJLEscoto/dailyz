@@ -31,9 +31,9 @@ const handleReorder = (newOrder: string[]) => console.log('new order:', newOrder
     <!-- empty state if no habits exist -->
     <div v-if="!todoHabits.length && !completedHabits.length"
       class="text-center justify-center flex flex-col items-center gap-6">
-      <img src="/images/no_habits.png" alt="No habits for today"
+      <img src="/images/mascot/no_habits.png" alt="No habits for today"
         class="max-w-[400px] w-full h-auto object-contain mix-blend-darken" />
-      <section class="space-y-3">
+      <section class="space-y-2">
         <h1 class="text-3xl font-bold text-primary">You don’t have any habits yet.</h1>
         <p class="text-muted text-lg">Create one using this button.</p>
       </section>
@@ -46,13 +46,14 @@ const handleReorder = (newOrder: string[]) => console.log('new order:', newOrder
     <!-- Tab Content -->
     <Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0 translate-y-1"
       leave-active-class="transition duration-150 ease-in" leave-to-class="opacity-0 translate-y-1" mode="out-in">
+      
+      <!-- to do -->
       <section v-if="activeTab === 'todo'" key="todo">
-
         <div v-if="!todoHabits.length && completedHabits.length" 
           class="text-center justify-center flex flex-col items-center gap-6">
-          <img src="/images/todo_done.png" alt="No habits for today"
+          <img src="/images/mascot/no_todo.png" alt="No habits for today"
             class="max-w-[400px] w-full h-auto object-contain" />
-          <section class="space-y-3">
+          <section class="space-y-2">
             <h1 class="text-3xl font-bold text-primary">No more habits for now!</h1>
             <p class="text-muted text-lg">Take a rest or add more habits later.</p>
           </section>
@@ -62,15 +63,15 @@ const handleReorder = (newOrder: string[]) => console.log('new order:', newOrder
           @delete="deleteHabit" @reorder="handleReorder" /> 
       </section>
 
+      <!-- completed -->
       <section v-else key="completed">
-
         <div v-if="todoHabits.length && !completedHabits.length"
           class="text-center justify-center flex flex-col items-center gap-6">
-          <img src="/images/no_habits.png" alt="No habits for today"
+          <img src="/images/mascot/no_completions.png" alt="No completed habits"
             class="max-w-[400px] w-full h-auto object-contain" />
-          <section class="space-y-3">
-            <h1 class="text-3xl font-bold text-primary">You don’t have any habits yet.</h1>
-            <p class="text-muted text-lg">Create one using this button.</p>
+          <section class="space-y-2">
+            <h1 class="text-3xl font-bold text-primary">You haven't completed any habits.</h1>
+            <p class="text-muted text-lg">Complete a habit from <span class="font-bold">"To Do"</span> to see them here.</p>
           </section>
         </div>
 
