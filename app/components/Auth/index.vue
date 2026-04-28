@@ -5,7 +5,7 @@ import type { Habit } from '~/types/habit'
 const habitStore = useHabitStore()
 const habits = computed(() => habitStore.habits)
 
-const { todoHabits, completedHabits, todoCount, completedCount } = useHabitStats(habits)
+const { todoHabits, completedHabits, todoCount, completedCount, reorder } = useHabitStats(habits)
 
 const modalEditRef = ref()
 
@@ -22,7 +22,7 @@ const editHabit = (id: Habit['id']) => {
 }
 const deleteHabit = (id: Habit['id']) => habitStore.deleteHabit(id)
 const toggleCompletion = (habit: Habit) => habitStore.toggleCompletion(habit)
-const handleReorder = (newOrder: string[]) => console.log('new order:', newOrder)
+const handleReorder = (newOrder: string[]) => habitStore.saveOrder(newOrder)
 </script>
 
 <template>
@@ -32,7 +32,7 @@ const handleReorder = (newOrder: string[]) => console.log('new order:', newOrder
     <div v-if="!todoHabits.length && !completedHabits.length"
       class="text-center justify-center flex flex-col items-center gap-6">
       <img src="/images/mascot/no_habits.png" alt="No habits for today"
-        class="max-w-[400px] w-full h-auto object-contain mix-blend-darken" />
+        class="max-w-100 w-full h-auto object-contain mix-blend-darken" />
       <section class="space-y-2">
         <h1 class="text-3xl font-bold text-primary">You don’t have any habits yet.</h1>
         <p class="text-muted text-lg">Create one using this button.</p>
@@ -52,7 +52,7 @@ const handleReorder = (newOrder: string[]) => console.log('new order:', newOrder
         <div v-if="!todoHabits.length && completedHabits.length" 
           class="text-center justify-center flex flex-col items-center gap-6">
           <img src="/images/mascot/no_todo.png" alt="No habits for today"
-            class="max-w-[400px] w-full h-auto object-contain" />
+            class="max-w-100 w-full h-auto object-contain" />
           <section class="space-y-2">
             <h1 class="text-3xl font-bold text-primary">No more habits for now!</h1>
             <p class="text-muted text-lg">Take a rest or add more habits later.</p>
@@ -68,7 +68,7 @@ const handleReorder = (newOrder: string[]) => console.log('new order:', newOrder
         <div v-if="todoHabits.length && !completedHabits.length"
           class="text-center justify-center flex flex-col items-center gap-6">
           <img src="/images/mascot/no_completions.png" alt="No completed habits"
-            class="max-w-[400px] w-full h-auto object-contain" />
+            class="max-w-100 w-full h-auto object-contain" />
           <section class="space-y-2">
             <h1 class="text-3xl font-bold text-primary">You haven't completed any habits.</h1>
             <p class="text-muted text-lg">Complete a habit from <span class="font-bold">"To Do"</span> to see them here.</p>
