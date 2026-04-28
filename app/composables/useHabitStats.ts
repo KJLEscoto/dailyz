@@ -6,12 +6,18 @@ import type { Habit } from '~/types/habit'
 export function useHabitStats(habits: ComputedRef<Habit[]>) {
   const today = () => format(new Date(), 'yyyy-MM-dd')
 
+  // FIFO — sorted by orderInToDo ascending
   const todoHabits = computed(() =>
-    habits.value.filter(h => !h.completions?.includes(today()))
+    habits.value
+      .filter(h => !h.completions?.includes(today()))
+      .sort((a, b) => (a.orderInToDo ?? Infinity) - (b.orderInToDo ?? Infinity))
   )
 
+  // FILO — sorted by orderInCompleted ascending (0 = most recently completed = top)
   const completedHabits = computed(() =>
-    habits.value.filter(h => h.completions?.includes(today()))
+    habits.value
+      .filter(h => h.completions?.includes(today()))
+      .sort((a, b) => (a.orderInCompleted ?? Infinity) - (b.orderInCompleted ?? Infinity))
   )
 
   const habitsCount = computed(() => habits.value.length)

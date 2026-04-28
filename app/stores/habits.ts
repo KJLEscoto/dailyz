@@ -45,7 +45,7 @@ export const useHabitStore = defineStore('habitStore', {
         const snapshot = await getDocs(this.getHabitsCollection())
         this.habits = snapshot.docs
           .map(doc => ({ id: doc.id, ...doc.data() } as Habit))
-          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0)) // 👈 sort by order
+          // .sort((a, b) => (a.order ?? 0) - (b.order ?? 0)) // 👈 sort by order
       } catch (error) {
         console.error('fetchHabits error:', error)
       } finally {
@@ -57,6 +57,8 @@ export const useHabitStore = defineStore('habitStore', {
     async addHabit(Habit: Habit) {
       if (!import.meta.client) return
 
+      const todoCount = this.habits.filter(h => !h.completions?.length).length
+
       const habit = {
         name: Habit.name,
         time: Habit.time as HabitTime,
@@ -64,7 +66,8 @@ export const useHabitStore = defineStore('habitStore', {
         completions: [],
         color: Habit.color,
         createdAt: new Date().toISOString(),
-        order: this.habits.length
+        orderInToDo: todoCount,
+        orderInCompleted: 0,
       }
 
       const docRef = await addDoc(this.getHabitsCollection(), habit)
@@ -92,22 +95,54 @@ export const useHabitStore = defineStore('habitStore', {
     },
 
     // complete a habit for today
-  async toggleCompletion(habit: Habit) {
-    const today = format(new Date(), 'yyyy-MM-dd')
+    async toggleCompletion(habit: Habit) {
+      const today = format(new Date(), 'yyyy-MM-dd')
+      const isCompletingToday = !habit.completions.includes(today)
 
-    // 👈 work on a copy, not the original
-    const updatedCompletions = habit.completions.includes(today)
-      ? habit.completions.filter(date => date !== today)
-      : [...habit.completions, today]
+      const updatedCompletions = isCompletingToday
+        ? [...habit.completions, today]
+        : habit.completions.filter(date => date !== today)
 
-    const updatedStreak = this.calculateStreak(updatedCompletions)
+      const updatedStreak = this.calculateStreak(updatedCompletions)
 
-    // 👈 await the update
-    await this.updateHabit(habit.id, {
-      completions: updatedCompletions,
-      streak: updatedStreak
-    })
-  },
+      if (isCompletingToday) {
+        // shift all existing completed habits down by 1
+        const completedHabits = this.habits.filter(h =>
+          h.id !== habit.id && h.completions.includes(today)
+        )
+
+        // push new habit to top (orderInCompleted = 0)
+        await Promise.all([
+          // update the toggled habit
+          this.updateHabit(habit.id, {
+            completions: updatedCompletions,
+            streak: updatedStreak,
+            orderInCompleted: 0, 
+            orderInToDo: null,
+          }),
+          // shift others down
+          ...completedHabits.map((h, index) =>
+            this.updateHabit(h.id, { orderInCompleted: index + 1 })
+          ),
+        ])
+
+      } else {
+        // shift all existing todo habits up, put this one at the bottom
+        const todoHabits = this.habits.filter(h =>
+          h.id !== habit.id && !h.completions.includes(today)
+        ).sort((a, b) => (a.orderInToDo ?? 0) - (b.orderInToDo ?? 0))
+
+        await Promise.all([
+          // update the toggled habit
+          this.updateHabit(habit.id, {
+            completions: updatedCompletions,
+            streak: updatedStreak,
+            orderInToDo: todoHabits.length, 
+            orderInCompleted: null,
+          }),
+        ])
+      }
+    },
 
     calculateStreak(completions: Habit['completions']) {
       const sortedDates = [...completions].sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
@@ -160,20 +195,16 @@ export const useHabitStore = defineStore('habitStore', {
       }
     },
 
-    // save order to Firestore
     async saveOrder(newOrder: string[]) {
-      // update local state immediately
-      const reordered = newOrder
-        .map(id => this.habits.find(h => h.id === id))
-        .filter(Boolean) as Habit[]
-      const rest = this.habits.filter(h => !newOrder.includes(h.id))
-      this.habits = [...reordered, ...rest]
+      newOrder.forEach((id, index) => {
+        const habit = this.habits.find(h => h.id === id)
+        if (habit) habit.orderInToDo = index
+      })
 
-      // persist each habit's order to Firestore in parallel
       await Promise.all(
         newOrder.map((id, index) => {
           const docRef = this.getHabitDoc(id)
-          return updateDoc(docRef, { order: index })
+          return updateDoc(docRef, { orderInToDo: index })
         })
       )
     },

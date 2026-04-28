@@ -85,7 +85,7 @@ const streakStarted = computed(() => {
           </h2>
           <div class="flex items-center gap-2">
             <div class="size-2 rounded-full!" :style="{ backgroundColor: habit.color }"></div>
-            <UppercaseTitle size="sm">{{ habit.time }}</UppercaseTitle>
+            <p class="text-sm text-muted capitalize">{{ habit.time }}</p>
           </div>
         </section>
       </section>

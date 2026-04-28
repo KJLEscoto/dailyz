@@ -56,7 +56,7 @@ function onBlur(e: FocusEvent) {
 
     <!-- Label -->
     <label v-if="label" :for="inputId"
-      class="flex items-center gap-1 text-xs font-bold uppercase text-muted select-none">
+      class="flex items-center gap-1 text-sm font-medium uppercase text-muted select-none">
       {{ label }}
       <span v-if="required" class="text-sm leading-none text-primary">*</span>
     </label>

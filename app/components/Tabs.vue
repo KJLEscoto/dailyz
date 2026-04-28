@@ -16,7 +16,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div class="flex items-center gap-1 bg-muted/5 p-1 rounded-2xl w-full">
+  <div class="flex items-center gap-1 bg-[#f4f4f4] p-1 rounded-2xl w-full relative z-50">
     <button v-for="tab in tabs" :key="tab.value" @click="emit('update:modelValue', tab.value)" :class="[
       'flex-1 py-2 px-4 rounded-xl text-base font-semibold transition-all group duration-200 font-primary cursor-pointer flex items-center justify-center gap-2',
       modelValue === tab.value

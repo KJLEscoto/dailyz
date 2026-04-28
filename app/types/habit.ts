@@ -9,5 +9,6 @@ export interface Habit {
   completions: string[]
   color: string
   createdAt: string
-  order?: number
+  orderInToDo?: number
+  orderInCompleted?: number
 }

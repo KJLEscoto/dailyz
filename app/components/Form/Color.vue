@@ -33,11 +33,11 @@ const emit = defineEmits<{
     </label>
 
     <!-- Color circles -->
-    <div class="flex items-center gap-3">
+    <div class="flex items-center gap-2">
       <button v-for="color in colors" :key="color" type="button" :aria-label="`Select color ${color}`" :class="[
         'size-8 rounded-full transition-all duration-150 shrink-0 cursor-pointer',
         modelValue === color
-          ? 'ring-2 ring-offset-2 ring-black scale-100'
+          ? 'ring-1 ring-offset-2 ring-black scale-100'
           : 'hover:scale-95',
       ]" :style="{ backgroundColor: color }" @click="emit('update:modelValue', color)" />
     </div>
