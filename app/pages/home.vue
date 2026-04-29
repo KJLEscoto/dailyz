@@ -1,8 +1,8 @@
-<!-- components/Auth/index.vue -->
+<!-- pages/home.vue -->
 <script setup lang="ts">
 import type { Habit } from '~/types/habit'
 
-definePageMeta({ layout: 'auth', middleware: 'auth' })
+definePageMeta({ layout: 'auth' })
 
 const habitStore = useHabitStore()
 const habits = computed(() => habitStore.habits)

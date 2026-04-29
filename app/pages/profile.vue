@@ -5,7 +5,7 @@ definePageMeta({ layout: 'auth' })
 
 <template>
   <div class="space-y-4">
-    stats page
+    profile page
 
   </div>
 </template>

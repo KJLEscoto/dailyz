@@ -6,11 +6,11 @@ const ready = computed(() => authReady.value && (user.value ? habitsReady.value 
 
 <template>
   <NuxtRouteAnnouncer />
-  <NuxtLayout >
-  <div v-if="!ready" class="fixed inset-0 z-50 flex items-center justify-center bg-foreground">
+  <!-- <div v-if="!ready" class="fixed inset-0 z-50 flex items-center justify-center bg-foreground">
     <div class="size-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-  </div>
-
-    <NuxtPage v-else />
+  </div> -->
+  
+  <NuxtLayout>
+    <NuxtPage />
   </NuxtLayout>
 </template>

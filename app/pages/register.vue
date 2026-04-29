@@ -3,8 +3,6 @@
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
 import type { Auth } from 'firebase/auth'
 
-definePageMeta({ layout: 'default', middleware: 'guest' })
-
 const { signInWithGoogle } = useAuth()
 const userStore = useUserStore()
 
