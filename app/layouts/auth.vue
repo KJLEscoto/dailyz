@@ -4,8 +4,7 @@ const habitStore = useHabitStore()
 const habits = computed(() => habitStore.habits)
 
 const { formatted } = useDate()
-const { habitsCount, completedCount, percentageCompleted } =
-  useHabitStats(habits)
+const { habitsCount, completedCount, percentageCompleted } = useHabitStats(habits)
 </script>
 
 <template>
@@ -14,6 +13,5 @@ const { habitsCount, completedCount, percentageCompleted } =
       :percentage-completed="percentageCompleted" />
     <slot />
     <AuthBottomNav />
-
   </div>
 </template>

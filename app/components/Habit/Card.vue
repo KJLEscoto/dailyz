@@ -64,8 +64,8 @@ const streakStarted = computed(() => {
 </script>
 
 <template>
-  <main :class="['w-full h-auto rounded-3xl! flex items-center justify-center relative p-6 group gap-4 border border-transparent hover:border-primary/20 transition-all duration-200 select-none cursor-move',
-    isCompletedToday ? 'bg-[#f3f3f3]' : 'bg-white',
+  <main :class="['w-full h-auto rounded-3xl! flex items-center justify-center relative p-6 group gap-4 border border-transparent hover:border-black/10 transition-all duration-200 select-none cursor-move',
+    isCompletedToday ? 'bg-[#f1f1f1]' : 'bg-white',
   ]" 
   :style="{ transform: isHolding ? 'scale(0.95)' : 'scale(1)' }">
     <GripVertical class="size-6 text-muted cursor-move" />

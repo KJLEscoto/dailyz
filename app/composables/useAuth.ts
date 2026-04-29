@@ -5,10 +5,13 @@ import type { User } from 'firebase/auth'
 export function useAuth() {
   const user = useState<User | null>('auth-user', () => null)
   const authReady = useState<boolean>('auth-ready', () => false)
+  const habitsReady = useState<boolean>('habits-ready', () => false) // 👈
 
   const initAuth = (onLogin?: (user: User) => void, onLogout?: () => void) => {
+    if (authReady.value) return
+
     const { $firebase } = useNuxtApp()
-    onAuthStateChanged($firebase.auth, (firebaseUser) => {
+    const unsubscribe = onAuthStateChanged($firebase.auth, (firebaseUser) => {
       user.value = firebaseUser
       authReady.value = true
 
@@ -18,16 +21,16 @@ export function useAuth() {
         onLogout?.()
       }
     })
+
+    onUnmounted(() => unsubscribe())
   }
 
-  // Google sign in
   const signInWithGoogle = async () => {
     try {
       const { $firebase } = useNuxtApp()
       const result = await signInWithPopup($firebase.auth, $firebase.provider)
       user.value = result.user
 
-      // save google user to firestore if first time
       const userStore = useUserStore()
       await userStore.createUser(result.user.uid, {
         fullName: result.user.displayName ?? '',
@@ -36,23 +39,33 @@ export function useAuth() {
         createdAt: new Date().toISOString(),
       })
 
-      await navigateTo('/')
+      const habitStore = useHabitStore()
+      await habitStore.fetchHabits()
+      await habitStore.resetStaleStreaks()
+      habitsReady.value = true // 👈
+
+      await navigateTo('/home')
     } catch (error: any) {
       if (error.code === 'auth/popup-closed-by-user') return
       console.error('Google sign in error:', error)
     }
   }
 
-  // Email/password sign in
   const signIn = async (email: string, password: string) => {
     try {
       const { $firebase } = useNuxtApp()
       const result = await signInWithEmailAndPassword($firebase.auth, email, password)
       user.value = result.user
-      await navigateTo('/')
+
+      const habitStore = useHabitStore()
+      await habitStore.fetchHabits()
+      await habitStore.resetStaleStreaks()
+      habitsReady.value = true // 👈
+
+      await navigateTo('/home')
     } catch (error: any) {
       console.error('Sign in error:', error)
-      throw error // 👈 throw so the page can handle the error message
+      throw error
     }
   }
 
@@ -60,8 +73,9 @@ export function useAuth() {
     const { $firebase } = useNuxtApp()
     await $firebase.auth.signOut()
     user.value = null
+    habitsReady.value = false // 👈
     await navigateTo('/login')
   }
 
-  return { user, authReady, initAuth, signIn, signInWithGoogle, signOut }
+  return { user, authReady, habitsReady, initAuth, signIn, signInWithGoogle, signOut }
 }

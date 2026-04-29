@@ -3,7 +3,7 @@
 import { Home, BarChart2, User2, Plus } from '@lucide/vue'
 
 const navItems = [
-  { to: '/', icon: Home, label: 'Home' },
+  { to: '/home', icon: Home, label: 'Home' },
   { to: '/stats', icon: BarChart2, label: 'Stats' },
   { to: '/profile', icon: User2, label: 'Profile' },
 ]
@@ -27,7 +27,7 @@ const addHabit = () => modalAddRef.value?.addHabit()
       </section>
 
       <button @click="addHabit"
-        class="bg-primary flex items-center justify-center py-4 px-8 rounded-3xl cursor-pointer shadow-xl self-stretch w-auto">
+        class="bg-primary flex items-center justify-center py-4 px-8 rounded-3xl cursor-pointer shadow-2xl self-stretch min-w-[20%] w-auto">
         <Plus class="size-6 text-white pointer-events-none" />
       </button>
     </div>

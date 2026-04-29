@@ -1,56 +1,31 @@
-<!-- index.vue -->
+<!-- pages/index.vue -->
 <script setup lang="ts">
-const { user, authReady, initAuth } = useAuth()
-const habitStore = useHabitStore()
+import type { Habit } from '~/types/habit';
 
-definePageMeta({ layout: false })
+definePageMeta({ layout: 'default', middleware: 'guest' })
 
-onMounted(() => {
-  initAuth(
-    // onLogin — fires every time auth state confirms a logged-in user
-    async () => {
-      await habitStore.fetchHabits()
-      await habitStore.resetStaleStreaks()
-    },
-    // onLogout
-    () => {
-      habitStore.habits = []
-    }
-  )
-})
-
-watch(user, async (newUser) => {
-  if (newUser) {
-    await habitStore.fetchHabits()
-    await habitStore.resetStaleStreaks()
-  } else {
-    habitStore.habits = []
-  }
-})
+const { sampleHabits, toggleCompletion, reorder } = useSampleHabits()
 </script>
 
 <template>
-  <!-- Fixed overlay spinner — independent of layout -->
-  <div v-if="!authReady" class="fixed inset-0 z-50 flex items-center justify-center bg-foreground">
-    <div class="size-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+  <div class="w-full space-y-10">
+    <section class="space-y-3 text-center w-full">
+      <h1 class="text-3xl font-bold text-primary">Your path to serenity begins here.</h1>
+      <p class="text-muted">Create your habits and start building a more mindful life.</p>
+    </section>
+
+    <HabitList :habits="sampleHabits" :has-menu="false" @toggle="toggleCompletion" @reorder="reorder" />
+
+    <section class="flex items-center gap-3 justify-center w-full">
+      <hr class="border-muted/20 w-full" />
+      <div class="size-2 shrink-0 bg-primary rounded-full" />
+      <hr class="border-muted/20 w-full" />
+    </section>
+
+    <section class="space-y-5 text-center">
+      <Button size="lg" to="/login">
+        <p>Get Started</p>
+      </Button>
+    </section>
   </div>
-
-  <template v-else>
-    <main>
-      <!-- Not logged in -->
-      <NuxtLayout v-if="!user" name="default">
-        <section class="flex items-center justify-center min-h-screen py-20">
-          <div class="w-full space-y-10">
-            <Guest />
-          </div>
-        </section>
-      </NuxtLayout>
-
-      <!-- Logged in -->
-      <NuxtLayout v-else name="auth">
-        <Auth />
-      </NuxtLayout>
-    </main>
-
-  </template>
 </template>

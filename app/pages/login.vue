@@ -1,6 +1,8 @@
 <script setup lang="ts">
 const { signIn, signInWithGoogle } = useAuth()
 
+definePageMeta({ layout: 'default', middleware: 'guest' })
+
 const emailAddress = ref('')
 const emailError = ref('')
 const password = ref('')
@@ -42,7 +44,6 @@ const handleLogin = async () => {
 </script>
 
 <template>
-  <main class="flex items-center flex-col justify-center min-h-screen py-20 gap-10">
     <section class="text-center space-y-3">
       <h1 class="text-4xl font-bold text-primary">Welcome back!</h1>
       <p class="text-muted">Sign in to continue building your habits.</p>
@@ -85,7 +86,5 @@ const handleLogin = async () => {
           <NuxtLink to="/register" class="text-primary hover:underline">Sign Up</NuxtLink>
         </p>
       </section>
-
     </form>
-  </main>
 </template>
