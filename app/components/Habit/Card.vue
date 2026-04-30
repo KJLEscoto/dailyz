@@ -66,8 +66,7 @@ const streakStarted = computed(() => {
 <template>
   <main :class="['w-full h-auto rounded-3xl! flex items-center justify-center relative p-6 group gap-4 border border-transparent hover:border-black/10 transition-all duration-200 select-none cursor-move',
     isCompletedToday ? 'bg-[#f1f1f1]' : 'bg-white',
-  ]" 
-  :style="{ transform: isHolding ? 'scale(0.95)' : 'scale(1)' }">
+  ]" :style="{ transform: isHolding ? 'scale(0.95)' : 'scale(1)' }">
     <GripVertical class="size-6 text-muted cursor-move" />
     <div class="w-full">
       <section class="flex items-center gap-4">
@@ -98,13 +97,12 @@ const streakStarted = computed(() => {
             ? 'bg-danger/10 text-danger'
             : 'bg-emerald-500/10 text-emerald-500',
         ]">
-          <Flame v-if="habit.streak >= 3" class="size-3.5 pointer-events-none" />
-          <Leaf v-else class="size-3.5 pointer-events-none" />
+          <span v-if="habit.streak >= 3">🔥</span>
+          <span v-else>🍀</span>
           {{ habit.streak }}
         </button>
       </Tooltip>
-      <HabitMenu v-if="hasMenu !== false" data-swapy-no-drag
-        trigger-class="shrink-0" @edit="editHabit"
+      <HabitMenu v-if="hasMenu !== false" data-swapy-no-drag trigger-class="shrink-0" @edit="editHabit"
         @delete="deleteHabit" />
     </div>
   </main>
