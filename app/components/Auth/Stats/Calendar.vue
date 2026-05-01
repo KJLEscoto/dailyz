@@ -38,6 +38,11 @@ const selectedDateHabits = computed(() => {
   }
 })
 
+const goToToday = () => {
+  currentMonth.value = new Date()
+  selectedDate.value = format(new Date(), 'yyyy-MM-dd')
+}
+
 const selectedDateInfo = computed(() => {
   const dateStr = selectedDate.value
   const today = format(new Date(), 'yyyy-MM-dd')
@@ -63,9 +68,18 @@ const hasCompletion = (date: Date) => completionDates.value.has(format(date, 'yy
   <section class="bg-white rounded-3xl p-6 flex flex-col gap-4">
     <!-- Header -->
     <div class="flex items-center justify-between">
-      <p class="text-sm font-semibold text-black/60">
-        {{ format(currentMonth, 'MMMM yyyy') }}
-      </p>
+      <div class="flex items-center gap-2">
+        <p class="text-sm font-semibold text-black/60">
+          {{ format(currentMonth, 'MMMM yyyy') }}
+        </p>
+        <!-- 👇 Today button — only show if not already on current month/day -->
+        <button
+          v-if="format(currentMonth, 'yyyy-MM') !== format(new Date(), 'yyyy-MM') || selectedDate !== format(new Date(), 'yyyy-MM-dd')"
+          @click="goToToday"
+          class="text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/20 px-2 py-1 rounded-lg transition-colors cursor-pointer">
+          Go Today
+        </button>
+      </div>
       <div class="flex items-center gap-1">
         <button @click="prevMonth"
           class="p-1.5 rounded-xl hover:bg-primary/10 text-black/40 hover:text-primary transition-colors">

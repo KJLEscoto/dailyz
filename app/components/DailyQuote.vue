@@ -22,11 +22,11 @@ const { quote, author, loading, error } = $dailyQuote
 
     <!-- Quote -->
     <template v-else-if="quote">
-      <div class="flex gap-3">
-        <span class="text-primary text-3xl font-serif italic leading-none mt-0.5 select-none">"</span>
+      <div class="flex flex-col">
+        <span class="text-primary text-3xl font-serif italic select-none">"</span>
         <section class="space-y-1">
-          <p class="text-muted">{{ quote }}</p>
-          <h4 class="text-xs text-muted/50 font-semibold">by {{ author }}</h4>
+          <p class="text-white">{{ quote }}</p>
+          <h4 class="text-xs text-muted font-semibold">by {{ author }}</h4>
         </section>
       </div>
     </template>

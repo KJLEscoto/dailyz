@@ -3,6 +3,7 @@ import { initializeApp } from 'firebase/app'
 import { getAnalytics } from 'firebase/analytics'
 import { getFirestore } from 'firebase/firestore'
 import { getAuth, GoogleAuthProvider } from 'firebase/auth'
+import { getStorage } from 'firebase/storage'
 
 export default defineNuxtPlugin({
   name: 'firebase',  // 👈 only addition
@@ -23,6 +24,7 @@ export default defineNuxtPlugin({
     const auth = getAuth(app)
     const db = getFirestore(app)
     const provider = new GoogleAuthProvider()
+    const storage = getStorage(app)
 
     let analytics = null
     try {
@@ -33,7 +35,7 @@ export default defineNuxtPlugin({
 
     return {
       provide: {
-        firebase: { app, analytics, db, auth, provider },
+        firebase: { app, analytics, db, auth, provider, storage },
       },
     }
   }

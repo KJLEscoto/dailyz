@@ -1,11 +1,13 @@
-<!-- pages/stats.vue -->
+<!-- pages/profile.vue -->
 <script setup lang="ts">
 definePageMeta({ layout: 'auth' })
 </script>
 
 <template>
   <div class="space-y-4">
-    profile page
-
+    <AuthProfileInfo />
+    <AuthProfilePassword />
+    <AuthProfileOptions />
+    <AuthProfileAbout />
   </div>
 </template>

@@ -94,7 +94,10 @@ const slices = computed<PieSlice[]>(() => {
     <img class="shrink-0 absolute bottom-0 right-0 w-auto h-32" src="/images/mascot/crop_donut_model.png"
       alt="Donut Model" />
 
-    <p class="text-sm font-semibold text-black/60">Habits by Time</p>
+    <p class="text-sm font-semibold text-black/60">
+      <span v-if="habits.length">Total of {{ habits.length }} habits</span>
+      <span v-else>0 habit</span>
+    </p>
 
     <div v-if="habits.length" class="flex flex-col items-center gap-4">
       <!-- Pie SVG -->
@@ -109,11 +112,11 @@ const slices = computed<PieSlice[]>(() => {
             </radialGradient>
           </defs>
 
-          <g v-for="slice in slices" :key="slice.time">
+          <g v-for="slice in slices" :key="slice.time" class="select-none">
             <path :d="slice.path" :fill="`url(#grad-${slice.time})`" class="transition-all duration-500" />
             <text :x="slice.emojiX" :y="slice.emojiY + 5" text-anchor="middle" dominant-baseline="middle"
               font-size="14">{{ slice.emoji }}</text>
-            <text :x="slice.labelX" :y="slice.labelY + 4" text-anchor="middle" dominant-baseline="middle" font-size="11"
+            <text :x="slice.labelX" :y="slice.labelY + 4" text-anchor="middle" dominant-baseline="middle" font-size="12"
               font-weight="bold" fill="#1a1a1a">{{ slice.count }}</text>
           </g>
         </svg>
@@ -131,8 +134,8 @@ const slices = computed<PieSlice[]>(() => {
       </div>
     </div>
 
-    <div v-else class="text-center py-4">
-      <p class="text-sm text-black/30">No habits yet.</p>
+    <div v-else class="rounded-xl px-4 py-6 bg-foreground">
+      <p class="text-sm text-black/50">No habits yet. Add some!</p>
     </div>
   </section>
 </template>
