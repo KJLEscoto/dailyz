@@ -52,7 +52,7 @@ const weeklyData = computed(() => {
 </script>
 
 <template>
-  <section class="bg-white rounded-3xl p-6 flex flex-col gap-3 justify-center">
+  <section class="bg-white rounded-3xl p-6 flex flex-col gap-3 justify-between h-full w-full">
     <p class="text-sm font-semibold text-black/60">Weekly Completion</p>
     <div ref="chartRef" class="flex items-end justify-between gap-1 h-20">
       <div v-for="(day, index) in weeklyData" :key="day.day"

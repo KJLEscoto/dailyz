@@ -17,16 +17,18 @@ const countHighestStreak = computed(() => {
 </script>
 
 <template>
-  <section class="bg-white rounded-3xl p-6 flex flex-col gap-2 justify-center">
-    <p class="text-sm font-semibold text-black/60">Days Current Streak</p>
-    <div :class="['text-5xl font-bold', highestStreak >= 3 ? 'text-red-500' : 'text-green-500']">
-      {{ highestStreak }}<span v-if="highestStreak >= 3">🔥</span><span v-else>🍀</span>
+  <section class="bg-white rounded-3xl p-6 flex flex-col gap-2 justify-between h-full w-full">
+    <p class="text-sm font-semibold text-black/60">Current Streak</p>
+    <div class="space-y-2">
+      <div :class="['text-5xl font-bold', highestStreak >= 3 ? 'text-red-500' : 'text-green-500']">
+        {{ highestStreak }}<span v-if="highestStreak >= 3">🔥</span><span v-else>🍀</span>
+      </div>
+      <p class="text-sm text-black/60">
+        In <span class="font-bold text-primary text-lg">{{ countHighestStreak }}</span>
+        <span v-if="countHighestStreak <= 1"> habit</span>
+        <span v-else> habits</span>.
+        Keep it up!
+      </p>
     </div>
-    <p class="text-sm text-black/60">
-      In <span class="font-bold text-primary text-lg">{{ countHighestStreak }}</span>
-      <span v-if="countHighestStreak <= 1"> habit</span>
-      <span v-else> habits</span>.
-      Keep it up!
-    </p>
   </section>
 </template>

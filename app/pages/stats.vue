@@ -11,7 +11,7 @@ const habits = computed(() => habitStore.habits)
     <AuthStatsStreak :habits="habits" />
 
     <section class="row-span-2 h-full">
-      <AuthStatsDonut :habits="habits" />
+      <AuthStatsPie :habits="habits" />
     </section>
 
     <AuthStatsWeekly :habits="habits" />
