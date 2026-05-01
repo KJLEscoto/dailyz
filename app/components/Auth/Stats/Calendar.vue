@@ -1,4 +1,3 @@
-<!-- components/Auth/Stats/calendar.vue -->
 <script setup lang="ts">
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, subMonths, addMonths, isSameMonth, isToday } from 'date-fns'
 import { ChevronLeft, ChevronRight } from '@lucide/vue'
@@ -15,11 +14,8 @@ const calendarDays = computed(() => {
   const start = startOfMonth(currentMonth.value)
   const end = endOfMonth(currentMonth.value)
   const days = eachDayOfInterval({ start, end })
-
-  const startPadding = getDay(start) // 0 = Sun
-  const paddedDays = Array(startPadding).fill(null)
-
-  return [...paddedDays, ...days]
+  const startPadding = getDay(start)
+  return [...Array(startPadding).fill(null), ...days]
 })
 
 const completionDates = computed(() => {
@@ -28,18 +24,23 @@ const completionDates = computed(() => {
   return set
 })
 
-const selectedHabits = computed(() => {
-  if (!selectedDate.value) return []
-  return props.habits.filter(h => h.completions?.includes(selectedDate.value))
+// 👇 habits that existed on a given date
+const habitsOnDate = (dateStr: string) =>
+  props.habits.filter(h => format(new Date(h.createdAt), 'yyyy-MM-dd') <= dateStr)
+
+const selectedDateHabits = computed(() => {
+  const dateStr = selectedDate.value
+  const existing = habitsOnDate(dateStr)
+  return {
+    completed: existing.filter(h => h.completions?.includes(dateStr)),
+    uncompleted: existing.filter(h => !h.completions?.includes(dateStr)),
+    total: existing.length,
+  }
 })
 
 const prevMonth = () => currentMonth.value = subMonths(currentMonth.value, 1)
 const nextMonth = () => currentMonth.value = addMonths(currentMonth.value, 1)
-
-const selectDay = (date: Date) => {
-  selectedDate.value = format(date, 'yyyy-MM-dd')
-}
-
+const selectDay = (date: Date) => selectedDate.value = format(date, 'yyyy-MM-dd')
 const isSelected = (date: Date) => format(date, 'yyyy-MM-dd') === selectedDate.value
 const hasCompletion = (date: Date) => completionDates.value.has(format(date, 'yyyy-MM-dd'))
 </script>
@@ -74,10 +75,7 @@ const hasCompletion = (date: Date) => completionDates.value.has(format(date, 'yy
     <!-- Days grid -->
     <div class="grid grid-cols-7 gap-y-1 text-center">
       <div v-for="(day, i) in calendarDays" :key="i" class="flex items-center justify-center">
-        <!-- Empty padding -->
         <span v-if="!day" />
-
-        <!-- Day cell -->
         <button v-else @click="selectDay(day)" :class="[
           'relative w-8 h-8 rounded-full text-xs font-semibold transition-all flex items-center justify-center',
           isSelected(day)
@@ -89,7 +87,6 @@ const hasCompletion = (date: Date) => completionDates.value.has(format(date, 'yy
                 : 'text-black/70 hover:bg-primary/10'
         ]">
           {{ format(day, 'd') }}
-          <!-- Completion dot -->
           <span v-if="hasCompletion(day) && !isSelected(day)"
             class="absolute bottom-0.5 left-1/2 -translate-x-1/2 size-1 rounded-full bg-primary" />
         </button>
@@ -100,26 +97,34 @@ const hasCompletion = (date: Date) => completionDates.value.has(format(date, 'yy
     <Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0 translate-y-1"
       leave-active-class="transition duration-150 ease-in" leave-to-class="opacity-0 translate-y-1" mode="out-in">
       <div :key="selectedDate" class="bg-foreground p-6 rounded-2xl max-h-50 overflow-y-auto scrollbar-none">
-        <!-- Has habits -->
-        <div v-if="selectedHabits.length" class="flex flex-col gap-2">
+
+        <div v-if="selectedDateHabits.total > 0" class="flex flex-col gap-2">
+          <!-- Count -->
           <p class="text-sm font-semibold text-primary uppercase tracking-wide">
-            {{ selectedHabits.length }} habits completed
+            {{ selectedDateHabits.completed.length }}/{{ selectedDateHabits.total }} habits completed
           </p>
-          <div v-for="habit in selectedHabits" :key="habit.id"
+
+          <!-- Completed habits -->
+          <div v-for="habit in selectedDateHabits.completed" :key="habit.id"
             class="flex items-center gap-3 px-4 py-3 rounded-2xl bg-white">
             <span class="size-2.5 rounded-full shrink-0" :style="{ backgroundColor: habit.color }" />
             <span class="text-sm font-medium text-black/70">{{ habit.name }}</span>
             <span class="ml-auto text-xs" :class="habit.streak >= 3 ? 'text-orange-500' : 'text-green-500'">
-              {{ habit.streak }}
-              <span v-if="habit.streak >= 3">🔥</span>
-              <span v-else>🍀</span>
+              {{ habit.streak }}<span v-if="habit.streak >= 3">🔥</span><span v-else>🍀</span>
             </span>
+          </div>
+
+          <!-- Uncompleted habits -->
+          <div v-for="habit in selectedDateHabits.uncompleted" :key="habit.id"
+            class="flex items-center gap-3 px-4 py-3 rounded-2xl bg-white opacity-40">
+            <span class="size-2.5 rounded-full shrink-0 border-2" :style="{ borderColor: habit.color }" />
+            <span class="text-sm font-medium text-black/50">{{ habit.name }}</span>
           </div>
         </div>
 
-        <!-- No habits -->
+        <!-- No habits existed -->
         <div v-else class="text-center py-4">
-          <p class="text-sm font-semibold text-black/30">No habits completed on this day.</p>
+          <p class="text-sm font-semibold text-black/30">No habits on this day.</p>
         </div>
       </div>
     </Transition>

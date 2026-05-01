@@ -66,11 +66,6 @@ const arcs = computed(() => {
             :stroke-dashoffset="-arc.offset" stroke-linecap="butt"
             style="transform: rotate(-90deg); transform-origin: 50% 50%; transition: stroke-dasharray 0.5s ease" />
         </svg>
-
-        <!-- <div class="absolute inset-0 flex flex-col items-center justify-center">
-          <span class="text-xl font-bold text-black/80">{{ habits.length }}</span>
-          <span class="text-[10px] text-black/40 font-medium">habits</span>
-        </div> -->
       </div>
 
       <!-- Legend -->
