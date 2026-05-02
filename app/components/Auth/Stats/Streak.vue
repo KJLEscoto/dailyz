@@ -17,7 +17,7 @@ const countHighestStreak = computed(() => {
 </script>
 
 <template>
-  <section class="bg-white rounded-3xl p-6 flex flex-col gap-2 justify-between h-full w-full">
+  <section class="bg-white rounded-3xl md:p-6 p-4 flex flex-col gap-3 justify-between h-full w-full">
     <p class="text-sm font-semibold text-black/60">Current Streak</p>
     
     <div class="space-y-2" v-if="countHighestStreak > 0">

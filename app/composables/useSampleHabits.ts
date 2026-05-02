@@ -12,24 +12,24 @@ const defaultSampleHabits: Habit[] = [
     color: '#a8d8a8',
     createdAt: new Date().toISOString(),
   },
-  {
-    id: 'sample-2',
-    name: 'Evening Walk',
-    time: 'evening',
-    streak: 0,
-    completions: [],
-    color: '#f9c784',
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'sample-3',
-    name: 'Read 10 pages',
-    time: 'afternoon',
-    streak: 0,
-    completions: [],
-    color: '#c9b8e8',
-    createdAt: new Date().toISOString(),
-  },
+  // {
+  //   id: 'sample-2',
+  //   name: 'Evening Walk',
+  //   time: 'evening',
+  //   streak: 0,
+  //   completions: [],
+  //   color: '#f9c784',
+  //   createdAt: new Date().toISOString(),
+  // },
+  // {
+  //   id: 'sample-3',
+  //   name: 'Read 10 pages',
+  //   time: 'afternoon',
+  //   streak: 0,
+  //   completions: [],
+  //   color: '#c9b8e8',
+  //   createdAt: new Date().toISOString(),
+  // },
 ]
 
 export function useSampleHabits() {

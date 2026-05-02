@@ -1,6 +1,6 @@
 <!-- components/Habit/Card.vue -->
 <script setup lang="ts">
-import { Check, Flame, GripVertical, Leaf } from '@lucide/vue';
+import { Check } from '@lucide/vue';
 import type { Habit } from '~/types/habit'
 import { format } from 'date-fns'
 
@@ -67,7 +67,7 @@ const streakStarted = computed(() => {
   <main :class="['w-full h-auto rounded-3xl! flex items-center justify-center relative p-6 group gap-4 border border-transparent hover:border-black/10 transition-all duration-200 select-none cursor-move',
     isCompletedToday ? 'bg-[#f1f1f1]' : 'bg-white',
   ]" :style="{ transform: isHolding ? 'scale(0.95)' : 'scale(1)' }">
-    <GripVertical class="size-6 text-muted cursor-move" />
+    <!-- <GripVertical class="size-6 text-muted cursor-move" /> -->
     <div class="w-full">
       <section class="flex items-center gap-4">
         <section

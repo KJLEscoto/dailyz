@@ -90,8 +90,8 @@ const slices = computed<PieSlice[]>(() => {
 </script>
 
 <template>
-  <section class="bg-white rounded-3xl p-6 flex flex-col gap-2 h-full relative overflow-hidden">
-    <img class="shrink-0 absolute bottom-0 right-0 w-auto h-32" src="/images/mascot/crop_donut_model.png"
+  <section class="bg-white rounded-3xl md:p-6 p-4 flex flex-col gap-2 h-full relative overflow-hidden">
+    <img class="shrink-0 absolute bottom-0 -right-5 w-auto md:h-32 h-40" src="/images/mascot/crop_donut_model.png"
       alt="Donut Model" />
 
     <p class="text-sm font-semibold text-black/60">
@@ -101,7 +101,7 @@ const slices = computed<PieSlice[]>(() => {
 
     <div v-if="habits.length" class="flex flex-col items-center gap-4">
       <!-- Pie SVG -->
-      <div class="relative flex flex-col items-center">
+      <div class="relative flex flex-col items-center md:scale-100 scale-125">
         <svg :width="SIZE" :height="SIZE" :viewBox="`0 0 ${SIZE} ${SIZE}`">
           <!-- Gradient defs -->
           <defs>

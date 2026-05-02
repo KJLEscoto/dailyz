@@ -1,6 +1,6 @@
 <!-- components/Auth/Profile/Info.vue -->
 <script setup lang="ts">
-import { Pencil, Check, X } from '@lucide/vue'
+import { Pencil, Check, X, LoaderCircle } from '@lucide/vue'
 import { updateProfile } from 'firebase/auth'
 
 const { user } = useAuth()
@@ -53,9 +53,9 @@ const saveName = async () => {
 </script>
 
 <template>
-  <section class="bg-white rounded-3xl p-6 flex flex-col items-center gap-4">
+  <section class="bg-white rounded-3xl md:p-6 p-4 flex flex-col items-center gap-4">
     <section class="w-full rounded-2xl h-full min-h-40 overflow-hidden relative">
-      <div class="relative z-10 p-4 w-1/2 pointer-events-none">
+      <div class="relative z-10 p-4 md:w-1/2 w-3/4 pointer-events-none">
         <DailyQuote />
       </div>
       <div class="absolute inset-0">
@@ -68,14 +68,16 @@ const saveName = async () => {
       <img :src="user?.photoURL ?? '/images/default_user.png'" :alt="user?.displayName ?? undefined"
         class="size-16 rounded-full object-cover shrink-0" referrerpolicy="no-referrer" />
 
-      <div class="flex flex-col gap-1 min-w-0 flex-1">
+      <div class="flex flex-col min-w-0 flex-1">
         <div v-if="isEditingName" class="flex items-center gap-2">
           <input v-model="editedName" @keyup.enter="saveName" @keyup.escape="cancelEditName"
             class="flex-1 text-base font-bold text-black/80 bg-foreground rounded-xl px-3 py-1 outline-none focus:ring-2 focus:ring-primary/30 min-w-0"
             autofocus />
           <button @click="saveName" :disabled="nameLoading"
             class="p-1.5 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary transition-colors shrink-0">
-            <Check class="size-3.5" />
+            <LoaderCircle v-if="nameLoading"
+              class="size-3.5 animate-spin" />
+            <Check v-else class="size-3.5" />
           </button>
           <button @click="cancelEditName"
             class="p-1.5 rounded-xl hover:bg-black/5 text-black/40 transition-colors shrink-0">
@@ -91,7 +93,7 @@ const saveName = async () => {
           </button>
         </div>
 
-        <p v-if="nameError && isEditingName" class="text-xs text-red-400">{{ nameError }}</p>
+        <p v-if="nameError && isEditingName" class="text-xs text-red-400 mt-1">{{ nameError }}</p>
         <p class="text-sm text-black/40 truncate">{{ user?.email }}</p>
       </div>
     </section>

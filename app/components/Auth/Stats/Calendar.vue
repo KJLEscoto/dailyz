@@ -65,7 +65,7 @@ const hasCompletion = (date: Date) => completionDates.value.has(format(date, 'yy
 </script>
 
 <template>
-  <section class="bg-white rounded-3xl p-6 flex flex-col gap-4">
+  <section class="bg-white rounded-3xl md:p-6 p-4 flex flex-col gap-4">
     <!-- Header -->
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-2">
@@ -124,7 +124,7 @@ const hasCompletion = (date: Date) => completionDates.value.has(format(date, 'yy
     <!-- Selected day habits -->
     <Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0 translate-y-1"
       leave-active-class="transition duration-150 ease-in" leave-to-class="opacity-0 translate-y-1" mode="out-in">
-      <div :key="selectedDate" class="bg-foreground p-6 rounded-2xl max-h-50 overflow-y-auto scrollbar-none">
+      <div :key="selectedDate" class="bg-foreground md:p-6 p-4 rounded-2xl max-h-50 overflow-y-auto scrollbar-none">
 
         <!-- Future or no habits existed -->
         <div v-if="selectedDateInfo.isFuture || selectedDateInfo.total === 0" class="text-center py-4">

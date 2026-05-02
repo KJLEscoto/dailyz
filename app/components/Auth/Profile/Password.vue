@@ -1,6 +1,6 @@
 <!-- components/Auth/Profile/Password.vue -->
 <script setup lang="ts">
-import { KeyRound } from '@lucide/vue'
+import { KeyRound, Info, Check } from '@lucide/vue'
 import { updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth'
 
 const { user } = useAuth()
@@ -48,7 +48,7 @@ const changePassword = async () => {
     currentPassword.value = ''
     newPassword.value = ''
     confirmPassword.value = ''
-    showPasswordSection.value = false
+    // showPasswordSection.value = false
   } catch (error: any) {
     if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
       passwordError.value = 'Current password is incorrect.'
@@ -77,8 +77,10 @@ const changePassword = async () => {
         <FormField v-model="newPassword" type="password" placeholder="New password" />
         <FormField v-model="confirmPassword" type="password" placeholder="Confirm new password" />
 
-        <p v-if="passwordError" class="text-xs text-red-400 px-1">{{ passwordError }}</p>
-        <p v-if="passwordSuccess" class="text-xs text-green-500 px-1">{{ passwordSuccess }}</p>
+        <p v-if="passwordError" class="text-sm text-red-400 px-1 flex items-center gap-1">
+          <Info class="size-4" /> {{ passwordError }}</p>
+        <p v-if="passwordSuccess" class="text-sm text-green-500 px-1 flex items-center gap-1">
+          <Check class="size-4" /> {{ passwordSuccess }}</p>
 
         <Button @click="changePassword" :disabled="passwordLoading">
           {{ passwordLoading ? 'Updating...' : 'Update Password' }}

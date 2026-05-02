@@ -28,7 +28,7 @@ const handleReorder = (newOrder: string[]) => habitStore.saveOrder(newOrder)
 </script>
 
 <template>
-  <div class="space-y-4">
+  <div class="sm:space-y-4 space-y-3">
 
     <!-- empty state if no habits exist -->
     <div v-if="!todoHabits.length && !completedHabits.length"
@@ -36,10 +36,10 @@ const handleReorder = (newOrder: string[]) => habitStore.saveOrder(newOrder)
       <img src="/images/mascot/no_habits.png" alt="No habits for today"
         class="max-w-100 w-full h-auto object-contain mix-blend-darken" />
       <section class="space-y-2">
-        <h1 class="text-3xl font-bold text-primary">You don’t have any habits yet.</h1>
-        <p class="text-muted text-lg">Create one using this button.</p>
+        <h1 class="md:text-3xl text-xl font-bold text-primary">You don’t have any habits yet.</h1>
+        <p class="text-muted md:text-lg text-sm">Create one using this button.</p>
       </section>
-      <img src="/images/arrow_to_add.svg" alt="Add habit" class="w-full h-auto object-cover" />
+      <img src="/images/arrow_to_add.svg" alt="Add habit" class="sm:w-full w-2/3 h-auto object-cover" />
     </div>
 
     <!-- Tabs -->
@@ -56,8 +56,8 @@ const handleReorder = (newOrder: string[]) => habitStore.saveOrder(newOrder)
           <img src="/images/mascot/no_todo.png" alt="No habits for today"
             class="max-w-100 w-full h-auto object-contain" />
           <section class="space-y-2">
-            <h1 class="text-3xl font-bold text-primary">No more habits for now!</h1>
-            <p class="text-muted text-lg">Take a rest or add more habits later.</p>
+            <h1 class="md:text-3xl text-xl font-bold text-primary">No more habits for now!</h1>
+            <p class="text-muted md:text-lg text-sm">Take a rest or add more habits later.</p>
           </section>
         </div>
 
@@ -72,8 +72,8 @@ const handleReorder = (newOrder: string[]) => habitStore.saveOrder(newOrder)
           <img src="/images/mascot/no_completions.png" alt="No completed habits"
             class="max-w-100 w-full h-auto object-contain" />
           <section class="space-y-2">
-            <h1 class="text-3xl font-bold text-primary">You haven't completed any habits.</h1>
-            <p class="text-muted text-lg">Complete a habit from <span class="font-bold">"To Do"</span> to see them here.
+            <h1 class="md:text-3xl text-xl font-bold text-primary">You haven't completed any habits.</h1>
+            <p class="text-muted md:text-lg text-sm">Complete a habit from <span class="font-bold">"To Do"</span> to see them here.
             </p>
           </section>
         </div>

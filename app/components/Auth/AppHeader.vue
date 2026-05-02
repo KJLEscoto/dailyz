@@ -13,13 +13,13 @@ const firstName = computed(() => user.value?.displayName?.split(' ')[0] ?? 'ther
 </script>
 
 <template>
-  <header class="sticky top-0 z-30 bg-foreground flex items-center justify-between gap-10 py-5">
-    <div class="space-y-2">
-      <h1 class="text-3xl font-semibold">Hi, <span class="capitalize">{{ firstName }}</span>!</h1>
+  <header class="sticky top-0 z-30 bg-foreground flex items-center justify-between gap-5 md:py-5 py-3">
+    <div class="md:space-y-2 space-y-1 max-w-1/2 w-full">
       <UppercaseTitle size="sm">{{ formatted }}</UppercaseTitle>
+      <h1 class="md:text-3xl text-2xl font-semibold text-nowrap truncate">Hi, <span class="capitalize">{{ firstName }}</span>!</h1>
     </div>
 
-    <div class="flex items-center gap-3 px-5 py-3 bg-black/3 rounded-3xl">
+    <div class="flex items-center gap-2 md:px-5 px-3 md:py-3 py-1.5 bg-black/3 rounded-3xl">
       <section class="flex flex-col items-end gap-1">
         <h1 class="text-2xl text-primary font-semibold text-nowrap">{{ completedCount }}/{{ habitsCount }}</h1>
         <UppercaseTitle size="sm">progress</UppercaseTitle>

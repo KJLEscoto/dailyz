@@ -10,11 +10,18 @@ const habits = computed(() => habitStore.habits)
 
     <AuthStatsStreak :habits="habits" />
 
-    <section class="row-span-2 h-full">
+    <!-- i want the auth stats weekly to be here in md -->
+    <span class="md:hidden block">
+      <AuthStatsWeekly :habits="habits" />
+    </span>
+
+    <section class="md:row-span-2 md:col-span-1 col-span-2 row-span-1 h-full">
       <AuthStatsPie :habits="habits" />
     </section>
 
-    <AuthStatsWeekly :habits="habits" />
+    <span class="hidden md:block">
+      <AuthStatsWeekly :habits="habits" />
+    </span>
 
     <!-- calendar -->
     <section class="col-span-2">

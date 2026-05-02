@@ -28,7 +28,7 @@ onMounted(() => {
 
 <template>
   <section
-    class="rounded-full size-14 flex items-center justify-center select-none relative ring-3 ring-muted/10 shrink-0">
+    class="rounded-full size-16 flex items-center justify-center select-none relative shrink-0">
     <svg class="absolute inset-0 -rotate-90" viewBox="0 0 56 56" fill="none">
       <circle cx="28" cy="28" r="24" stroke="var(--color-foreground)" stroke-width="4" stroke-opacity="0.1" />
       <circle cx="28" cy="28" r="24" stroke="var(--color-primary)" stroke-width="4" stroke-linecap="round"
@@ -37,7 +37,7 @@ onMounted(() => {
     <!-- <p class="text-primary font-semibold text-sm">{{ percentage }}%</p> -->
     <MainMenu :items="userMenuItems" :menu-width="200">
       <template #trigger>
-        <div class="relative size-10 rounded-full shrink-0 overflow-hidden transition-all">
+        <div class="relative size-12 rounded-full shrink-0 overflow-hidden transition-all">
           <img :src="user?.photoURL ?? '/images/default_user.png'" :alt="user?.displayName ?? undefined"
             class="w-full h-full object-cover hover:scale-110 transition-transform"
             referrerpolicy="no-referrer" />

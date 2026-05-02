@@ -6,9 +6,10 @@ const { sampleHabits, toggleCompletion, reorder } = useSampleHabits()
 </script>
 
 <template>
-  <section class="space-y-3 text-center w-full">
-    <h1 class="text-3xl font-bold text-primary">Your path to serenity begins here.</h1>
-    <p class="text-muted">Create your habits and start building a more mindful life.</p>
+  <section class="space-y-2 text-center w-full">
+    <img src="/images/mascot/intro_model.png" alt="Dailyz Mascot Meditate" class="w-full h-auto object-cover" />
+    <h1 class="md:text-3xl text-xl font-bold text-primary">Your path to serenity begins here.</h1>
+    <p class="text-muted md:text-lg text-sm">Create your habits for a more mindful life.</p>
   </section>
 
   <HabitList :habits="sampleHabits" :has-menu="false" @toggle="toggleCompletion" @reorder="reorder" />

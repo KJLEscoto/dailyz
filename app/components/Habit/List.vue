@@ -108,7 +108,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <ul ref="container" class="space-y-4 w-full" @pointerdown="onPointerDown" @pointerup="onPointerUp"
+  <ul ref="container" class="sm:space-y-4 space-y-3 w-full" @pointerdown="onPointerDown" @pointerup="onPointerUp"
     @pointercancel="onPointerUp">
     <li v-for="{ slotId, itemId, item: habit } in slottedItems" :key="slotId" :data-swapy-slot="slotId">
       <div :key="itemId" :data-swapy-item="itemId">
