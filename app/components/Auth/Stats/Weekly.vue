@@ -37,7 +37,7 @@ const weeklyData = computed(() => {
       return createdDate <= dateStr
     })
 
-    const completed = existingHabits.filter(h => h.completions?.includes(dateStr)).length
+    const completed = existingHabits.filter(h => h.completions?.some(c => c.date === dateStr)).length
     const total = existingHabits.length
 
     return {

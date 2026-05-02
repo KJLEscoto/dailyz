@@ -18,25 +18,16 @@ const calendarDays = computed(() => {
   return [...Array(startPadding).fill(null), ...days]
 })
 
+// CalendarSection — anywhere you check completions
 const completionDates = computed(() => {
   const set = new Set<string>()
-  props.habits.forEach(h => h.completions?.forEach(d => set.add(d)))
+  props.habits.forEach(h => h.completions?.forEach(c => set.add(c.date)))
   return set
 })
 
 // 👇 habits that existed on a given date
 const habitsOnDate = (dateStr: string) =>
   props.habits.filter(h => format(new Date(h.createdAt), 'yyyy-MM-dd') <= dateStr)
-
-const selectedDateHabits = computed(() => {
-  const dateStr = selectedDate.value
-  const existing = habitsOnDate(dateStr)
-  return {
-    completed: existing.filter(h => h.completions?.includes(dateStr)),
-    uncompleted: existing.filter(h => !h.completions?.includes(dateStr)),
-    total: existing.length,
-  }
-})
 
 const goToToday = () => {
   currentMonth.value = new Date()
@@ -51,8 +42,8 @@ const selectedDateInfo = computed(() => {
 
   return {
     isFuture,
-    completed: existing.filter(h => h.completions?.includes(dateStr)),
-    uncompleted: existing.filter(h => !h.completions?.includes(dateStr)),
+    completed: existing.filter(h => h.completions?.some(c => c.date === dateStr)),
+    uncompleted: existing.filter(h => !h.completions?.some(c => c.date === dateStr)),
     total: existing.length,
   }
 })
@@ -82,11 +73,11 @@ const hasCompletion = (date: Date) => completionDates.value.has(format(date, 'yy
       </div>
       <div class="flex items-center gap-1">
         <button @click="prevMonth"
-          class="p-1.5 rounded-xl hover:bg-primary/10 text-black/40 hover:text-primary transition-colors">
+          class="p-1.5 rounded-xl hover:bg-primary/10 text-black/40 hover:text-primary transition-colors cursor-pointer">
           <ChevronLeft class="size-4" />
         </button>
         <button @click="nextMonth"
-          class="p-1.5 rounded-xl hover:bg-primary/10 text-black/40 hover:text-primary transition-colors">
+          class="p-1.5 rounded-xl hover:bg-primary/10 text-black/40 hover:text-primary transition-colors cursor-pointer">
           <ChevronRight class="size-4" />
         </button>
       </div>
@@ -105,7 +96,7 @@ const hasCompletion = (date: Date) => completionDates.value.has(format(date, 'yy
       <div v-for="(day, i) in calendarDays" :key="i" class="flex items-center justify-center">
         <span v-if="!day" />
         <button v-else @click="selectDay(day)" :class="[
-          'relative w-8 h-8 rounded-full text-xs font-semibold transition-all flex items-center justify-center',
+          'relative w-8 h-8 rounded-full text-xs font-semibold transition-all flex items-center justify-center cursor-pointer',
           isSelected(day)
             ? 'bg-primary text-white shadow-md scale-110'
             : isToday(day)

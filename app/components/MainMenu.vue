@@ -1,6 +1,6 @@
 <!-- components/MainMenu.vue -->
 <script setup lang="ts">
-import { Settings2 } from '@lucide/vue'
+import { EllipsisVertical, Settings2 } from '@lucide/vue'
 import { ref, onMounted, onUnmounted } from 'vue'
 
 export interface MenuItem {
@@ -110,10 +110,10 @@ const handleAction = (item: MenuItem) => {
 
 <template>
   <div :class="['relative inline-flex  shrink-0', triggerClass]">
-    <button ref="triggerRef" class="cursor-pointer" @click="toggle" :aria-expanded="isOpen" aria-haspopup="true"
+    <button ref="triggerRef" class="cursor-pointer" @click="toggle" :aria-expanded="isOpen" aria-haspopup="true" 
       aria-label="Options">
       <slot name="trigger">
-        <Settings2 class="size-5 pointer-events-none text-muted" />
+        <!-- <EllipsisVertical class="hover:bg-black/5 size-4 pointer-events-none text-muted" /> -->
       </slot>
     </button>
   </div>

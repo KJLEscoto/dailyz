@@ -2,7 +2,7 @@
 <script setup lang="ts">
 import type { Habit } from '~/types/habit';
 
-const { sampleHabits, toggleCompletion, reorder } = useSampleHabits()
+const { sampleHabits, toggleCompletion } = useSampleHabits()
 </script>
 
 <template>
@@ -12,7 +12,7 @@ const { sampleHabits, toggleCompletion, reorder } = useSampleHabits()
     <p class="text-muted md:text-lg text-sm">Create your habits for a more mindful life.</p>
   </section>
 
-  <HabitList :habits="sampleHabits" :has-menu="false" @toggle="toggleCompletion" @reorder="reorder" />
+  <HabitList :habits="sampleHabits" :has-menu="false" @toggle="toggleCompletion"/>
 
   <section class="flex items-center gap-3 justify-center w-full">
     <hr class="border-muted/20 w-full" />

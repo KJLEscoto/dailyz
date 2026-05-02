@@ -12,7 +12,6 @@ export const useHabitStore = defineStore('habitStore', {
   }),
   actions: {
 
-    // helper to get the habits collection path for the current user
     getHabitsCollection() {
       const { $firebase } = useNuxtApp()
       const db = $firebase.db as Firestore
@@ -21,10 +20,9 @@ export const useHabitStore = defineStore('habitStore', {
       const uid = auth.currentUser?.uid
       if (!uid) throw new Error('User not logged in')
 
-      return collection(db, 'users', uid, 'habits') // 👈 users/{uid}/habits
+      return collection(db, 'users', uid, 'habits')
     },
 
-    // helper to get a single habit doc ref
     getHabitDoc(id: Habit['id']) {
       const { $firebase } = useNuxtApp()
       const db = $firebase.db as Firestore
@@ -33,19 +31,16 @@ export const useHabitStore = defineStore('habitStore', {
       const uid = auth.currentUser?.uid
       if (!uid) throw new Error('User not logged in')
 
-      return doc(db, 'users', uid, 'habits', id) // 👈 users/{uid}/habits/{id}
+      return doc(db, 'users', uid, 'habits', id)
     },
 
-    // fetch all habits
     async fetchHabits() {
       if (!import.meta.client) return
 
       this.loading = true
       try {
         const snapshot = await getDocs(this.getHabitsCollection())
-        this.habits = snapshot.docs
-          .map(doc => ({ id: doc.id, ...doc.data() } as Habit))
-          // .sort((a, b) => (a.order ?? 0) - (b.order ?? 0)) // 👈 sort by order
+        this.habits = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Habit))
       } catch (error) {
         console.error('fetchHabits error:', error)
       } finally {
@@ -53,11 +48,8 @@ export const useHabitStore = defineStore('habitStore', {
       }
     },
 
-    // add new habit
     async addHabit(Habit: Habit) {
       if (!import.meta.client) return
-
-      const todoCount = this.habits.filter(h => !h.completions?.length).length
 
       const habit = {
         name: Habit.name,
@@ -66,15 +58,12 @@ export const useHabitStore = defineStore('habitStore', {
         completions: [],
         color: Habit.color,
         createdAt: new Date().toISOString(),
-        orderInToDo: todoCount,
-        orderInCompleted: 0,
       }
 
       const docRef = await addDoc(this.getHabitsCollection(), habit)
       this.habits.push({ id: docRef.id, ...habit })
     },
 
-    // update habit
     async updateHabit(id: Habit['id'], updates: any) {
       const docRef = this.getHabitDoc(id)
       await updateDoc(docRef, updates)
@@ -85,7 +74,6 @@ export const useHabitStore = defineStore('habitStore', {
       }
     },
 
-    // delete habit
     async deleteHabit(id: Habit['id']) {
       if (!import.meta.client) return
 
@@ -94,58 +82,27 @@ export const useHabitStore = defineStore('habitStore', {
       this.habits = this.habits.filter((habit) => habit.id !== id)
     },
 
-    // complete a habit for today
     async toggleCompletion(habit: Habit) {
       const today = format(new Date(), 'yyyy-MM-dd')
-      const isCompletingToday = !habit.completions.includes(today)
+      const isCompletingToday = !habit.completions.some(c => c.date === today)
 
       const updatedCompletions = isCompletingToday
-        ? [...habit.completions, today]
-        : habit.completions.filter(date => date !== today)
+        ? [...habit.completions, { date: today, completedAt: new Date().toISOString() }]
+        : habit.completions.filter(c => c.date !== today)
 
       const updatedStreak = this.calculateStreak(updatedCompletions)
 
-      if (isCompletingToday) {
-        // shift all existing completed habits down by 1
-        const completedHabits = this.habits.filter(h =>
-          h.id !== habit.id && h.completions.includes(today)
-        )
-
-        // push new habit to top (orderInCompleted = 0)
-        await Promise.all([
-          // update the toggled habit
-          this.updateHabit(habit.id, {
-            completions: updatedCompletions,
-            streak: updatedStreak,
-            orderInCompleted: 0, 
-            orderInToDo: null,
-          }),
-          // shift others down
-          ...completedHabits.map((h, index) =>
-            this.updateHabit(h.id, { orderInCompleted: index + 1 })
-          ),
-        ])
-
-      } else {
-        // shift all existing todo habits up, put this one at the bottom
-        const todoHabits = this.habits.filter(h =>
-          h.id !== habit.id && !h.completions.includes(today)
-        ).sort((a, b) => (a.orderInToDo ?? 0) - (b.orderInToDo ?? 0))
-
-        await Promise.all([
-          // update the toggled habit
-          this.updateHabit(habit.id, {
-            completions: updatedCompletions,
-            streak: updatedStreak,
-            orderInToDo: todoHabits.length, 
-            orderInCompleted: null,
-          }),
-        ])
-      }
+      await this.updateHabit(habit.id, {
+        completions: updatedCompletions,
+        streak: updatedStreak,
+        uncompletedAt: isCompletingToday ? null : new Date().toISOString(), // 👈
+      })
     },
 
     calculateStreak(completions: Habit['completions']) {
-      const sortedDates = [...completions].sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
+      const sortedDates = [...completions]
+        .map(c => c.date)
+        .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
 
       let streak = 0
       let currentDate = new Date()
@@ -175,9 +132,10 @@ export const useHabitStore = defineStore('habitStore', {
           continue
         }
 
-        const sortedDates = [...habit.completions].sort((a, b) =>
-          new Date(b).getTime() - new Date(a).getTime()
-        )
+        const sortedDates = [...habit.completions]
+          .map(c => c.date)
+          .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
+
         const lastCompletion = new Date(sortedDates[0] as string)
         lastCompletion.setHours(0, 0, 0, 0)
 
@@ -193,20 +151,6 @@ export const useHabitStore = defineStore('habitStore', {
           await this.updateHabit(habit.id, { streak: recalculated })
         }
       }
-    },
-
-    async saveOrder(newOrder: string[]) {
-      newOrder.forEach((id, index) => {
-        const habit = this.habits.find(h => h.id === id)
-        if (habit) habit.orderInToDo = index
-      })
-
-      await Promise.all(
-        newOrder.map((id, index) => {
-          const docRef = this.getHabitDoc(id)
-          return updateDoc(docRef, { orderInToDo: index })
-        })
-      )
     },
   }
 })

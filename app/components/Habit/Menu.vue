@@ -1,6 +1,6 @@
 <!-- components/Habit/Menu.vue -->
 <script setup lang="ts">
-import { SquarePen, Trash } from '@lucide/vue'
+import { EllipsisVertical, SquarePen, Trash } from '@lucide/vue'
 import type { MenuItem } from '~/components/MainMenu.vue'
 
 const props = defineProps<{
@@ -20,4 +20,11 @@ const items: MenuItem[] = [
 
 <template>
   <MainMenu :items="items" :trigger-class="triggerClass" />
+  <MainMenu :items="items" :menu-width="200">
+    <template #trigger>
+      <div class="p-1.5 hover:bg-black/5 rounded-xl text-black/40 hover:text-black/80 transition-colors">
+        <EllipsisVertical class="size-4 pointer-events-none" />
+      </div>
+    </template>
+  </MainMenu>
 </template>
