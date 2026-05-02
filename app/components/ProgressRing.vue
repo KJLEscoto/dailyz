@@ -3,7 +3,9 @@
 import { LogOut, UserRound } from '@lucide/vue'
 import type { MenuItem } from '~/components/MainMenu.vue'
 
-  const props = defineProps<{
+const { photoURL } = useUserPhoto()
+
+const props = defineProps<{
   percentage: number
   completed: number
   total: number
@@ -11,6 +13,8 @@ import type { MenuItem } from '~/components/MainMenu.vue'
 
 const circumference = 2 * Math.PI * 24
 const dashOffset = ref(circumference) // 👈 start as "empty" ring
+
+const displayName = computed(() => user.value?.displayName ?? undefined)
 
 const userMenuItems: MenuItem[] = [
   { label: 'Profile', icon: UserRound, action: () => navigateTo('/profile') },
@@ -21,7 +25,8 @@ const { user, signOut } = useAuth()
 
 onMounted(() => {
   watchEffect(() => {
-    dashOffset.value = circumference * (1 - props.percentage / 100)
+    dashOffset.value = circumference * (1 - props.percentage / 100),
+    user
   })
 })
 </script>
@@ -38,7 +43,7 @@ onMounted(() => {
     <MainMenu :items="userMenuItems" :menu-width="200">
       <template #trigger>
         <div class="relative size-12 rounded-full shrink-0 overflow-hidden transition-all">
-          <img :src="user?.photoURL ?? '/images/default_user.png'" :alt="user?.displayName ?? undefined"
+          <img :src="photoURL" :alt="displayName" v-if="photoURL"
             class="w-full h-full object-cover hover:scale-110 transition-transform"
             referrerpolicy="no-referrer" />
         </div>

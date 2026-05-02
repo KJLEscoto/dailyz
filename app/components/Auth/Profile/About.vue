@@ -9,10 +9,10 @@ import { ArrowUpRight } from '@lucide/vue';
     <div class="w-2/3 md:space-y-4 space-y-3">
       <div>
         <h3 class="text-xl font-bold text-primary">Dailyz</h3>
-        <p class="text-sm text-black/40">Habit Tracker</p>
+        <p class="text-sm text-black/40">Habit Tracker - v1.0.0</p>
       </div>
       <p class="text-sm text-black/70 md:leading-relaxed">
-        Dailyz helps you build mindful daily habits, track your progress, and stay consistent — one day at a time.
+        Helps you build mindful daily habits and stay consistent — one day at a time.
       </p>
       <hr class="border-black/5" />
       <div class="flex items-center gap-1 text-xs">

@@ -8,13 +8,14 @@ export default defineNuxtPlugin({
 
     initAuth(
       async () => {
+        habitsReady.value = false
         await habitStore.fetchHabits()
         await habitStore.resetStaleStreaks()
-        habitsReady.value = true // 👈
+        habitsReady.value = true
       },
       () => {
         habitStore.habits = []
-        habitsReady.value = false // 👈
+        habitsReady.value = false
       }
     )
   }

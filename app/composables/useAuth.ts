@@ -1,55 +1,81 @@
-// app/composables/useAuth.ts
-import { signInWithPopup, signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth'
+// composables/useAuth.ts
+import { signInWithPopup, signInWithEmailAndPassword, onAuthStateChanged, updateProfile } from 'firebase/auth'
 import type { User } from 'firebase/auth'
-
-let unsubscribe: (() => void) | null = null
 
 export function useAuth() {
   const user = useState<User | null>('auth-user', () => null)
   const authReady = useState<boolean>('auth-ready', () => false)
   const habitsReady = useState<boolean>('habits-ready', () => false)
 
-  const initAuth = (onLogin?: (user: User) => void, onLogout?: () => void) => {
-    if (unsubscribe) return
-
+  const initAuth = (onLogin?: (user: User) => Promise<void>, onLogout?: () => void) => {
     const { $firebase } = useNuxtApp()
 
-    unsubscribe = onAuthStateChanged($firebase.auth, (firebaseUser) => {
+    // no cleanup needed — plugin lives for the entire app lifetime
+    onAuthStateChanged($firebase.auth, async (firebaseUser) => {
       user.value = firebaseUser
-      authReady.value = true
 
       if (firebaseUser) {
-        onLogin?.(firebaseUser)
+        await onLogin?.(firebaseUser)
       } else {
         onLogout?.()
       }
+
+      authReady.value = true
     })
   }
 
   const signInWithGoogle = async () => {
-    const { $firebase } = useNuxtApp()
-    const result = await signInWithPopup($firebase.auth, $firebase.provider)
-    user.value = result.user
+    try {
+      const { $firebase } = useNuxtApp()
+      const result = await signInWithPopup($firebase.auth, $firebase.provider)
+      const firebaseUser = result.user
 
-    const userStore = useUserStore()
-    await userStore.createUser(result.user.uid, {
-      fullName: result.user.displayName ?? '',
-      email: result.user.email ?? '',
-      photoURL: result.user.photoURL ?? '',
-      createdAt: new Date().toISOString(),
-    })
+      // 👇 fetch existing Firestore user to get original name
+      const { doc, getDoc, updateDoc } = await import('firebase/firestore')
+      const userDocRef = doc($firebase.db, 'users', firebaseUser.uid)
+      const userDoc = await getDoc(userDocRef)
 
-    const habitStore = useHabitStore()
-    await habitStore.fetchHabits()
-    await habitStore.resetStaleStreaks()
-    habitsReady.value = true
+      if (userDoc.exists()) {
+        // 👇 user already exists — preserve their original fullName
+        const existingName = userDoc.data().fullName
+        if (existingName && firebaseUser.displayName !== existingName) {
+          await updateProfile(firebaseUser, { displayName: existingName })
+        }
+      } else {
+        // 👇 new user — create with Google display name
+        await useUserStore().createUser(firebaseUser.uid, {
+          fullName: firebaseUser.displayName ?? '',
+          email: firebaseUser.email ?? '',
+          photoURL: firebaseUser.photoURL ?? '',
+          createdAt: new Date().toISOString(),
+        })
+      }
 
-    await navigateTo('/home')
+      const habitStore = useHabitStore()
+      await habitStore.fetchHabits()
+      await habitStore.resetStaleStreaks()
+      habitsReady.value = true
+
+      user.value = $firebase.auth.currentUser
+      await navigateTo('/home')
+    } catch (error: any) {
+      if (error.code === 'auth/popup-closed-by-user') return
+      console.error('Google sign in error:', error)
+    }
   }
 
   const signIn = async (email: string, password: string) => {
     try {
       const { $firebase } = useNuxtApp()
+
+      // 👇 check which providers are linked to this email
+      const { fetchSignInMethodsForEmail } = await import('firebase/auth')
+      const methods = await fetchSignInMethodsForEmail($firebase.auth, email)
+
+      if (methods.includes('google.com') && !methods.includes('password')) {
+        throw { code: 'auth/wrong-provider' }
+      }
+
       const result = await signInWithEmailAndPassword($firebase.auth, email, password)
       user.value = result.user
 

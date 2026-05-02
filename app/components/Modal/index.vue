@@ -87,12 +87,12 @@ onUnmounted(() => {
               <h2 class="text-lg font-semibold text-gray-900 leading-snug">
                 {{ title }}
               </h2>
-              <p v-if="description" class="text-sm text-gray-400 leading-relaxed">
+              <p v-if="description" class="text-sm text-muted leading-relaxed">
                 {{ description }}
               </p>
             </div>
             <button
-              class="shrink-0 size-8 rounded-xl flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all duration-150 cursor-pointer mt-0.5"
+              class="shrink-0 size-8 rounded-xl flex items-center justify-center text-muted hover:text-gray-600 hover:bg-gray-100 transition-all duration-150 cursor-pointer mt-0.5"
               @click="close" aria-label="Close">
               <X class="size-4 pointer-events-none" />
             </button>
@@ -106,7 +106,7 @@ onUnmounted(() => {
           <!-- Footer -->
           <div class="flex items-center justify-end gap-2 px-6 py-4 border-t border-black/5 shrink-0">
             <button
-              class="px-4 py-2 rounded-xl text-sm font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-all duration-150 cursor-pointer"
+              class="px-4 py-2 rounded-xl text-sm font-medium text-muted hover:text-gray-700 hover:bg-gray-100 transition-all duration-150 cursor-pointer"
               @click="close">
               {{ cancelLabel }}
             </button>

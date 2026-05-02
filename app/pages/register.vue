@@ -89,7 +89,7 @@ const handleRegister = async () => {
     <p class="text-muted">Sign up to start building your habits.</p>
   </section>
 
-  <form class="w-full bg-white rounded-4xl p-10 space-y-10 h-full shadow-lg" @submit.prevent="handleRegister">
+  <form class="w-full bg-white rounded-4xl md:p-10 p-6 space-y-10 h-full shadow-lg" @submit.prevent="handleRegister">
     <section class="space-y-6">
       <div class="space-y-5">
         <FormField v-model="fullName" label="Full Name" type="text" placeholder="Scott Skwiril" :error="fullNameError"

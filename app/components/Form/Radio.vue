@@ -33,7 +33,7 @@ const groupName = `radio-${Math.random().toString(36).slice(2, 7)}`
 
     <!-- Label -->
     <label v-if="label"
-      class="flex items-center gap-1 text-sm font-medium uppercase text-muted select-none">
+      class="flex items-center gap-1 md:text-sm text-xs font-medium uppercase text-muted select-none">
       {{ label }}
       <span v-if="required" class="text-sm leading-none text-primary">*</span>
     </label>
