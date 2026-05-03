@@ -27,7 +27,7 @@ const addHabit = () => modalAddRef.value?.addHabit()
       </section>
 
       <button @click="addHabit"
-        class="bg-primary flex items-center justify-center py-4 px-8 rounded-3xl cursor-pointer shadow-2xl self-stretch min-w-[20%] w-auto">
+        class="bg-primary flex items-center justify-center py-4 px-8 rounded-3xl cursor-pointer shadow-2xl self-stretch min-w-[20%] w-auto border border-black/40">
         <Plus class="size-6 text-white pointer-events-none shrink-0" />
       </button>
     </div>

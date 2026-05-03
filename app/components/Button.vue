@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Loader2 } from '@lucide/vue'
 import { twMerge } from 'tailwind-merge'
 
 interface Props {
@@ -72,11 +73,7 @@ const computedClass = computed(() =>
   <!-- Regular button -->
   <button v-else :type="type" :disabled="isDisabled" :class="computedClass"
     @click="!isDisabled && emit('click', $event)">
-    <svg v-if="loading" :class="['animate-spin shrink-0', spinnerSize[size]]" xmlns="http://www.w3.org/2000/svg"
-      fill="none" viewBox="0 0 24 24">
-      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-    </svg>
+    <Loader2 v-if="loading" :class="['animate-spin shrink-0 pointer-events-none', spinnerSize[size]]" />
 
     <slot v-if="!loading" name="icon-left" />
     <slot />

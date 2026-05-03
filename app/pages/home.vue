@@ -12,6 +12,11 @@ const { todoHabits, completedHabits, todoCount, completedCount } = useHabitStats
 const modalEditRef = ref()
 const activeTab = ref('todo')
 
+// --- Delete state ---
+const deleteLoading = ref(false)
+const showDeleteSuccessAlert = ref(false)
+const deletedHabitName = ref('')
+
 const tabs = computed(() => [
   { label: `To Do`, count: todoCount.value, value: 'todo' },
   { label: `Completed`, count: completedCount.value, value: 'completed' },
@@ -21,13 +26,32 @@ const editHabit = (id: Habit['id']) => {
   const habit = habits.value.find(h => h.id === id)
   if (habit) modalEditRef.value?.editHabit(habit)
 }
-const deleteHabit = (id: Habit['id']) => habitStore.deleteHabit(id)
+
+const deleteHabit = async (id: Habit['id'], habitName: string) => {
+  deleteLoading.value = true
+  deletedHabitName.value = habitName
+  try {
+    await habitStore.deleteHabit(id)
+    showDeleteSuccessAlert.value = true
+  } finally {
+    deleteLoading.value = false
+  }
+}
+
 const toggleCompletion = (habit: Habit) => habitStore.toggleCompletion(habit)
 </script>
 
 <template>
-  <div class="sm:space-y-4 space-y-3">
+  <!-- Deleting progress -->
+  <Alert type="info" title="Deleting habit..." :message="`Removing &quot;${deletedHabitName}&quot; from your list.`"
+    :visible="deleteLoading" :dismissible="false" />
 
+  <!-- Delete success -->
+  <Alert type="success" title="Habit deleted!"
+    :message="`&quot;${deletedHabitName}&quot; has been successfully removed.`" :visible="showDeleteSuccessAlert"
+    :timeout="3000" @dismiss="showDeleteSuccessAlert = false" />
+
+  <div class="sm:space-y-4 space-y-3">
     <div v-if="!todoHabits.length && !completedHabits.length"
       class="text-center justify-center flex flex-col items-center gap-6">
       <img src="/images/mascot/no_habits.png" alt="No habits for today"
@@ -56,7 +80,7 @@ const toggleCompletion = (habit: Habit) => habitStore.toggleCompletion(habit)
         </div>
 
         <HabitList v-else :has-menu="true" :habits="todoHabits" @toggle="toggleCompletion" @edit="editHabit"
-          @delete="deleteHabit" />
+          @delete="(id, name) => deleteHabit(id, name)" />
       </section>
 
       <section v-else key="completed">
@@ -72,10 +96,9 @@ const toggleCompletion = (habit: Habit) => habitStore.toggleCompletion(habit)
         </div>
 
         <HabitList :has-menu="true" :habits="completedHabits" @toggle="toggleCompletion" @edit="editHabit"
-          @delete="deleteHabit" />
+          @delete="(id, name) => deleteHabit(id, name)" />
       </section>
     </Transition>
-
   </div>
 
   <ModalEdit ref="modalEditRef" />

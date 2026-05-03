@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { X } from '@lucide/vue'
+import { X, LoaderCircle } from '@lucide/vue'
 import { onMounted, onUnmounted, watch } from 'vue'
 
 const props = withDefaults(defineProps<{
@@ -117,11 +117,7 @@ onUnmounted(() => {
                 : 'bg-primary hover:bg-primary/90 text-white',
               (primaryDisabled || primaryLoading) && 'opacity-50 cursor-not-allowed',
             ]" @click="onPrimary">
-              <svg v-if="primaryLoading" class="size-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none"
-                viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-              </svg>
+              <LoaderCircle v-if="primaryLoading" class="size-4 animate-spin pointer-events-none" />
               {{ primaryLabel }}
             </button>
           </div>

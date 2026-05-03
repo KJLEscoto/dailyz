@@ -21,7 +21,6 @@ const startCountdown = () => {
 
 const runCountdown = (until: number) => {
   if (countdownTimer) clearInterval(countdownTimer)
-
   const tick = () => {
     const remaining = Math.ceil((until - Date.now()) / 1000)
     if (remaining <= 0) {
@@ -33,8 +32,7 @@ const runCountdown = (until: number) => {
       countdown.value = remaining
     }
   }
-
-  tick() // run immediately
+  tick()
   countdownTimer = setInterval(tick, 1000)
 }
 
@@ -63,7 +61,6 @@ const sendResetPassword = async () => {
   }
 }
 
-// 👇 on mount, resume countdown if still active
 onMounted(() => {
   const stored = localStorage.getItem(RESET_COOLDOWN_KEY)
   if (stored) {
@@ -86,12 +83,11 @@ const currentPassword = ref('')
 const newPassword = ref('')
 const confirmPassword = ref('')
 const passwordError = ref('')
-const passwordSuccess = ref('')
 const passwordLoading = ref(false)
+const showPasswordSuccessAlert = ref(false) // 👈
 
 const changePassword = async () => {
   passwordError.value = ''
-  passwordSuccess.value = ''
 
   if (!currentPassword.value || !newPassword.value || !confirmPassword.value) {
     passwordError.value = 'All fields are required.'
@@ -116,10 +112,11 @@ const changePassword = async () => {
     await reauthenticateWithCredential(firebaseUser, credential)
     await updatePassword(firebaseUser, newPassword.value)
 
-    passwordSuccess.value = 'Password updated successfully.'
     currentPassword.value = ''
     newPassword.value = ''
     confirmPassword.value = ''
+    showPasswordSection.value = false
+    showPasswordSuccessAlert.value = true // 👈
   } catch (error: any) {
     if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
       passwordError.value = 'Current password is incorrect.'
@@ -133,6 +130,10 @@ const changePassword = async () => {
 </script>
 
 <template>
+  <!-- Password changed success alert -->
+  <Alert type="success" title="Password updated!" message="Your password has been changed successfully."
+    :visible="showPasswordSuccessAlert" :timeout="3000" @dismiss="showPasswordSuccessAlert = false" />
+
   <!-- Email verified — use Firebase reset password -->
   <section v-if="isEmailVerified" class="bg-white rounded-3xl p-2 flex flex-col">
     <button @click="sendResetPassword" :disabled="countdown > 0"
@@ -155,10 +156,12 @@ const changePassword = async () => {
           <Info class="size-3 pointer-events-none text-primary/70" />
           Check your spam or junk folder if you don't see it.
         </p>
-        <button v-if="countdown > 0" class="text-sm text-black/60 text-center p-2 w-full bg-muted/30 mt-2 rounded-lg cursor-not-allowed">
+        <button v-if="countdown > 0"
+          class="text-sm text-black/60 text-center p-2 w-full bg-muted/30 mt-2 rounded-lg cursor-not-allowed">
           Resend in <span class="text-primary font-bold">{{ formattedCountdown }}</span>.
         </button>
-        <button v-else @click="sendResetPassword" class="text-sm text-white text-center p-2 w-full bg-primary mt-2 rounded-lg cursor-pointer">
+        <button v-else @click="sendResetPassword"
+          class="text-sm text-white text-center p-2 w-full bg-primary mt-2 rounded-lg cursor-pointer">
           Resend Again
         </button>
         <p v-if="resetError" class="text-sm text-red-400 mt-1">{{ resetError }}</p>
@@ -183,9 +186,8 @@ const changePassword = async () => {
         <FormField v-model="confirmPassword" type="password" placeholder="Confirm new password" />
 
         <p v-if="passwordError" class="text-sm text-red-400 px-1">{{ passwordError }}</p>
-        <p v-if="passwordSuccess" class="text-sm text-green-500 px-1">{{ passwordSuccess }}</p>
 
-        <Button @click="changePassword" :disabled="passwordLoading">
+        <Button @click="changePassword" :disabled="passwordLoading" :loading="passwordLoading">
           {{ passwordLoading ? 'Updating...' : 'Update Password' }}
         </Button>
       </div>

@@ -19,7 +19,6 @@ const items: MenuItem[] = [
 </script>
 
 <template>
-  <MainMenu :items="items" :trigger-class="triggerClass" />
   <MainMenu :items="items" :menu-width="200">
     <template #trigger>
       <div class="p-1.5 hover:bg-black/5 rounded-xl text-black/40 hover:text-black/80 transition-colors">

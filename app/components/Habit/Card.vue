@@ -1,6 +1,5 @@
-<!-- components/Habit/Card.vue -->
 <script setup lang="ts">
-import { Check } from '@lucide/vue';
+import { Check, Loader2, LoaderCircle } from '@lucide/vue';
 import type { Habit } from '~/types/habit'
 import { format } from 'date-fns'
 
@@ -12,10 +11,13 @@ const props = defineProps<{
 const emit = defineEmits<{
   toggle: [habit: Habit]
   edit: [id: Habit['id']]
-  delete: [id: Habit['id']]
+  delete: [id: Habit['id'], name: string]
 }>()
 
+const habitStore = useHabitStore()
 const today = format(new Date(), 'yyyy-MM-dd')
+const showDeleteAlert = ref(false)
+const toggleLoading = ref(false) // 👈
 
 const isCompletedToday = computed(() =>
   props.habit.completions?.some(c =>
@@ -29,8 +31,8 @@ const streakStarted = computed(() => {
   }
 
   const sorted = [...props.habit.completions]
-    .map(c => typeof c === 'string' ? c : c.date) // 👈 handle both formats
-    .filter(Boolean) // 👈 guard against undefined
+    .map(c => typeof c === 'string' ? c : c.date)
+    .filter(Boolean)
     .sort((a, b) => b.localeCompare(a))
 
   if (!sorted.length) return 'Complete to start a streak'
@@ -40,7 +42,6 @@ const streakStarted = computed(() => {
     const current = new Date(sorted[i]!)
     const next = new Date(sorted[i + 1]!)
     const diffDays = (current.getTime() - next.getTime()) / (1000 * 60 * 60 * 24)
-
     if (diffDays === 1) {
       streakStart = sorted[i + 1]!
     } else {
@@ -50,25 +51,58 @@ const streakStarted = computed(() => {
 
   return 'Streak since ' + format(new Date(streakStart), 'MMM d')
 })
+
+const handleToggle = async () => {
+  if (toggleLoading.value) return
+  toggleLoading.value = true
+  try {
+    await habitStore.toggleCompletion(props.habit)
+  } finally {
+    toggleLoading.value = false
+  }
+}
+
+const confirmDelete = () => {
+  showDeleteAlert.value = false
+  emit('delete', props.habit.id, props.habit.name)
+}
 </script>
 
 <template>
+  <Alert type="danger" title="Delete this habit?"
+    :message="`&quot;${habit.name}&quot; will be permanently removed along with all its history.`"
+    :visible="showDeleteAlert" :actions="[
+      { label: 'No, Cancel', onClick: () => showDeleteAlert = false },
+      { label: 'Yes, Delete it.', onClick: confirmDelete }
+    ]" @dismiss="showDeleteAlert = false" />
+
   <main :class="[
     'w-full h-auto rounded-3xl! flex items-center justify-center relative p-6 gap-4 border border-transparent hover:border-black/10 transition-all duration-200 select-none',
     isCompletedToday ? 'bg-[#f1f1f1]' : 'bg-white',
   ]">
     <div class="w-full">
       <section class="flex items-center gap-4">
-        <section
-          class="ring-2 ring-black/5 rounded-full! size-12 flex items-center shrink-0 justify-center cursor-pointer transition-all duration-200 hover:ring-primary/40 hover:bg-primary/10"
-          @click="emit('toggle', habit)">
-          <div v-if="isCompletedToday"
+
+        <!-- Toggle button -->
+        <section :class="[
+          'ring-2 ring-black/5 rounded-full! size-12 flex items-center shrink-0 justify-center transition-all duration-200',
+          toggleLoading ? 'cursor-not-allowed opacity-70' : 'cursor-pointer hover:ring-primary/40 hover:bg-primary/10'
+        ]" @click="handleToggle">
+
+          <!-- Loading spinner -->
+          <Loader2 v-if="toggleLoading"
+            class="size-6 text-primary pointer-events-none animate-spin" />
+
+          <!-- Completed -->
+          <div v-else-if="isCompletedToday"
             class="ring-4 ring-primary rounded-full! size-9 flex items-center justify-center bg-primary">
             <Check class="size-8 text-white" />
           </div>
         </section>
+
         <section :class="['space-y-1', isCompletedToday ? 'opacity-50' : 'opacity-100']">
-          <h2 :class="['text-xl font-semibold', isCompletedToday ? 'line-through' : '']">
+          <h2
+            :class="['sm:text-xl text-base font-semibold leading-5 line-clamp-2', isCompletedToday ? 'line-through' : '']">
             {{ habit.name }}
           </h2>
           <div class="flex items-center gap-2">
@@ -91,7 +125,7 @@ const streakStarted = computed(() => {
         </button>
       </Tooltip>
       <HabitMenu v-if="hasMenu !== false" trigger-class="shrink-0" @edit="emit('edit', habit.id)"
-        @delete="emit('delete', habit.id)" />
+        @delete="showDeleteAlert = true" />
     </div>
   </main>
 </template>

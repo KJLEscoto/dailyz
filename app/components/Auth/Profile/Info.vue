@@ -184,23 +184,22 @@ const saveName = async () => {
             <div class="w-full justify-between gap-4 flex items-center">
               <Tooltip text="Verify your email to avoid losing your habits." position="top">
                 <p class="text-xs bg-muted w-fit rounded-full text-white flex items-center gap-1 px-3 py-1 select-none">
-                  <!-- <X class="size-3" /> -->
                   Unverified
                 </p>
               </Tooltip>
               <Button size="sm" @click="sendVerification" :disabled="verifyLoading || verifySent">
                 <LoaderCircle v-if="verifyLoading" class="size-3 animate-spin" />
-                <span v-else-if="verifySent">Email sent!</span>
+                <span v-else-if="verifySent">Resend</span>
                 <span v-else>Verify Now</span>
               </Button>
             </div>
 
-            <!-- Sent state -->
-            <p v-if="verifySent" class="text-xs text-black/40">
-              Check your inbox and click the verification link. This page will update automatically.
-            </p>
+            <!-- Sent alert -->
+            <Alert toast type="info" title="Verification email sent!"
+              message="We sent a verification link to your email. Please check your inbox or spam folder." :timeout="5000"
+              :visible="verifySent" @dismiss="verifySent = false" />
 
-            <p v-if="verifyError" class="text-xs text-red-400">{{ verifyError }}</p>
+            <Alert toast type="danger" title="Error Occured!" :message="verifyError" :visible="!!verifyError" @dismiss="verifyError = ''" :timeout="5000" />
           </div>
         </span>
       </div>

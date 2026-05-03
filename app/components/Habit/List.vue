@@ -10,7 +10,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   toggle: [habit: Habit]
   edit: [id: Habit['id']]
-  delete: [id: Habit['id']]
+  delete: [id: Habit['id'], name: string]
 }>()
 </script>
 
@@ -18,7 +18,7 @@ const emit = defineEmits<{
   <ul class="sm:space-y-4 space-y-3 w-full">
     <li v-for="habit in props.habits" :key="habit.id">
       <HabitCard :has-menu="props.hasMenu !== false" :habit="habit" @toggle="emit('toggle', $event)"
-        @edit="emit('edit', $event)" @delete="emit('delete', $event)" />
+        @edit="emit('edit', $event)" @delete="(id, name) => emit('delete', id, name)" />
     </li>
   </ul>
 </template>

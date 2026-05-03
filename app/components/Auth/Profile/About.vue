@@ -1,9 +1,9 @@
+<!-- components/Profile/About.vue -->
 <script setup lang="ts">
 import { ArrowUpRight } from '@lucide/vue';
 
 </script>
 
-<!-- components/Profile/About.vue -->
 <template>
   <section class="bg-white rounded-3xl p-6 relative overflow-hidden">
     <div class="w-2/3 md:space-y-4 space-y-3">
@@ -23,6 +23,6 @@ import { ArrowUpRight } from '@lucide/vue';
       </div>
     </div>
 
-    <img src="/images/mascot/about_model.png" alt="App preview" class="absolute bottom-0 sm:right-4 -right-20 sm:w-40 w-52 h-auto pointer-events-none" />
+    <img src="/images/mascot/about_model.png" alt="App preview" class="absolute -bottom-2 sm:right-4 -right-20 sm:w-40 w-52 h-auto pointer-events-none" />
   </section>
 </template>
