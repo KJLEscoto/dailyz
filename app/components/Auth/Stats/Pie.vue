@@ -90,6 +90,7 @@ const slices = computed<PieSlice[]>(() => {
 </script>
 
 <template>
+  <ClientOnly>
   <section class="bg-white rounded-3xl md:p-6 p-4 flex flex-col gap-2 h-full relative overflow-hidden">
     <img class="shrink-0 absolute bottom-0 -right-5 w-auto md:h-32 h-40" src="/images/mascot/crop_donut_model.png"
       alt="Donut Model" />
@@ -138,4 +139,20 @@ const slices = computed<PieSlice[]>(() => {
       <p class="text-sm text-black/50">No habits yet. Add some!</p>
     </div>
   </section>
+
+  <template #fallback>
+      <section class="bg-white rounded-3xl md:p-6 p-4 flex flex-col gap-4 h-full">
+        <Skeleton height="1rem" width="40%" />
+        <div class="flex flex-col items-center gap-4">
+          <Skeleton width="200px" height="200px" rounded="9999px" />
+          <div class="flex flex-col gap-2 w-full">
+            <div v-for="i in 4" :key="i" class="flex items-center gap-2">
+              <Skeleton width="1rem" height="1rem" rounded="9999px" />
+              <Skeleton height="0.875rem" :width="`${40 + (i * 13) % 30}%`" />
+            </div>
+          </div>
+        </div>
+      </section>
+    </template>
+  </ClientOnly>
 </template>

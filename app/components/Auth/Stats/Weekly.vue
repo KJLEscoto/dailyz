@@ -52,26 +52,40 @@ const weeklyData = computed(() => {
 </script>
 
 <template>
-  <section class="bg-white rounded-3xl md:p-6 p-4 flex flex-col gap-3 justify-between h-full w-full">
-    <p class="text-sm font-semibold text-black/60">Weekly Completion</p>
-    <div ref="chartRef" class="flex items-end justify-between gap-1 h-20">
-      <div v-for="(day, index) in weeklyData" :key="day.day"
-        class="flex flex-col items-center gap-1 flex-1 relative group cursor-pointer" @mouseenter="hoveredDay = index"
-        @mouseleave="hoveredDay = null" @click="toggleSelected(index)">
-        <!-- Tooltip -->
-        <div v-if="isActive(index)"
-          class="absolute top-5 left-1/2 -translate-x-1/2 bg-white text-primary shadow text-[10px] font-semibold px-2 py-1 rounded-lg whitespace-nowrap z-10">
-          {{ day.percentage }}%
-        </div>
+  <ClientOnly>
+    <section class="bg-white rounded-3xl md:p-6 p-4 flex flex-col gap-3 justify-between h-full w-full">
+      <p class="text-sm font-semibold text-black/60">Weekly Completion</p>
+      <div ref="chartRef" class="flex items-end justify-between gap-1 h-20">
+        <div v-for="(day, index) in weeklyData" :key="day.day"
+          class="flex flex-col items-center gap-1 flex-1 relative group cursor-pointer" @mouseenter="hoveredDay = index"
+          @mouseleave="hoveredDay = null" @click="toggleSelected(index)">
+          <!-- Tooltip -->
+          <div v-if="isActive(index)"
+            class="absolute top-5 left-1/2 -translate-x-1/2 bg-white text-primary shadow text-[10px] font-semibold px-2 py-1 rounded-lg whitespace-nowrap z-10">
+            {{ day.percentage }}%
+          </div>
 
-        <div class="w-full rounded-t-md relative flex items-end bg-primary/5" style="height: 64px">
-          <div class="w-full rounded-t-md transition-all duration-500"
-            :class="day.isToday ? 'bg-primary' : 'bg-primary/20'" :style="{ height: `${day.percentage}%` }" />
+          <div class="w-full rounded-t-md relative flex items-end bg-primary/5" style="height: 64px">
+            <div class="w-full rounded-t-md transition-all duration-500"
+              :class="day.isToday ? 'bg-primary' : 'bg-primary/20'" :style="{ height: `${day.percentage}%` }" />
+          </div>
+          <span class="text-xs font-semibold" :class="day.isToday ? 'text-primary font-bold' : 'text-black/30'">
+            {{ day.day }}
+          </span>
         </div>
-        <span class="text-xs font-semibold" :class="day.isToday ? 'text-primary font-bold' : 'text-black/30'">
-          {{ day.day }}
-        </span>
       </div>
-    </div>
-  </section>
+    </section>
+
+    <template #fallback>
+      <section class="bg-white rounded-3xl md:p-6 p-4 flex flex-col gap-3 h-full w-full">
+        <Skeleton height="1rem" width="50%" />
+        <div class="flex items-end justify-between gap-1 h-20">
+          <div v-for="i in 7" :key="i" class="flex flex-col items-center gap-1 flex-1">
+            <Skeleton :height="`${30 + (i * 11) % 50}px`" rounded="0.25rem" />
+            <Skeleton height="0.75rem" width="1rem" />
+          </div>
+        </div>
+      </section>
+    </template>
+  </ClientOnly>
 </template>

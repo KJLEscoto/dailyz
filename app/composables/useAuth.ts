@@ -64,6 +64,8 @@ export function useAuth() {
     }
   }
 
+  const signOutSuccess = useState<boolean>('sign-out-success', () => false)
+
   const signIn = async (email: string, password: string) => {
     try {
       const { $firebase } = useNuxtApp()
@@ -99,5 +101,5 @@ export function useAuth() {
     await navigateTo('/')
   }
 
-  return { user, authReady, habitsReady, initAuth, signIn, signInWithGoogle, signOut }
+  return { user, authReady, habitsReady, initAuth, signIn, signInWithGoogle, signOut, signOutSuccess }
 }

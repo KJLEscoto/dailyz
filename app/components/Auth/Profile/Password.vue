@@ -130,6 +130,8 @@ const changePassword = async () => {
 </script>
 
 <template>
+  <ClientOnly>
+
   <!-- Password changed success alert -->
   <Alert type="success" title="Password updated!" message="Your password has been changed successfully."
     :visible="showPasswordSuccessAlert" :timeout="3000" @dismiss="showPasswordSuccessAlert = false" />
@@ -157,11 +159,11 @@ const changePassword = async () => {
           Check your spam or junk folder if you don't see it.
         </p>
         <button v-if="countdown > 0"
-          class="text-sm text-black/60 text-center p-2 w-full bg-muted/30 mt-2 rounded-lg cursor-not-allowed">
+          class="text-sm text-black/60 text-center p-2 w-full bg-muted/30 mt-2 rounded-xl cursor-not-allowed">
           Resend in <span class="text-primary font-bold">{{ formattedCountdown }}</span>.
         </button>
         <button v-else @click="sendResetPassword"
-          class="text-sm text-white text-center p-2 w-full bg-primary mt-2 rounded-lg cursor-pointer">
+          class="text-sm text-white text-center p-2 w-full bg-primary mt-2 rounded-xl cursor-pointer">
           Resend Again
         </button>
         <p v-if="resetError" class="text-sm text-red-400 mt-1">{{ resetError }}</p>
@@ -193,4 +195,15 @@ const changePassword = async () => {
       </div>
     </Transition>
   </section>
+
+    <template #fallback>
+      <section class="bg-white rounded-3xl p-2 flex flex-col gap-1">
+        <div class="flex items-center gap-3 px-4 py-3">
+          <Skeleton width="1rem" height="1rem" rounded="9999px" />
+          <Skeleton height="1rem" width="40%" />
+          <Skeleton height="1rem" width="10%" class="ml-auto" />
+        </div>
+      </section>
+    </template>
+  </ClientOnly>
 </template>

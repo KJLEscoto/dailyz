@@ -11,14 +11,14 @@ const siteIcon = "/images/Icon.png";
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
-  devtools: { enabled: true },
+  devtools: { enabled: false },
   css: ['./app/assets/css/main.css'],
   vite: {
     plugins: [
       tailwindcss(),
     ],
   },
-  modules: ["@nuxt/fonts", 'kinwebb-attribute', '@pinia/nuxt'],
+  modules: ["@nuxt/fonts", 'kinwebb-attribute', '@pinia/nuxt', ],
   fonts: {
     families: [
       {

@@ -56,6 +56,7 @@ const hasCompletion = (date: Date) => completionDates.value.has(format(date, 'yy
 </script>
 
 <template>
+  <ClientOnly>
   <section class="bg-white rounded-3xl md:p-6 p-4 flex flex-col gap-4">
     <!-- Header -->
     <div class="flex items-center justify-between">
@@ -148,4 +149,31 @@ const hasCompletion = (date: Date) => completionDates.value.has(format(date, 'yy
       </div>
     </Transition>
   </section>
+
+  <template #fallback>
+    <section class="bg-white rounded-3xl md:p-6 p-4 flex flex-col gap-4">
+      <!-- header -->
+      <div class="flex items-center justify-between">
+        <Skeleton height="1rem" width="30%" />
+        <div class="flex gap-1">
+          <Skeleton width="2rem" height="2rem" rounded="0.75rem" />
+          <Skeleton width="2rem" height="2rem" rounded="0.75rem" />
+        </div>
+      </div>
+
+      <!-- day labels -->
+      <div class="grid grid-cols-7 gap-1">
+        <Skeleton v-for="i in 7" :key="i" height="1rem" rounded="0.25rem" />
+      </div>
+
+      <!-- days grid -->
+      <div class="grid grid-cols-7 gap-1">
+        <Skeleton v-for="i in 35" :key="i" width="2rem" height="2rem" rounded="9999px" />
+      </div>
+
+      <!-- selected day -->
+      <Skeleton height="6rem" rounded="1rem" />
+    </section>
+  </template>
+  </ClientOnly>
 </template>
