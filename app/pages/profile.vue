@@ -12,5 +12,6 @@ definePageMeta({ layout: 'auth' })
     <AuthProfilePassword />
     <AuthProfileOptions />
     <AuthProfileAbout />
+    <AuthProfileDeleteAccount />
   </div>
 </template>

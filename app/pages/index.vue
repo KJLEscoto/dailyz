@@ -3,6 +3,7 @@
 const { sampleHabits, toggleCompletion } = useSampleHabits()
 const habitStore = useHabitStore()
 const signOutSuccess = useState<boolean>('sign-out-success', () => false)
+const deleteAccountSuccess = useState<boolean>('delete-account-success', () => false)
 
 // 👈 patch the store's toggleCompletion for guest mode
 const originalToggle = habitStore.toggleCompletion
@@ -26,6 +27,10 @@ onUnmounted(() => {
 <template>
   <Alert type="success" title="Signed out!" message="You have been successfully signed out." :visible="signOutSuccess"
     :timeout="3000" @dismiss="signOutSuccess = false" />
+
+  <!-- Reset success -->
+  <Alert type="success" title="Account deleted!" message="Your account is not accessible anymore."
+    :visible="deleteAccountSuccess" :timeout="3000" @dismiss="deleteAccountSuccess = false" />
 
   <section class="space-y-2 text-center w-full">
     <img src="/images/mascot/intro_model.png" alt="Dailyz Mascot Meditate" class="w-full h-auto object-cover" />
