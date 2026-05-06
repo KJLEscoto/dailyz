@@ -9,15 +9,15 @@ export default defineNuxtPlugin({
   name: 'firebase',  // 👈 only addition
   async setup() {
     const config = useRuntimeConfig()
-
+    
     const firebaseConfig = {
-      apiKey: config.public.firebaseApiKey as string,
-      authDomain: config.public.firebaseAuthDomain as string,
-      projectId: config.public.firebaseProjectId as string,
-      storageBucket: config.public.firebaseStorageBucket as string,
-      messagingSenderId: config.public.firebaseMessagingSenderId as string,
-      appId: config.public.firebaseAppId as string,
-      measurementId: config.public.firebaseMeasurementId as string,
+      apiKey: config.public.firebaseApiKey,
+      authDomain: config.public.firebaseAuthDomain,
+      projectId: config.public.firebaseProjectId,
+      storageBucket: config.public.firebaseStorageBucket,
+      messagingSenderId: config.public.firebaseMessagingSenderId,
+      appId: config.public.firebaseAppId,
+      measurementId: config.public.firebaseMeasurementId,
     }
 
     const app = initializeApp(firebaseConfig)
