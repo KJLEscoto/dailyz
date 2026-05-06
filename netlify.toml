@@ -1,6 +1,4 @@
-[build]
-  command = "yarn build"
-  publish = ".output/public"
+# netlify.toml
 
 [[redirects]]
   from = "/__/auth/*"
@@ -13,8 +11,3 @@
   to = "https://dailyz-a3b19.firebaseapp.com/__/firebase/:splat"
   status = 200
   force = true
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
