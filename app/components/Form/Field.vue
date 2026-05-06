@@ -27,7 +27,8 @@ const emit = defineEmits<{
   focus: [event: FocusEvent]
 }>()
 
-const inputId = props.id ?? `input-${Math.random().toString(36).slice(2, 7)}`
+const generatedId = useId()
+const inputId = computed(() => props.id ?? generatedId)
 const isFocused = ref(false)
 const showPassword = ref(false)
 

@@ -2,9 +2,11 @@
 export default defineNuxtPlugin({
   name: 'auth',
   dependsOn: ['firebase'],
-  setup() {
-    const { initAuth, habitsReady } = useAuth()
+  async setup() {
+    const { initAuth, habitsReady, handleRedirectResult } = useAuth()
     const habitStore = useHabitStore()
+
+    await handleRedirectResult()
 
     initAuth(
       async () => {

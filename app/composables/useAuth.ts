@@ -1,6 +1,13 @@
 // composables/useAuth.ts
-import { signInWithPopup, signInWithEmailAndPassword, onAuthStateChanged, updateProfile } from 'firebase/auth'
+import { signInWithPopup, signInWithRedirect, getRedirectResult, signInWithEmailAndPassword, onAuthStateChanged, updateProfile } from 'firebase/auth'
 import type { User } from 'firebase/auth'
+
+// 👇 detect mobile/webview where popups don't work
+const isMobileOrWebview = () => {
+  if (import.meta.server) return false
+  const ua = navigator.userAgent
+  return /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(ua)
+}
 
 export function useAuth() {
   const user = useState<User | null>('auth-user', () => null)
@@ -10,7 +17,6 @@ export function useAuth() {
   const initAuth = (onLogin?: (user: User) => Promise<void>, onLogout?: () => void) => {
     const { $firebase } = useNuxtApp()
 
-    // no cleanup needed — plugin lives for the entire app lifetime
     onAuthStateChanged($firebase.auth, async (firebaseUser) => {
       user.value = firebaseUser
 
@@ -24,40 +30,59 @@ export function useAuth() {
     })
   }
 
+  const processGoogleUser = async (firebaseUser: User) => {
+    const { $firebase } = useNuxtApp()
+    const { doc, getDoc } = await import('firebase/firestore')
+    const userDocRef = doc($firebase.db, 'users', firebaseUser.uid)
+    const userDoc = await getDoc(userDocRef)
+
+    if (userDoc.exists()) {
+      const existingName = userDoc.data().fullName
+      if (existingName && firebaseUser.displayName !== existingName) {
+        await updateProfile(firebaseUser, { displayName: existingName })
+      }
+    } else {
+      await useUserStore().createUser(firebaseUser.uid, {
+        fullName: firebaseUser.displayName ?? '',
+        email: firebaseUser.email ?? '',
+        photoURL: firebaseUser.photoURL ?? '',
+        createdAt: new Date().toISOString(),
+      })
+    }
+
+    const habitStore = useHabitStore()
+    await habitStore.fetchHabits()
+    await habitStore.resetStaleStreaks()
+    habitsReady.value = true
+    user.value = $firebase.auth.currentUser
+  }
+
+  const handleRedirectResult = async () => {
+    try {
+      const { $firebase } = useNuxtApp()
+      const result = await getRedirectResult($firebase.auth)
+      if (!result) return
+
+      await processGoogleUser(result.user)
+      window.location.replace('/home') // 👈 hard nav to bypass middleware race
+    } catch (error: any) {
+      console.error('Google redirect result error:', error)
+    }
+  }
+
   const signInWithGoogle = async () => {
     try {
       const { $firebase } = useNuxtApp()
-      const result = await signInWithPopup($firebase.auth, $firebase.provider)
-      const firebaseUser = result.user
 
-      // 👇 fetch existing Firestore user to get original name
-      const { doc, getDoc, updateDoc } = await import('firebase/firestore')
-      const userDocRef = doc($firebase.db, 'users', firebaseUser.uid)
-      const userDoc = await getDoc(userDocRef)
-
-      if (userDoc.exists()) {
-        // 👇 user already exists — preserve their original fullName
-        const existingName = userDoc.data().fullName
-        if (existingName && firebaseUser.displayName !== existingName) {
-          await updateProfile(firebaseUser, { displayName: existingName })
-        }
+      if (isMobileOrWebview()) {
+        // 👇 mobile — use redirect
+        await signInWithRedirect($firebase.auth, $firebase.provider)
       } else {
-        // 👇 new user — create with Google display name
-        await useUserStore().createUser(firebaseUser.uid, {
-          fullName: firebaseUser.displayName ?? '',
-          email: firebaseUser.email ?? '',
-          photoURL: firebaseUser.photoURL ?? '',
-          createdAt: new Date().toISOString(),
-        })
+        // 👇 desktop — use popup
+        const result = await signInWithPopup($firebase.auth, $firebase.provider)
+        await processGoogleUser(result.user)
+        await navigateTo('/home')
       }
-
-      const habitStore = useHabitStore()
-      await habitStore.fetchHabits()
-      await habitStore.resetStaleStreaks()
-      habitsReady.value = true
-
-      user.value = $firebase.auth.currentUser
-      await navigateTo('/home')
     } catch (error: any) {
       if (error.code === 'auth/popup-closed-by-user') return
       console.error('Google sign in error:', error)
@@ -70,7 +95,6 @@ export function useAuth() {
     try {
       const { $firebase } = useNuxtApp()
 
-      // 👇 check which providers are linked to this email
       const { fetchSignInMethodsForEmail } = await import('firebase/auth')
       const methods = await fetchSignInMethodsForEmail($firebase.auth, email)
 
@@ -101,5 +125,5 @@ export function useAuth() {
     await navigateTo('/')
   }
 
-  return { user, authReady, habitsReady, initAuth, signIn, signInWithGoogle, signOut, signOutSuccess }
+  return { user, authReady, habitsReady, initAuth, signIn, signInWithGoogle, signOut, signOutSuccess, handleRedirectResult }
 }
