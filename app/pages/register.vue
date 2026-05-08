@@ -21,9 +21,13 @@ const showGoogleUnavailable = ref(false)
 const isAnyLoading = computed(() => isLoading.value || isGoogleLoading.value)
 
 const handleGoogleSignUp = async () => {
+  // TODO: Re-enable when Google Sign-Up is available
+  showGoogleUnavailable.value = true
+  return
+
   isGoogleLoading.value = true
   try {
-    await signUpWithGoogle() // 👈 swap
+    await signUpWithGoogle()
   } catch (error: any) {
     if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') return
 
@@ -34,8 +38,8 @@ const handleGoogleSignUp = async () => {
 
       await navigateTo({
         path: '/login',
-        query: { email: error.customData?.email ?? '', error: 'existing' }
-      })
+        state: { email: error.customData?.email ?? '', error: 'existing' }
+      }, { replace: true })
       return
     }
 
