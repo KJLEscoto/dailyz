@@ -5,7 +5,8 @@ import type { MenuItem } from '~/components/MainMenu.vue'
 
 const { photoURL } = useUserPhoto()
 const { user } = useAuth()
-const { handleSignOut, signOutLoading, countdown, cancelSignOut } = useSignOut() // 👈 added missing
+const { handleSignOut } = useSignOut()
+
 
 const props = defineProps<{
   percentage: number
@@ -31,11 +32,6 @@ onMounted(() => {
 </script>
 
 <template>
-  <!-- Sign out countdown -->
-  <Alert type="danger" title="Signing out..."
-    :message="`You will be signed out in ${countdown} second${countdown === 1 ? '' : 's'}.`" :visible="signOutLoading"
-    :dismissible="false" :actions="[{ label: 'No, Stay Logged In', onClick: cancelSignOut }]" />
-
   <section class="rounded-full size-16 flex items-center justify-center select-none relative shrink-0">
     <svg class="absolute inset-0 -rotate-90" viewBox="0 0 56 56" fill="none">
       <circle cx="28" cy="28" r="24" stroke="var(--color-foreground)" stroke-width="4" stroke-opacity="0.1" />

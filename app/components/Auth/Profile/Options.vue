@@ -2,10 +2,9 @@
 <script setup lang="ts">
 import { LogOut, RotateCcw } from '@lucide/vue'
 
+const { handleSignOut } = useSignOut()
 const habitStore = useHabitStore()
-const { signOutLoading, countdown, handleSignOut, cancelSignOut } = useSignOut()
 
-// --- Reset state ---
 const resetLoading = ref(false)
 const showResetConfirm = ref(false)
 const showResetSuccess = ref(false)
@@ -28,11 +27,6 @@ const cancelReset = () => { showResetConfirm.value = false }
 
 <template>
   <ClientOnly>
-    <!-- Sign out countdown -->
-    <Alert type="danger" title="Signing out..."
-      :message="`You will be signed out in ${countdown} second${countdown === 1 ? '' : 's'}.`" :visible="signOutLoading"
-      :dismissible="false" :actions="[{ label: 'No, Stay Logged In', onClick: cancelSignOut }]" />
-
     <!-- Reset confirm -->
     <Alert type="danger" title="Reset all habits?"
       message="This will permanently delete all your habit records. This cannot be undone." :visible="showResetConfirm"

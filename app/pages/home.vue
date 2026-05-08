@@ -1,5 +1,6 @@
 <!-- pages/home.vue -->
 <script setup lang="ts">
+import { Clock } from '@lucide/vue'
 import type { Habit } from '~/types/habit'
 
 definePageMeta({ layout: 'auth' })
@@ -8,6 +9,7 @@ const habitStore = useHabitStore()
 const habits = computed(() => habitStore.habits)
 
 const { todoHabits, completedHabits, todoCount, completedCount } = useHabitStats(habits)
+const { timeLeft } = useDayCountdown()
 
 const modalEditRef = ref()
 const activeTab = ref('todo')
@@ -69,7 +71,7 @@ const toggleCompletion = (habit: Habit) => habitStore.toggleCompletion(habit)
       <Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0 translate-y-1"
         leave-active-class="transition duration-150 ease-in" leave-to-class="opacity-0 translate-y-1" mode="out-in">
 
-        <section v-if="activeTab === 'todo'" key="todo">
+        <section v-if="activeTab === 'todo'" key="todo" class="sm:space-y-4 space-y-3">
           <div v-if="!todoHabits.length && completedHabits.length"
             class="text-center justify-center flex flex-col items-center gap-6">
             <img src="/images/mascot/no_todo.png" alt="No habits for today"
@@ -77,6 +79,12 @@ const toggleCompletion = (habit: Habit) => habitStore.toggleCompletion(habit)
             <section class="space-y-2">
               <h1 class="md:text-3xl text-xl font-bold text-primary">No more habits for now!</h1>
               <p class="text-muted md:text-lg text-sm">Take a rest or add more habits later.</p>
+              <div class="select-none flex items-center mt-5! gap-1 justify-center rounded-xl text-sm text-muted" >
+                <Clock class="size-4 pointer-events-none" />
+                <span>
+                  Habits reset in <span class="font-semibold tabular-nums">{{ timeLeft }}</span>
+                </span>
+              </div>
             </section>
           </div>
 
@@ -92,8 +100,7 @@ const toggleCompletion = (habit: Habit) => habitStore.toggleCompletion(habit)
             <section class="space-y-2">
               <h1 class="md:text-3xl text-xl font-bold text-primary">You haven't completed any habits.</h1>
               <p class="text-muted md:text-lg text-sm">Complete a habit from <span class="font-bold">"To Do"</span> to
-                see
-                them here.</p>
+                see them here.</p>
             </section>
           </div>
 

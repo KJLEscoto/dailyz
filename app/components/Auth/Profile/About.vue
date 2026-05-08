@@ -9,8 +9,11 @@ import { ArrowUpRight } from '@lucide/vue';
 
     <section class="bg-white rounded-3xl p-6 relative overflow-hidden">
       <div class="w-2/3 md:space-y-4 space-y-3">
-        <div>
-          <h3 class="text-xl font-bold text-primary">Dailyz</h3>
+        <div class="space-y-1">
+          <div class="flex items-center gap-2">
+            <h3 class="text-xl font-bold text-primary">Dailyz</h3>
+            <p class="px-2 py-0.5 rounded-full border border-primary/20 text-xs font-bold text-primary bg-primary/10 select-none">BETA</p>
+          </div>
           <p class="text-sm text-black/40">Habit Tracker - v1.0.0</p>
         </div>
         <p class="text-sm text-black/70 md:leading-relaxed">
