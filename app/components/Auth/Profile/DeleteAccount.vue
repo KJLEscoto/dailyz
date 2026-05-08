@@ -97,7 +97,7 @@ onUnmounted(() => {
     </Modal>
 
     <button @click="confirmDeleteAccount"
-      class="flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-red-900 hover:bg-red-700 transition-all duration-100 ease-in cursor-pointer w-full text-white active:scale-95">
+      class="flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-red-700 hover:bg-red-600 transition-all duration-100 ease-in cursor-pointer w-full text-white">
       <Trash2 class="size-4 pointer-events-none" />
       <span class="text-sm font-medium">Delete My Account</span>
     </button>

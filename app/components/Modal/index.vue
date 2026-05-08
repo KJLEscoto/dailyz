@@ -1,3 +1,4 @@
+<!-- components/Modal/index.vue -->
 <script setup lang="ts">
 import { X, LoaderCircle } from '@lucide/vue'
 import { onMounted, onUnmounted, watch } from 'vue'

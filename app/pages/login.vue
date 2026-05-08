@@ -10,6 +10,7 @@ const password = ref('')
 const passwordError = ref('')
 const isLoading = ref(false)
 const isGoogleLoading = ref(false)
+const showForgotPassword = ref(false)
 
 const isAnyLoading = computed(() => isLoading.value || isGoogleLoading.value)
 
@@ -226,17 +227,14 @@ const handleLogin = async () => {
 
         <div class="flex items-center justify-between">
           <button type="button" :disabled="isLoading"
+            @click="showForgotPassword = true"
             class="text-sm text-primary cursor-pointer w-fit hover:underline disabled:opacity-50 disabled:cursor-not-allowed">
             Forgot Password?
           </button>
-          <!-- <Transition enter-active-class="transition duration-200" enter-from-class="opacity-0">
-            <p v-if="attemptsLeft < MAX_ATTEMPTS && !isLockedOut && emailAddress.trim()"
-              :class="['text-xs font-medium', attemptsLeft === 1 ? 'text-red-400' : 'text-orange-400']">
-              {{ attemptsLeft }} attempt{{ attemptsLeft === 1 ? '' : 's' }} left
-            </p>
-          </Transition> -->
         </div>
       </div>
+
+      <ModalForgotPassword v-model="showForgotPassword" />
 
       <Button type="submit" size="lg" block :disabled="isLoading || isLockedOut">
         <p>{{ isLoading ? 'Signing in...' : 'Sign In' }}</p>

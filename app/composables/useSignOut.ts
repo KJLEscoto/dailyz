@@ -4,7 +4,7 @@ export const useSignOut = () => {
 
   const signOutLoading = ref(false)
   const signOutCancelled = ref(false)
-  const countdown = ref(4)
+  const countdown = ref(2)
   let signOutTimer: ReturnType<typeof setTimeout> | null = null
   let countdownTimer: ReturnType<typeof setInterval> | null = null
 
@@ -13,7 +13,7 @@ export const useSignOut = () => {
   const handleSignOut = () => {
     signOutLoading.value = true
     signOutCancelled.value = false
-    countdown.value = 4
+    countdown.value = 2
 
     countdownTimer = setInterval(() => {
       countdown.value--
@@ -31,7 +31,7 @@ export const useSignOut = () => {
       } finally {
         signOutLoading.value = false
       }
-    }, 4000)
+    }, 2000)
   }
 
   const cancelSignOut = () => {
@@ -39,7 +39,7 @@ export const useSignOut = () => {
     if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null }
     signOutCancelled.value = true
     signOutLoading.value = false
-    countdown.value = 4
+    countdown.value = 2
   }
 
   onUnmounted(() => {

@@ -1,5 +1,5 @@
 // composables/useAuth.ts
-import { signInWithPopup, signInWithRedirect, getRedirectResult, signInWithEmailAndPassword, onAuthStateChanged, updateProfile } from 'firebase/auth'
+import { signInWithPopup, signInWithRedirect, getRedirectResult, signInWithEmailAndPassword, onAuthStateChanged, updateProfile, sendPasswordResetEmail } from 'firebase/auth'
 import type { User } from 'firebase/auth'
 
 // 👇 detect mobile/webview where popups don't work
@@ -125,5 +125,12 @@ export function useAuth() {
     await navigateTo('/')
   }
 
-  return { user, authReady, habitsReady, initAuth, signIn, signInWithGoogle, signOut, signOutSuccess, handleRedirectResult }
+    // inside useAuth():
+  const sendPasswordReset = async (email: string) => {
+    const { $firebase } = useNuxtApp()
+    const auth = $firebase.auth
+    await sendPasswordResetEmail(auth, email)
+  }
+
+  return { user, authReady, habitsReady, initAuth, signIn, signInWithGoogle, signOut, signOutSuccess, handleRedirectResult, sendPasswordReset }
 }
