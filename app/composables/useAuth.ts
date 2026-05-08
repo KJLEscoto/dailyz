@@ -1,5 +1,5 @@
 // composables/useAuth.ts
-import { signInWithPopup, signInWithRedirect, getRedirectResult, signInWithEmailAndPassword, onAuthStateChanged, updateProfile, sendPasswordResetEmail } from 'firebase/auth'
+import { signInWithPopup, signInWithRedirect, getRedirectResult, signInWithEmailAndPassword, onAuthStateChanged, updateProfile, sendPasswordResetEmail, linkWithCredential, EmailAuthProvider } from 'firebase/auth'
 import type { User } from 'firebase/auth'
 
 // 👇 detect mobile/webview where popups don't work
@@ -30,13 +30,43 @@ export function useAuth() {
     })
   }
 
-  const processGoogleUser = async (firebaseUser: User) => {
+  const linkPassword = async (password: string) => {
+    const { $firebase } = useNuxtApp()
+    const currentUser = $firebase.auth.currentUser
+    if (!currentUser || !currentUser.email) throw new Error('No authenticated user')
+
+    const credential = EmailAuthProvider.credential(currentUser.email, password)
+    await linkWithCredential(currentUser, credential)
+
+    // Write Firestore doc
+    await useUserStore().createUser(currentUser.uid, {
+      fullName: currentUser.displayName ?? '',
+      email: currentUser.email ?? '',
+      photoURL: currentUser.photoURL ?? '',
+      createdAt: new Date().toISOString(),
+    })
+
+    // ✅ Reload the user so providerData reflects the new password link
+    await currentUser.reload()
+    user.value = $firebase.auth.currentUser
+
+    const habitStore = useHabitStore()
+    await habitStore.fetchHabits()
+    await habitStore.resetStaleStreaks()
+    habitsReady.value = true
+  }
+
+  const processGoogleUser = async (firebaseUser: User, { allowExisting = true } = {}) => {
     const { $firebase } = useNuxtApp()
     const { doc, getDoc } = await import('firebase/firestore')
     const userDocRef = doc($firebase.db, 'users', firebaseUser.uid)
     const userDoc = await getDoc(userDocRef)
 
     if (userDoc.exists()) {
+      if (!allowExisting) {
+        // 👇 existing account — throw so register page can redirect
+        throw { code: 'auth/email-already-in-use', customData: { email: firebaseUser.email } }
+      }
       const existingName = userDoc.data().fullName
       if (existingName && firebaseUser.displayName !== existingName) {
         await updateProfile(firebaseUser, { displayName: existingName })
@@ -70,6 +100,36 @@ export function useAuth() {
     }
   }
 
+  const signUpWithGoogle = async () => {
+    const { $firebase } = useNuxtApp()
+
+    if (isMobileOrWebview()) {
+      await signInWithRedirect($firebase.auth, $firebase.provider)
+      return
+    }
+
+    const result = await signInWithPopup($firebase.auth, $firebase.provider)
+    
+    // Check if already existing (has Firestore doc)
+    const { doc, getDoc } = await import('firebase/firestore')
+    const userDocRef = doc($firebase.db, 'users', result.user.uid)
+    const userDoc = await getDoc(userDocRef)
+
+    if (userDoc.exists()) {
+      // Existing user tried to register — sign them out and redirect
+      await $firebase.auth.signOut()
+      await navigateTo({
+        path: '/login',
+        state: { email: result.user.email ?? '', error: 'existing' }
+      }, { replace: true })
+      return
+    }
+
+    // New user — don't write to Firestore yet, go to setup
+    user.value = result.user
+    await navigateTo('/setup-password')
+  }
+
   const signInWithGoogle = async () => {
     try {
       const { $firebase } = useNuxtApp()
@@ -98,9 +158,9 @@ export function useAuth() {
       const { fetchSignInMethodsForEmail } = await import('firebase/auth')
       const methods = await fetchSignInMethodsForEmail($firebase.auth, email)
 
-      if (methods.includes('google.com') && !methods.includes('password')) {
-        throw { code: 'auth/wrong-provider' }
-      }
+      // if (methods.includes('google.com') && !methods.includes('password')) {
+      //   throw { code: 'auth/wrong-provider' }
+      // }
 
       const result = await signInWithEmailAndPassword($firebase.auth, email, password)
       user.value = result.user
@@ -132,5 +192,5 @@ export function useAuth() {
     await sendPasswordResetEmail(auth, email)
   }
 
-  return { user, authReady, habitsReady, initAuth, signIn, signInWithGoogle, signOut, signOutSuccess, handleRedirectResult, sendPasswordReset }
+  return { user, authReady, habitsReady, initAuth, signIn, signInWithGoogle, signOut, signOutSuccess, handleRedirectResult, sendPasswordReset, signUpWithGoogle, linkPassword }
 }

@@ -4,13 +4,15 @@ import { Info } from '@lucide/vue'
 
 const { signIn, signInWithGoogle } = useAuth()
 
-const emailAddress = ref('')
-const emailError = ref('')
+const state = import.meta.client ? history.state : {}
+const emailAddress = ref((state?.email as string) ?? '')
+const emailError = ref(state?.error === 'existing' ? 'This account already exists. Please sign in instead.' : '')
 const password = ref('')
 const passwordError = ref('')
 const isLoading = ref(false)
 const isGoogleLoading = ref(false)
 const showForgotPassword = ref(false)
+const showGoogleUnavailable = ref(false)
 
 const isAnyLoading = computed(() => isLoading.value || isGoogleLoading.value)
 
@@ -97,7 +99,6 @@ const resetAttempts = (email: string) => {
   lockoutCountdown.value = 0
 }
 
-// 👇 watch email field changes to update lockout state
 watch(emailAddress, (val) => {
   if (lockoutTimer) {
     clearInterval(lockoutTimer)
@@ -112,16 +113,18 @@ onUnmounted(() => {
   if (lockoutTimer) clearInterval(lockoutTimer)
 })
 
+// TODO: Re-enable when Google Sign-In is available
 const handleGoogleLogin = async () => {
-  isGoogleLoading.value = true
-  try {
-    await signInWithGoogle()
-  } catch (error: any) {
-    if (error.code === 'auth/popup-closed-by-user') return
-    console.error('Google sign in error:', error)
-  } finally {
-    isGoogleLoading.value = false
-  }
+  showGoogleUnavailable.value = true
+  // isGoogleLoading.value = true
+  // try {
+  //   await signInWithGoogle()
+  // } catch (error: any) {
+  //   if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') return
+  //   console.error('Google sign in error:', error)
+  // } finally {
+  //   isGoogleLoading.value = false
+  // }
 }
 
 const handleLogin = async () => {
@@ -139,13 +142,12 @@ const handleLogin = async () => {
   }
   if (hasError) return
 
-  // 👇 check lockout for this specific email
   if (checkEmailLockout(emailAddress.value)) return
 
   isLoading.value = true
   try {
     await signIn(emailAddress.value, password.value)
-    resetAttempts(emailAddress.value) // 👈 clear on success
+    resetAttempts(emailAddress.value)
   } catch (error: any) {
     if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
       recordFailedAttempt(emailAddress.value)
@@ -178,6 +180,10 @@ const handleLogin = async () => {
 </script>
 
 <template>
+  <!-- Google unavailable alert -->
+  <Alert type="danger" title="Under Maintenance!" message="Please sign in with your email and password instead."
+    :visible="showGoogleUnavailable" :timeout="5000" @dismiss="showGoogleUnavailable = false" />
+
   <section class="text-center space-y-3">
     <h1 class="text-4xl font-bold text-primary">Welcome back!</h1>
     <p class="text-muted">Sign in to continue building your habits.</p>
@@ -186,7 +192,7 @@ const handleLogin = async () => {
   <form class="w-full bg-white rounded-4xl md:p-10 p-6 space-y-10 h-full shadow-lg" @submit.prevent="handleLogin">
 
     <!-- Google Sign In -->
-    <button @click="handleGoogleLogin" type="button" :disabled="isGoogleLoading" class="w-full h-auto py-3 px-10 shrink-0 bg-muted/10 rounded-2xl flex items-center justify-center gap-3
+    <button @click="handleGoogleLogin" type="button" :disabled="isAnyLoading" class="w-full h-auto py-3 px-10 shrink-0 bg-muted/10 rounded-2xl flex items-center justify-center gap-3
       cursor-pointer hover:bg-muted/20 transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed">
       <img v-if="!isGoogleLoading" src="/images/webp/google.webp" alt="Sign in with Google" class="size-6" />
       <div v-else class="size-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
@@ -202,6 +208,7 @@ const handleLogin = async () => {
 
     <!-- Email & Password -->
     <section class="space-y-6">
+
       <!-- Lockout banner -->
       <Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0 -translate-y-1"
         leave-active-class="transition duration-150 ease-in" leave-to-class="opacity-0 -translate-y-1">
@@ -215,29 +222,26 @@ const handleLogin = async () => {
 
       <div class="space-y-5">
         <FormField v-model="emailAddress" label="email address" type="email" placeholder="hello@example.com"
-          :error="emailError" :disabled="isLoading" required />
+          :error="emailError" :disabled="isAnyLoading" required />
         <FormField v-model="password" label="password" type="password" placeholder="••••••••"
-          :disabled="isLoading || isLockedOut" required />
+          :disabled="isAnyLoading || isLockedOut" required />
 
-          <!-- 👇 separate error with bold support -->
+        <!-- password error with bold support -->
         <p v-if="passwordError" class="flex items-center gap-1 text-xs text-red-400 -mt-3">
           <Info class="size-3 shrink-0" />
           <span v-html="passwordError" />
         </p>
 
-        <div class="flex items-center justify-between">
-          <button type="button" :disabled="isLoading"
-            @click="showForgotPassword = true"
-            class="text-sm text-primary cursor-pointer w-fit hover:underline disabled:opacity-50 disabled:cursor-not-allowed">
-            Forgot Password?
-          </button>
-        </div>
+        <button type="button" :disabled="isAnyLoading" @click="showForgotPassword = true"
+          class="text-sm text-primary cursor-pointer w-fit hover:underline disabled:opacity-50 disabled:cursor-not-allowed">
+          Forgot Password?
+        </button>
       </div>
 
       <ModalForgotPassword v-model="showForgotPassword" />
 
-      <Button type="submit" size="lg" block :disabled="isLoading || isLockedOut">
-        <p>{{ isLoading ? 'Signing in...' : 'Sign In' }}</p>
+      <Button type="submit" size="lg" block :disabled="isAnyLoading || isLockedOut">
+        <p>{{ isLoading ? 'Signing in...' : isGoogleLoading ? 'Signing In...' : 'Sign In' }}</p>
       </Button>
 
       <p class="text-sm text-muted text-center">
