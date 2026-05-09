@@ -37,6 +37,10 @@ export const useHabitStore = defineStore('habitStore', {
     async fetchHabits() {
       if (!import.meta.client) return
 
+      const { $firebase } = useNuxtApp()
+      const uid = ($firebase.auth as Auth).currentUser?.uid
+      if (!uid) return // 👈 no user yet, skip silently
+
       this.loading = true
       try {
         const snapshot = await getDocs(this.getHabitsCollection())

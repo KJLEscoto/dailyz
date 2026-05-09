@@ -38,17 +38,18 @@ export function useAuth() {
     const credential = EmailAuthProvider.credential(currentUser.email, password)
     await linkWithCredential(currentUser, credential)
 
-    // Write Firestore doc
+    // ✅ Reload + force token refresh BEFORE any Firestore writes
+    await currentUser.reload()
+    await currentUser.getIdToken(true) // 👈 ensures Firestore sees the updated auth token
+    user.value = $firebase.auth.currentUser
+
+    // Now safe to write to Firestore
     await useUserStore().createUser(currentUser.uid, {
       fullName: currentUser.displayName ?? '',
       email: currentUser.email ?? '',
       photoURL: currentUser.photoURL ?? '',
       createdAt: new Date().toISOString(),
     })
-
-    // ✅ Reload the user so providerData reflects the new password link
-    await currentUser.reload()
-    user.value = $firebase.auth.currentUser
 
     const habitStore = useHabitStore()
     await habitStore.fetchHabits()
@@ -109,7 +110,7 @@ export function useAuth() {
     }
 
     const result = await signInWithPopup($firebase.auth, $firebase.provider)
-    
+
     // Check if already existing (has Firestore doc)
     const { doc, getDoc } = await import('firebase/firestore')
     const userDocRef = doc($firebase.db, 'users', result.user.uid)
@@ -185,7 +186,6 @@ export function useAuth() {
     await navigateTo('/')
   }
 
-    // inside useAuth():
   const sendPasswordReset = async (email: string) => {
     const { $firebase } = useNuxtApp()
     const auth = $firebase.auth
