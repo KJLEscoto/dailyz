@@ -19,22 +19,22 @@ export default defineNuxtConfig({
     ],
   },
   modules: ["@nuxt/fonts", 'kinwebb-attribute', '@pinia/nuxt', ],
-  fonts: {
-    families: [
-      {
-        name: "Roboto Condensed",
-        provider: "google",
-        weights: [100, 200, 300, 400, 500, 600, 700, 800, 900],
-        styles: ["normal"],
-      },
-      {
-        name: "Hanken Grotesk",
-        provider: "google",
-        weights: [100, 200, 300, 400, 500, 600, 700, 800, 900],
-        styles: ["normal"],
-      },
-    ],
-  },
+  // fonts: {
+  //   families: [
+  //     {
+  //       name: "Nunito",
+  //       provider: "google",
+  //       weights: [200, 300, 400, 500, 600, 700, 800, 900, 1000],
+  //       styles: ["normal"],
+  //     },
+  //     {
+  //       name: "Hanken Grotesk",
+  //       provider: "google",
+  //       weights: [100, 200, 300, 400, 500, 600, 700, 800, 900],
+  //       styles: ["normal"],
+  //     },
+  //   ],
+  // },
   app: {
     head: {
       title: siteTitle,

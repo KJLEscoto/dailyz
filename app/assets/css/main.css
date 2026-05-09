@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  --font-primary: "Hanken Grotesk", "sans-serif";
+  --font-primary: "Cause", "sans-serif";
   /* --font-secondary: "Roboto Condensed", "sans-serif"; */
   --color-primary: #c87235;
   --color-black: #131313;

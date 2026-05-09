@@ -6,12 +6,7 @@ const props = defineProps<{
   habits: Habit[]
 }>()
 
-const TIME_CONFIG: Record<string, { label: string; emoji: string; color: string }> = {
-  morning: { label: 'Morning', emoji: '☀️', color: '#FFFEED' },
-  afternoon: { label: 'Afternoon', emoji: '⛅', color: '#FFD5AD' },
-  evening: { label: 'Evening', emoji: '🌙', color: '#AABACC' },
-  anytime: { label: 'Anytime', emoji: '☁️', color: '#F1F1F1' },
-}
+const TIME_CONFIG = useTimeConfig()
 
 const segments = computed(() => {
   const groups: Record<string, { count: number }> = {}
@@ -26,7 +21,8 @@ const segments = computed(() => {
   return Object.entries(groups).map(([time, data]) => ({
     time,
     count: data.count,
-    color: TIME_CONFIG[time]?.color ?? '#F1F1F1', // 👈 static color
+    bg: TIME_CONFIG[time]?.bg ?? '#F1F1F1',        // 👈 for pie fill
+    color: TIME_CONFIG[time]?.color ?? '#4A4A4A',  // 👈 for text
     label: TIME_CONFIG[time]?.label ?? time,
     emoji: TIME_CONFIG[time]?.emoji ?? '🕐',
     percentage: total === 0 ? 0 : (data.count / total) * 100,
@@ -38,6 +34,7 @@ const SIZE = 200
 const CENTER = SIZE / 2
 const RADIUS = 80
 const GAP_DEGREES = 1.5
+const showBlocks = ref(false)
 
 interface PieSlice {
   time: string
@@ -91,56 +88,65 @@ const slices = computed<PieSlice[]>(() => {
 
 <template>
   <ClientOnly>
-  <section class="bg-white rounded-3xl md:p-6 p-4 flex flex-col gap-2 h-full relative overflow-hidden">
-    <img class="shrink-0 absolute bottom-0 -right-5 w-auto md:h-32 h-40" src="/images/mascot/crop_donut_model.png"
-      alt="Donut Model" />
+    <section class="bg-white rounded-3xl md:p-6 p-4 flex flex-col gap-2 h-full relative overflow-hidden">
+      <img class="shrink-0 absolute -bottom-2 -right-6 w-auto md:h-48 h-52" src="/images/mascot/pie_model.png"
+        alt="Donut Model" />
 
-    <p class="text-sm font-semibold text-black/60">
-      <span v-if="habits.length">Total of {{ habits.length }} habits</span>
-      <span v-else>0 habit</span>
-    </p>
+      <p class="text-sm font-semibold text-black/60">
+        <span v-if="habits.length">Total of {{ habits.length }} habits</span>
+        <span v-else>0 habit</span>
+      </p>
 
-    <div v-if="habits.length" class="flex flex-col items-center gap-4">
-      <!-- Pie SVG -->
-      <div class="relative flex flex-col items-center md:scale-100 scale-125">
-        <svg :width="SIZE" :height="SIZE" :viewBox="`0 0 ${SIZE} ${SIZE}`">
-          <!-- Gradient defs -->
-          <defs>
-            <radialGradient v-for="slice in slices" :key="`grad-${slice.time}`" :id="`grad-${slice.time}`" cx="50%"
-              cy="50%" r="50%" fx="50%" fy="50%">
-              <stop offset="0%" :stop-color="slice.color" stop-opacity="0.4" />
-              <stop offset="100%" :stop-color="slice.color" stop-opacity="1" />
-            </radialGradient>
-          </defs>
+      <div v-if="habits.length" class="flex flex-col items-center gap-4">
+        <!-- Pie SVG -->
+        <div
+          class="relative flex flex-col items-center md:scale-100 scale-125 cursor-pointer md:hover:scale-105 hover:scale-120 duration-300 md:active:scale-100 active:scale-115"
+          @click="showBlocks = true">
 
-          <g v-for="slice in slices" :key="slice.time" class="select-none">
-            <path :d="slice.path" :fill="`url(#grad-${slice.time})`" class="transition-all duration-500" />
-            <text :x="slice.emojiX" :y="slice.emojiY + 5" text-anchor="middle" dominant-baseline="middle"
-              font-size="14">{{ slice.emoji }}</text>
-            <text :x="slice.labelX" :y="slice.labelY + 4" text-anchor="middle" dominant-baseline="middle" font-size="12"
-              font-weight="bold" fill="#1a1a1a">{{ slice.count }}</text>
-          </g>
-        </svg>
+          <svg :width="SIZE" :height="SIZE" :viewBox="`0 0 ${SIZE} ${SIZE}`">
+            <!-- Gradient defs -->
+            <defs>
+              <radialGradient v-for="slice in slices" :key="`grad-${slice.time}`" :id="`grad-${slice.time}`" cx="50%"
+                cy="50%" r="50%" fx="50%" fy="50%">
+                <stop offset="0%" :stop-color="TIME_CONFIG[slice.time]?.bg" stop-opacity="0.4" />
+                <stop offset="100%" :stop-color="TIME_CONFIG[slice.time]?.bg" stop-opacity="1" />
+              </radialGradient>
+            </defs>
 
-        <!-- Total below chart -->
-        <!-- <p class="text-sm font-bold text-black/70 -mt-2">{{ habits.length }} habits</p> -->
-      </div>
+            <g v-for="slice in slices" :key="slice.time" class="select-none">
+              <path :d="slice.path" :fill="`url(#grad-${slice.time})`" class="transition-all duration-500" />
+              <text :x="slice.emojiX" :y="slice.emojiY + 5" text-anchor="middle" dominant-baseline="middle"
+                font-size="14" fill="currentColor">{{ slice.emoji }}</text>
+              <text :x="slice.labelX" :y="slice.labelY + 4" text-anchor="middle" dominant-baseline="middle"
+                font-size="12" font-weight="bold" :fill="TIME_CONFIG[slice.time]?.color ?? '#4A4A4A'">{{ slice.count
+                }}</text>
+            </g>
+          </svg>
 
-      <!-- Legend -->
-      <div class="flex flex-col gap-1 w-full">
-        <div v-for="seg in segments" :key="seg.time" class="flex items-center gap-2">
-          <span class="text-sm">{{ TIME_CONFIG[seg.time]?.emoji }}</span>
-          <span class="text-sm text-black/60">{{ seg.label }}</span>
+          <!-- Total below chart -->
+          <!-- <p class="text-sm font-bold text-black/70 -mt-2">{{ habits.length }} habits</p> -->
+        </div>
+
+        <!-- Legend -->
+        <div class="flex flex-col gap-1 w-full">
+          <div v-for="seg in segments" :key="seg.time" class="flex items-center gap-2">
+            <span class="text-sm">{{ TIME_CONFIG[seg.time]?.emoji }}</span>
+            <span class="text-sm font-medium" :style="{ color: TIME_CONFIG[seg.time]?.color }">
+              {{ seg.label }}
+            </span>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div v-else class="rounded-xl px-4 py-6 bg-foreground">
-      <p class="text-sm text-black/50">No habits yet. Add some!</p>
-    </div>
-  </section>
+      <div v-else class="rounded-xl px-4 py-6 bg-foreground">
+        <p class="text-sm text-black/50">No habits yet. Add some!</p>
+      </div>
 
-  <template #fallback>
+      <ModalHabitBlocks v-model="showBlocks" :habits="habits" />
+
+    </section>
+
+    <template #fallback>
       <section class="bg-white rounded-3xl md:p-6 p-4 flex flex-col gap-4 h-full">
         <Skeleton height="1rem" width="40%" />
         <div class="flex flex-col items-center gap-4">
