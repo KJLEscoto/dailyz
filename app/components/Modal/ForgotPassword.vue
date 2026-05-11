@@ -77,13 +77,14 @@ const handleSubmit = async () => {
         <div class="space-y-1">
           <p class="font-medium text-gray-800">Reset link sent!</p>
           <p class="text-sm text-muted leading-relaxed">
-            We sent a password reset link to
-            <span class="font-semibold text-gray-700">{{ email }}</span>.
-            Check your spam folder if you don't see it.
+            If <span class="font-semibold text-gray-700">{{ email }}</span> is registered,
+            you'll receive a reset link shortly. Check your spam folder if you don't see it.
           </p>
         </div>
       </div>
     </Transition>
+
+    <!-- 4621 + 175 + 480 saved so far 1586 -->
 
     <!-- Form state -->
     <Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0"

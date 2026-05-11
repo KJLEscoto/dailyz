@@ -11,6 +11,10 @@ const today = startOfDay(new Date())
 
 const getDate = (c: any): string => typeof c === 'string' ? c : c?.date ?? ''
 
+const activeDays = computed(() =>
+  days.value.filter(d => !d.isFuture && d.completed > 0).length
+)
+
 // --- Year filtering ---
 const availableYears = computed(() => {
   const currentYear = getYear(today)
@@ -126,7 +130,7 @@ const ROW_LABELS: Record<number, string> = { 1: 'Mon', 3: 'Wed', 5: 'Fri' }
     <section class="bg-white rounded-3xl md:p-6 p-4 flex flex-col gap-4 h-full w-full">
       <!-- Header -->
       <div class="flex items-center justify-between">
-        <p class="text-sm font-semibold text-black/60">Habits Committed</p>
+        <p class="text-sm font-semibold text-black/60">Daily Commits</p>
 
         <!-- Year filter via MainMenu -->
         <MainMenu :items="yearMenuItems" :menu-width="120">
@@ -173,8 +177,8 @@ const ROW_LABELS: Record<number, string> = { 1: 'Mon', 3: 'Wed', 5: 'Fri' }
                     <!-- Real past/today cell -->
                     <Tooltip v-if="day.dateStr && !day.isFuture"
                       :text="day.total === 0
-                        ? `No habits on ${format(new Date(day.dateStr), 'MMM d')}`
-                        : `${day.completed} of ${day.total} habit${day.total !== 1 ? 's' : ''} on ${format(new Date(day.dateStr), 'MMM d')}`" position="top">
+                        ? `0 habits on ${format(new Date(day.dateStr), 'MMM d')}`
+                        : `${day.completed}/${day.total} habit${day.total !== 1 ? 's' : ''} on ${format(new Date(day.dateStr), 'MMM d')}`" position="top">
                       <div
                         :class="['rounded-sm transition-all duration-200 cursor-default', getColor(day.ratio, false)]"
                         style="width: 12px; height: 12px" />
@@ -182,7 +186,7 @@ const ROW_LABELS: Record<number, string> = { 1: 'Mon', 3: 'Wed', 5: 'Fri' }
 
                     <!-- Future cell -->
                     <Tooltip v-else-if="day.dateStr && day.isFuture"
-                      :text="`No habits on ${format(new Date(day.dateStr), 'MMM d')}`" position="top">
+                      :text="`0 habits on ${format(new Date(day.dateStr), 'MMM d')}`" position="top">
                       <div
                         :class="['rounded-sm cursor-default transition-all duration-200', getColor(day.ratio, true)]"
                         style="width: 12px; height: 12px" />
@@ -199,14 +203,22 @@ const ROW_LABELS: Record<number, string> = { 1: 'Mon', 3: 'Wed', 5: 'Fri' }
       </div>
 
       <!-- Legend -->
-      <div class="flex items-center gap-1.5 justify-end">
-        <span class="text-xs text-black/40">Less</span>
-        <div class="bg-black/5 rounded-sm" style="width: 12px; height: 12px" />
-        <div class="bg-primary/20 rounded-sm" style="width: 12px; height: 12px" />
-        <div class="bg-primary/40 rounded-sm" style="width: 12px; height: 12px" />
-        <div class="bg-primary/70 rounded-sm" style="width: 12px; height: 12px" />
-        <div class="bg-primary rounded-sm" style="width: 12px; height: 12px" />
-        <span class="text-xs text-black/40">More</span>
+      <div class="flex items-center justify-between w-full">
+        <section>
+          <p class="text-xs text-black/40">
+            <span class="font-semibold text-black/60">{{ activeDays }}</span>
+            day{{ activeDays !== 1 ? 's' : '' }} active
+          </p>
+        </section>
+        <section class="flex items-center gap-1 justify-end">
+          <span class="text-xs text-black/40">Less</span>
+          <div class="bg-black/5 rounded-sm" style="width: 12px; height: 12px" />
+          <div class="bg-primary/20 rounded-sm" style="width: 12px; height: 12px" />
+          <div class="bg-primary/40 rounded-sm" style="width: 12px; height: 12px" />
+          <div class="bg-primary/70 rounded-sm" style="width: 12px; height: 12px" />
+          <div class="bg-primary rounded-sm" style="width: 12px; height: 12px" />
+          <span class="text-xs text-black/40">More</span>
+        </section>
       </div>
     </section>
 
