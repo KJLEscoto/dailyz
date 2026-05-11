@@ -7,7 +7,10 @@ interface AlertAction {
   onClick: () => void
 }
 
+defineOptions({ inheritAttrs: false })
+
 interface Props {
+  toast?: boolean
   type?: 'success' | 'danger' | 'info'
   title?: string
   message: string

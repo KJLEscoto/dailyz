@@ -26,8 +26,8 @@ const blocks = computed(() => {
 </script>
 
 <template>
-  <Modal v-model="modelValue" title="Habit breakdown" primary-label="Free Fall" cancel-label="Close"
-    description="Drag the blocks around to explore your habits." @primary="fallKey++" @cancel="modelValue = false">
+  <Modal v-model="modelValue" title="Habit Blocks" primary-label="Free Fall" cancel-label="Close"
+    description="Drag it and play around your habits." @primary="fallKey++" @cancel="modelValue = false">
     <HabitBlockCanvas :key="fallKey" :blocks="blocks" :open="modelValue" />
   </Modal>
 </template>

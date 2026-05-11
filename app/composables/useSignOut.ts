@@ -1,10 +1,17 @@
 // composables/useSignOut.ts
-export const useSignOut = () => {
+interface UseSignOutReturn {
+  signOutLoading: Ref<boolean>
+  countdown: Ref<number>
+  handleSignOut: () => void
+  cancelSignOut: () => void
+}
+
+export const useSignOut = (): UseSignOutReturn => {
   const { signOut } = useAuth()
 
   const signOutLoading = ref(false)
   const signOutCancelled = ref(false)
-  const countdown = ref(2)
+  const countdown = ref(3)
   let signOutTimer: ReturnType<typeof setTimeout> | null = null
   let countdownTimer: ReturnType<typeof setInterval> | null = null
 
@@ -13,7 +20,7 @@ export const useSignOut = () => {
   const handleSignOut = () => {
     signOutLoading.value = true
     signOutCancelled.value = false
-    countdown.value = 2
+    countdown.value = 3
 
     countdownTimer = setInterval(() => {
       countdown.value--
@@ -31,7 +38,7 @@ export const useSignOut = () => {
       } finally {
         signOutLoading.value = false
       }
-    }, 2000)
+    }, 3000)
   }
 
   const cancelSignOut = () => {
@@ -39,7 +46,7 @@ export const useSignOut = () => {
     if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null }
     signOutCancelled.value = true
     signOutLoading.value = false
-    countdown.value = 2
+    countdown.value = 3
   }
 
   onUnmounted(() => {
