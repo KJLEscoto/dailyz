@@ -356,7 +356,7 @@ const endDrag = () => {
 </script>
 
 <template>
-  <div ref="containerRef" class="relative w-full select-none touch-none rounded-2xl scrollbar-none"
+  <div ref="containerRef" class="relative w-full select-none touch-none rounded-2xl  !scrollbar-none"
     style="height: 320px; background: var(--color-background-secondary);" @mousemove="onMove" @mouseup="endDrag"
     @mouseleave="endDrag" @touchmove.prevent="onMove" @touchend="endDrag">
     <template v-for="(block, i) in blocks" :key="block.time">
