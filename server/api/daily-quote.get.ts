@@ -1,33 +1,28 @@
 // server/api/daily-quote.get.ts
-const KEYWORDS = [
-  'discipline', 'routine', 'consistent', 'consistency', 'habit', 'habits',
-  'motivation', 'progress', 'daily', 'focus', 'persist', 'effort',
-  'work', 'improve', 'goal', 'action', 'commit', 'dedicated', 'growth',
-]
-
-function matchesKeywords(quote: string): boolean {
-  const lower = quote.toLowerCase()
-  return KEYWORDS.some(kw => lower.includes(kw))
-}
-
 export default defineEventHandler(async () => {
-  const data = await $fetch<Array<{ q: string; a: string }>>(
-    'https://zenquotes.io/api/quotes' // returns 50 quotes at once
-  )
+  try {
+    const data = await $fetch<{ content: string; author: string }>(
+      'https://api.quotable.io/random?tags=inspirational|success|motivation',
+      { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Dailyz/1.0)' } }
+    )
 
-  if (!data || data.length === 0) {
-    throw createError({ statusCode: 502, message: 'No quotes returned from ZenQuotes' })
-  }
+    return {
+      quote: data.content,
+      author: data.author,
+    }
+  } catch (err) {
+    console.error('[daily-quote] Failed to fetch:', err)
 
-  // Filter by keywords, fall back to full list if nothing matches
-  const filtered = data.filter(item => matchesKeywords(item.q))
-  const pool = filtered.length > 0 ? filtered : data
+    // fallback so the app never breaks
+    const FALLBACK = [
+      { quote: 'We are what we repeatedly do. Excellence, then, is not an act, but a habit.', author: 'Aristotle' },
+      { quote: 'Success is the sum of small efforts repeated day in and day out.', author: 'Robert Collier' },
+      { quote: 'Motivation is what gets you started. Habit is what keeps you going.', author: 'Jim Ryun' },
+      { quote: 'The secret of your future is hidden in your daily routine.', author: 'Mike Murdock' },
+      { quote: 'You do not rise to the level of your goals, you fall to the level of your systems.', author: 'James Clear' },
+    ]
 
-  // Pick a random one from the pool
-  const picked = pool[Math.floor(Math.random() * pool.length)]
-
-  return {
-    quote:  picked?.q,
-    author: picked?.a,
+    const picked = FALLBACK[Math.floor(Math.random() * FALLBACK.length)]
+    return { quote: picked?.quote, author: picked?.author }
   }
 })

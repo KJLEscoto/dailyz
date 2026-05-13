@@ -18,7 +18,7 @@ const { quote, author, loading, error } = $dailyQuote
 
       <!-- Error -->
       <div v-else-if="error" class="text-danger">
-        Failed to load quote. Please try again later.
+        Failed to load quote for today.
       </div>
 
       <!-- Quote -->
