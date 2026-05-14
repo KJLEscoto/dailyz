@@ -89,7 +89,7 @@ const slices = computed<PieSlice[]>(() => {
 <template>
   <ClientOnly>
     <section class="bg-white rounded-3xl md:p-6 p-4 flex flex-col gap-2 h-full relative overflow-hidden">
-      <img class="shrink-0 absolute md:-bottom-10 -bottom-2 -right-6 w-auto md:h-48 h-52" src="/images/mascot/pie_model.png"
+      <img v-if="habits.length" class="shrink-0 absolute md:-bottom-10 -bottom-2 -right-6 w-auto md:h-48 h-52" src="/images/mascot/pie_model.png"
         alt="Donut Model" />
 
       <p class="text-sm font-semibold text-black/60">
