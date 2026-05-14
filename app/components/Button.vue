@@ -52,7 +52,7 @@ const spinnerSize: Record<string, string> = {
 const computedClass = computed(() =>
   twMerge(
     'inline-flex items-center justify-center font-primary font-semibold tracking-wide select-none',
-    'transition-all duration-150 outline-none cursor-pointer',
+    'active:scale-95 transition-all duration-150 ease-in-out outline-none cursor-pointer',
     variantClasses[props.variant],
     sizeClasses[props.size],
     props.block ? 'w-full' : 'w-auto',

@@ -136,7 +136,7 @@ const ROW_LABELS: Record<number, string> = { 1: 'Mon', 3: 'Wed', 5: 'Fri' }
         <MainMenu :items="yearMenuItems" :menu-width="120">
           <template #trigger>
             <div
-              class="flex items-center gap-1.5 px-2 py-1 hover:bg-black/5 rounded-xl text-black/40 hover:text-black/80 transition-colors cursor-pointer select-none">
+              class="flex items-center gap-1.5 px-2 py-1 hover:bg-black/5 rounded-xl text-black/40 hover:text-black/80 cursor-pointer select-none active:scale-95 ease-in-out transition-all duration-150">
               <span class="text-xs font-semibold pointer-events-none">{{ selectedYear }}</span>
               <CalendarFold class="size-3 pointer-events-none" />
             </div>
