@@ -143,8 +143,8 @@ const handleRegister = async () => {
       </div>
 
       <button @click="handleGoogleSignUp" type="button" :disabled="isAnyLoading"
-        class="w-full h-auto py-3 px-10 shrink-0 bg-muted/10 rounded-2xl flex items-center justify-center gap-3
-        cursor-pointer hover:bg-muted/20 transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed">
+        class="w-full h-auto py-3 px-10 shrink-0 bg-muted/10 rounded-2xl flex items-center justify-center gap-3 active:scale-95 transition-all duration-150 ease-in-out
+        cursor-pointer hover:bg-muted/20 disabled:opacity-50 disabled:cursor-not-allowed">
         <img v-if="!isGoogleLoading" src="/images/webp/google.webp" alt="Sign up with Google" class="size-6" />
         <div v-else class="size-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
         <p class="text-nowrap">{{ isGoogleLoading ? 'Signing up...' : 'Continue with Google' }}</p>

@@ -179,14 +179,14 @@ onUnmounted(() => {
   <div class="relative rounded-3xl overflow-hidden">
 
     <!-- Action buttons (revealed underneath) -->
-    <div class="absolute inset-0 flex items-stretch justify-end pr-1">
+    <div class="absolute inset-0 flex items-stretch justify-end pr-1 py-0.5">
       <button @click="handleEdit"
-        class="flex flex-col items-center justify-center gap-1 w-20 bg-blue-500 hover:bg-blue-400 text-white text-xs font-semibold cursor-pointer rounded-l-3xl duration-200">
+        class="flex flex-col items-center justify-center gap-1 w-20 bg-blue-500 hover:bg-blue-400 text-white text-xs font-medium cursor-pointer rounded-l-3xl duration-200">
         <Pencil class="size-5 pointer-events-none" />
         Edit
       </button>
       <button @click="handleDeleteRequest"
-        class="flex flex-col items-center justify-center gap-1 w-20 bg-red-500 hover:bg-red-400 text-white text-xs font-semibold cursor-pointer rounded-r-3xl duration-200">
+        class="flex flex-col items-center justify-center gap-1 w-20 bg-red-500 hover:bg-red-400 text-white text-xs font-medium cursor-pointer rounded-r-3xl duration-200">
         <Trash2 class="size-5 pointer-events-none" />
         Delete
       </button>

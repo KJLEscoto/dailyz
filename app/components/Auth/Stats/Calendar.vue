@@ -68,7 +68,7 @@ const hasCompletion = (date: Date) => completionDates.value.has(format(date, 'yy
           <button
             v-if="format(currentMonth, 'yyyy-MM') !== format(new Date(), 'yyyy-MM') || selectedDate !== format(new Date(), 'yyyy-MM-dd')"
             @click="goToToday"
-            class="text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/20 px-2 py-1 rounded-lg transition-colors cursor-pointer">
+            class="text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/20 px-2 py-1 rounded-lg cursor-pointer active:scale-95 ease-in-out transition-all duration-150">
             Go Today
           </button>
         </div>
