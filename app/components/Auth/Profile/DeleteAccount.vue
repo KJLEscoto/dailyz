@@ -1,13 +1,14 @@
 <!-- components/Auth/Profile/DeleteAccount.vue -->
 <script setup lang="ts">
 import { Trash2 } from '@lucide/vue'
+import { reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth'
 
 const { user } = useAuth()
 const { signOut } = useAuth()
 
-const showEmailModal = ref(false)
-const emailInput = ref('')
-const emailError = ref('')
+const showPasswordModal = ref(false)
+const passwordInput = ref('')
+const passwordError = ref('')
 
 const deleteLoading = ref(false)
 const countdown = ref(4)
@@ -17,23 +18,36 @@ let countdownTimer: ReturnType<typeof setInterval> | null = null
 const deleteAccountSuccess = useState<boolean>('delete-account-success', () => false)
 
 const confirmDeleteAccount = () => {
-  emailInput.value = ''
-  emailError.value = ''
-  showEmailModal.value = true
+  passwordInput.value = ''
+  passwordError.value = ''
+  showPasswordModal.value = true
 }
 
-const verifyEmail = () => {
-  emailError.value = ''
-  if (!emailInput.value.trim()) {
-    emailError.value = 'Please enter your email.'
+const verifyPassword = async () => {
+  passwordError.value = ''
+  if (!passwordInput.value.trim()) {
+    passwordError.value = 'Please enter your password.'
     return
   }
-  if (emailInput.value.trim().toLowerCase() !== user.value?.email?.toLowerCase()) {
-    emailError.value = 'Email does not match your account.'
-    return
+
+  try {
+    const { $firebase } = useNuxtApp()
+    const firebaseUser = $firebase.auth.currentUser
+    if (!firebaseUser || !user.value?.email) return
+
+    // 👇 reauthenticate before deleting
+    const credential = EmailAuthProvider.credential(user.value.email, passwordInput.value)
+    await reauthenticateWithCredential(firebaseUser, credential)
+
+    showPasswordModal.value = false
+    startDeleteCountdown()
+  } catch (error: any) {
+    if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+      passwordError.value = 'Incorrect password. Please try again.'
+    } else {
+      passwordError.value = 'Failed to verify. Please try again.'
+    }
   }
-  showEmailModal.value = false
-  startDeleteCountdown()
 }
 
 const startDeleteCountdown = () => {
@@ -83,17 +97,15 @@ onUnmounted(() => {
 
 <template>
   <ClientOnly>
-    <!-- Delete countdown alert -->
     <Alert type="danger" title="Deleting account..."
       :message="`Your account will be deleted in ${countdown} second${countdown === 1 ? '' : 's'}.`"
       :visible="deleteLoading" :dismissible="false" :actions="[{ label: 'No, Cancel', onClick: cancelDelete }]" />
 
-    <!-- Email verification modal — using your Modal component -->
-    <Modal v-model="showEmailModal" title="Confirm deletion"
-      description="Enter your email to confirm you want to delete your account." primary-label="Confirm Delete"
-      cancel-label="Cancel" :dangerous="true" @primary="verifyEmail" @cancel="showEmailModal = false">
-      <FormField v-model="emailInput" label="your email" type="email" :placeholder="user?.email ?? 'your@email.com'"
-        :error="emailError" @keyup.enter="verifyEmail" />
+    <Modal v-model="showPasswordModal" title="Confirm deletion"
+      description="Enter your password to confirm you want to delete your account." primary-label="Confirm Delete"
+      cancel-label="Cancel" :dangerous="true" @primary="verifyPassword" @cancel="showPasswordModal = false">
+      <FormField v-model="passwordInput" label="your password" type="password" placeholder="••••••••"
+        :error="passwordError" @keyup.enter="verifyPassword" />
     </Modal>
 
     <button @click="confirmDeleteAccount"

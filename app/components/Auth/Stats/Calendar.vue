@@ -97,7 +97,7 @@ const hasCompletion = (date: Date) => completionDates.value.has(format(date, 'yy
         <div v-for="(day, i) in calendarDays" :key="i" class="flex items-center justify-center">
           <span v-if="!day" />
           <button v-else @click="selectDay(day)" :class="[
-            'relative w-8 h-8 rounded-full text-xs font-semibold transition-all flex items-center justify-center cursor-pointer',
+            'relative text-black/70 w-8 h-8 rounded-full text-xs font-semibold transition-all flex items-center justify-center cursor-pointer',
             isSelected(day)
               ? 'bg-primary text-white shadow-md scale-110'
               : isToday(day)
