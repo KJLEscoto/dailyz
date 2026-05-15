@@ -49,9 +49,8 @@ onMounted(() => {
       <template #trigger>
         <div class="relative size-12 rounded-full shrink-0 overflow-hidden transition-all">
           <ClientOnly>
-            <img v-if="photoURL" :src="photoURL" :alt="firstName"
-              class="w-full h-full object-cover hover:scale-110 transition-transform" referrerpolicy="no-referrer" />
-            <img v-else src="/images/default_user.png" :alt="firstName" class="w-full h-full object-cover" />
+            <Image v-if="photoURL" :src="photoURL" :alt="firstName" class="w-full h-full hover:scale-110 transition-transform" referrerpolicy="no-referrer" />
+            <Image v-else src="/images/default_user.png" :alt="firstName" class="w-full h-full" />
             <template #fallback>
               <Skeleton width="3rem" height="3rem" rounded="9999px" />
             </template>

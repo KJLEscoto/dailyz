@@ -159,7 +159,7 @@ onUnmounted(() => {
     <Transition enter-active-class="transition-opacity duration-150" enter-from-class="opacity-0"
       leave-active-class="transition-opacity duration-100" leave-to-class="opacity-0">
       <div v-if="isVisible" ref="tooltipRef" :style="tooltipStyles"
-        class="drop-shadow-xl fixed z-[9999] pointer-events-none whitespace-nowrap">
+        class="drop-shadow-xl fixed z-9999 pointer-events-none max-w-48 text-center">
         <div class="bg-white text-muted text-xs font-medium border-muted/10 border px-2.5 py-1.5 rounded-lg">
           {{ text }}
         </div>

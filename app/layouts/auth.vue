@@ -9,7 +9,7 @@ const { habitsCount, completedCount, percentageCompleted } = useHabitStats(habit
 </script>
 
 <template>
-  <div class="w-full max-w-xl mx-auto px-4 pb-26 relative">
+  <div class="w-full max-w-xl mx-auto px-4 pb-26 relative select-none">
     <AuthAppHeader :formatted="formatted" :completed-count="completedCount" :habits-count="habitsCount"
       :percentage-completed="percentageCompleted" :sign-out="signOut" />
     <slot />

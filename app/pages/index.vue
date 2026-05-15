@@ -1,29 +1,10 @@
 <!-- pages/index.vue -->
 <script setup lang="ts">
-const { sampleHabits, toggleCompletion } = useSampleHabits()
-const habitStore = useHabitStore()
+const { sampleHabits } = useSampleHabits()
 const signOutSuccess = useState<boolean>('sign-out-success', () => false)
 const deleteAccountSuccess = useState<boolean>('delete-account-success', () => false)
 
 const mascotSrc = '/images/mascot/intro_model.png'
-
-// 👈 patch the store's toggleCompletion for guest mode
-const originalToggle = habitStore.toggleCompletion
-habitStore.toggleCompletion = (habit) => {
-  toggleCompletion(habit)
-  return Promise.resolve()
-}
-
-// 👈 sync sample habits into the store so HabitCard reads from it
-watchEffect(() => {
-  habitStore.habits = sampleHabits.value
-})
-
-onUnmounted(() => {
-  // 👈 restore original and clear habits when leaving
-  habitStore.toggleCompletion = originalToggle
-  habitStore.habits = []
-})
 </script>
 
 <template>
@@ -36,14 +17,14 @@ onUnmounted(() => {
       :visible="deleteAccountSuccess" :timeout="3000" @dismiss="deleteAccountSuccess = false" />
 
     <section class="space-y-2 text-center w-full">
-      <img :src="mascotSrc" alt="Dailyz Mascot Meditate" class="w-full h-auto object-cover" />
+      <Image :src="mascotSrc" alt="Dailyz Mascot Scott" class="w-full h-auto" />
       <h1 class="md:text-3xl text-xl font-bold text-primary">Your path to serenity begins here.</h1>
       <p class="text-muted md:text-lg text-sm">Create your habits for a more mindful life.</p>
     </section>
 
     <ul class="space-y-5 pt-1 w-full">
       <li v-for="habit in sampleHabits" :key="habit.id">
-        <HabitCard :habit="habit" :has-menu="false" @edit="() => { }" @delete="() => { }" />
+        <HabitGuestCard :habit="habit" />
       </li>
     </ul>
 

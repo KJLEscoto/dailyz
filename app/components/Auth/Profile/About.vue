@@ -29,8 +29,8 @@ import { ArrowUpRight } from '@lucide/vue';
         </div>
       </div>
 
-      <img src="/images/mascot/about_model.png" alt="App preview"
-        class="absolute -bottom-2 sm:right-4 -right-20 sm:w-40 w-52 h-auto pointer-events-none" />
+      <Image src="/images/mascot/about_model.png" alt="App preview"
+        class="absolute -bottom-2 sm:right-4 -right-20 sm:w-40 w-52 pointer-events-none" />
     </section>
 
     <template #fallback>
