@@ -1,5 +1,9 @@
 <!-- app.vue -->
 <script setup lang="ts">
+const { handleRedirectResult } = useAuth()
+onMounted(async () => {
+  await handleRedirectResult()
+})
 </script>
 
 <template>
