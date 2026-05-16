@@ -1,52 +1,38 @@
-<!-- pages/auth/google-popup.vue -->
 <script setup lang="ts">
-import { signInWithRedirect, getRedirectResult } from 'firebase/auth'
+import { signInWithRedirect, getRedirectResult, GoogleAuthProvider } from 'firebase/auth'
 
 definePageMeta({ layout: false })
-
-const status = ref<'redirecting' | 'finishing' | 'error'>('redirecting')
 
 onMounted(async () => {
   const { $firebase } = useNuxtApp()
 
   try {
-    // ✅ Always check for redirect result first
     const result = await getRedirectResult($firebase.auth)
 
     if (result) {
-      // Google came back with a user — notify opener and close
-      status.value = 'finishing'
-      if (window.opener && !window.opener.closed) {
-        window.opener.postMessage(
-          { type: 'GOOGLE_AUTH_SUCCESS' },
-          window.location.origin
-        )
-      }
-      // Give postMessage a moment to deliver before closing
-      setTimeout(() => window.close(), 500)
+      localStorage.removeItem('google_tab_pending')
+      // ✅ Use '*' so message reaches localhost opener too
+      window.opener?.postMessage({ type: 'GOOGLE_AUTH_SUCCESS' }, '*')
+      setTimeout(() => window.close(), 300)
       return
     }
 
-    // ✅ No result yet — only redirect if this looks like a fresh open (has opener)
-    // If there's no opener, user navigated here directly — don't redirect
-    if (!window.opener) {
-      status.value = 'error'
+    if (localStorage.getItem('google_tab_pending')) {
+      localStorage.removeItem('google_tab_pending')
+      window.opener?.postMessage({ type: 'GOOGLE_AUTH_ERROR', code: 'no-result' }, '*')
+      window.close()
       return
     }
 
-    // First visit from opener tab — start the Google redirect
-    await signInWithRedirect($firebase.auth, $firebase.provider)
+    localStorage.setItem('google_tab_pending', '1')
+    const provider = new GoogleAuthProvider()
+    provider.setCustomParameters({ prompt: 'select_account' })
+    await signInWithRedirect($firebase.auth, provider)
 
   } catch (error: any) {
-    console.error('Google popup tab error:', error)
-    status.value = 'error'
-    if (window.opener && !window.opener.closed) {
-      window.opener.postMessage(
-        { type: 'GOOGLE_AUTH_ERROR', code: error.code },
-        window.location.origin
-      )
-    }
-    setTimeout(() => window.close(), 1500)
+    localStorage.removeItem('google_tab_pending')
+    window.opener?.postMessage({ type: 'GOOGLE_AUTH_ERROR', code: error.code ?? 'unknown' }, '*')
+    window.close()
   }
 })
 </script>
@@ -54,12 +40,9 @@ onMounted(async () => {
 <template>
   <div class="min-h-screen flex items-center justify-center bg-white">
     <div class="text-center space-y-4">
-      <div v-if="status !== 'error'"
-        class="size-10 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
-      <p class="text-muted text-sm">
-        {{ status === 'finishing' ? 'Almost done...' : status === 'error' ? 'Something went wrong.' : 'Connecting with Google...' }}
-      </p>
-      <p v-if="status !== 'error'" class="text-xs text-muted/60">This tab will close automatically.</p>
+      <div class="size-10 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+      <p class="text-muted text-sm">Connecting with Google...</p>
+      <p class="text-xs text-muted/60">This tab will close automatically.</p>
     </div>
   </div>
 </template>

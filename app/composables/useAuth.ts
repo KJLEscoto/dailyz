@@ -12,25 +12,42 @@ import {
 } from 'firebase/auth'
 import type { User } from 'firebase/auth'
 
-// ✅ Only runs client-side, never during SSR
+const isWebview = () => {
+  if (import.meta.server) return false
+  if (typeof navigator === 'undefined') return false
+  const ua = navigator.userAgent
+  const isIOS = /iPhone|iPad|iPod/i.test(ua)
+  const isSafari = /Safari/i.test(ua) && !/CriOS|FxiOS|OPiOS|EdgiOS/i.test(ua)
+  const isChrome = /CriOS/i.test(ua)
+  const isAndroidWebview = /Android/i.test(ua) && /wv/i.test(ua)
+  if (isIOS && !isSafari && !isChrome) return true
+  if (isAndroidWebview) return true
+  return false
+}
+
+const AUTH_TAB_URL = 'https://dailyz.netlify.app/auth/google-popup'
+
 const isMobile = () => {
   if (import.meta.server) return false
   if (typeof navigator === 'undefined') return false
   return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
 }
 
-const isDev = () => {
+const isProduction = () => {
   if (import.meta.server) return false
-  return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '192.168.254.130'
+  return window.location.hostname === 'dailyz.netlify.app'
+}
+
+const getGoogleProvider = () => {
+  const provider = new GoogleAuthProvider()
+  provider.setCustomParameters({ prompt: 'select_account' })
+  return provider
 }
 
 export function useAuth() {
   const user = useState<User | null>('auth-user', () => null)
   const authReady = useState<boolean>('auth-ready', () => false)
   const habitsReady = useState<boolean>('habits-ready', () => false)
-
-  // ✅ Never initialize from client-side check during SSR — always start false
-  // handleRedirectResult in app.vue sets this to true if needed
   const processingRedirect = useState<boolean>('processing-redirect', () => false)
 
   const initAuth = (onLogin?: (user: User) => Promise<void>, onLogout?: () => void) => {
@@ -92,15 +109,14 @@ export function useAuth() {
     user.value = $firebase.auth.currentUser
   }
 
+  // ✅ Only needed for webview fallback (same-tab redirect)
   const handleRedirectResult = async () => {
     const { $firebase } = useNuxtApp()
     try {
       const result = await getRedirectResult($firebase.auth)
       if (!result) return
 
-      // ✅ Got a result — block middleware now
       processingRedirect.value = true
-
       const { doc, getDoc } = await import('firebase/firestore')
       const userDocRef = doc($firebase.db, 'users', result.user.uid)
       const userDoc = await getDoc(userDocRef)
@@ -121,22 +137,94 @@ export function useAuth() {
     }
   }
 
-  // ✅ Get provider with forced account picker
-  const getGoogleProvider = () => {
-    const { $firebase } = useNuxtApp()
-    const provider = $firebase.provider as GoogleAuthProvider
-    provider.setCustomParameters({ prompt: 'select_account' })
-    return provider
+  // ✅ New tab approach — works on both localhost and production
+  const signInWithGoogleViaTab = (mode: 'signin' | 'signup'): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      // ✅ Always open the production auth domain — works from localhost and mobile
+      const authTab = window.open(AUTH_TAB_URL, '_blank')
+
+      if (!authTab) {
+        reject(new Error('Popup blocked'))
+        return
+      }
+
+      let settled = false
+      const settle = () => { settled = true }
+
+      const messageHandler = async (event: MessageEvent) => {
+        // ✅ Accept messages from the production domain
+        if (event.origin !== 'https://dailyz.netlify.app') return
+        if (!['GOOGLE_AUTH_SUCCESS', 'GOOGLE_AUTH_ERROR'].includes(event.data?.type)) return
+
+        window.removeEventListener('message', messageHandler)
+        clearInterval(tabClosedPoll)
+        settle()
+
+        if (event.data.type === 'GOOGLE_AUTH_ERROR') {
+          reject({ code: event.data.code })
+          return
+        }
+
+        try {
+          const { $firebase } = useNuxtApp()
+          await $firebase.auth.authStateReady()
+          const firebaseUser = $firebase.auth.currentUser
+          if (!firebaseUser) { resolve(); return }
+
+          if (mode === 'signup') {
+            const { doc, getDoc } = await import('firebase/firestore')
+            const userDocRef = doc($firebase.db, 'users', firebaseUser.uid)
+            const userDoc = await getDoc(userDocRef)
+            if (userDoc.exists()) {
+              await $firebase.auth.signOut()
+              await navigateTo({ path: '/login', state: { email: firebaseUser.email ?? '', error: 'existing' } }, { replace: true })
+            } else {
+              user.value = firebaseUser
+              await navigateTo('/setup-password')
+            }
+          } else {
+            await processGoogleUser(firebaseUser)
+            await navigateTo('/home')
+          }
+          resolve()
+        } catch (err) {
+          reject(err)
+        }
+      }
+
+      window.addEventListener('message', messageHandler)
+
+      const tabClosedPoll = setInterval(() => {
+        if (authTab.closed && !settled) {
+          clearInterval(tabClosedPoll)
+          window.removeEventListener('message', messageHandler)
+          resolve()
+        }
+      }, 500)
+    })
   }
 
   const signInWithGoogle = async () => {
     const { $firebase } = useNuxtApp()
 
-    if (isMobile() && !isDev()) {
+    if (isWebview()) {
       await signInWithRedirect($firebase.auth, getGoogleProvider())
       return
     }
 
+    // ✅ New tab only on mobile production — popup everywhere else
+    if (isMobile() && isProduction()) {
+      try {
+        await signInWithGoogleViaTab('signin')
+      } catch (error: any) {
+        if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') return
+        console.error('Google sign in error:', error)
+        throw error
+      }
+      return
+    }
+
+    // Desktop or localhost — popup
     try {
       const result = await signInWithPopup($firebase.auth, getGoogleProvider())
       await processGoogleUser(result.user)
@@ -151,11 +239,24 @@ export function useAuth() {
   const signUpWithGoogle = async () => {
     const { $firebase } = useNuxtApp()
 
-    if (isMobile() && !isDev()) {
+    if (isWebview()) {
       await signInWithRedirect($firebase.auth, getGoogleProvider())
       return
     }
 
+    // ✅ New tab only on mobile production
+    if (isMobile() && isProduction()) {
+      try {
+        await signInWithGoogleViaTab('signup')
+      } catch (error: any) {
+        if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') return
+        console.error('Google sign up error:', error)
+        throw error
+      }
+      return
+    }
+
+    // Desktop or localhost — popup
     try {
       const result = await signInWithPopup($firebase.auth, getGoogleProvider())
       const { doc, getDoc } = await import('firebase/firestore')
