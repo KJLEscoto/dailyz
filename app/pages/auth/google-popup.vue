@@ -1,31 +1,39 @@
-<!-- pages/auth/google-popup.vue -->
 <script setup lang="ts">
-// This page is opened in a new tab on mobile.
-// It runs the Firebase Google popup, then closes itself.
-// The opener tab detects auth state change via onAuthStateChanged.
+import { signInWithRedirect, getRedirectResult } from 'firebase/auth'
 
 definePageMeta({ layout: false })
 
 onMounted(async () => {
   const { $firebase } = useNuxtApp()
-  const { signInWithPopup } = await import('firebase/auth')
 
-  try {
-    await signInWithPopup($firebase.auth, $firebase.provider)
-    // Auth state is now set — the opener tab's onAuthStateChanged will fire.
-    // Close this tab.
-    window.close()
-  } catch (error: any) {
-    if (
-      error.code === 'auth/popup-closed-by-user' ||
-      error.code === 'auth/cancelled-popup-request'
-    ) {
-      window.close()
-      return
+  // If Google already redirected back here, there will be a pending result
+  const result = await getRedirectResult($firebase.auth)
+
+  if (result) {
+    // ✅ Auth completed — notify opener and close
+    if (window.opener && !window.opener.closed) {
+      window.opener.postMessage(
+        { type: 'GOOGLE_AUTH_SUCCESS' },
+        window.location.origin
+      )
     }
-    console.error('Google popup error:', error)
-    // Give user a moment to see if something went wrong, then close
-    setTimeout(() => window.close(), 2000)
+    window.close()
+    return
+  }
+
+  // ✅ First visit — kick off the redirect to Google (full page nav, browser allows this)
+  try {
+    await signInWithRedirect($firebase.auth, $firebase.provider)
+    // Browser navigates away to Google here — code below never runs until redirect back
+  } catch (error: any) {
+    console.error('Redirect error:', error)
+    if (window.opener && !window.opener.closed) {
+      window.opener.postMessage(
+        { type: 'GOOGLE_AUTH_ERROR', code: error.code },
+        window.location.origin
+      )
+    }
+    window.close()
   }
 })
 </script>

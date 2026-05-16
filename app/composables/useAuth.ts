@@ -12,19 +12,14 @@ import {
 } from 'firebase/auth'
 import type { User } from 'firebase/auth'
 
-// ✅ Only treat as webview — Safari/Chrome on iOS handles popups fine in new tabs
 const isWebview = () => {
   if (import.meta.server) return false
   const ua = navigator.userAgent
-  // Detect embedded webviews (not Safari/Chrome themselves)
   const isIOS = /iPhone|iPad|iPod/i.test(ua)
   const isSafari = /Safari/i.test(ua) && !/CriOS|FxiOS|OPiOS|EdgiOS/i.test(ua)
   const isChrome = /CriOS/i.test(ua)
   const isAndroidBrowser = /Android/i.test(ua) && /wv/i.test(ua)
-
-  // If it's iOS but NOT Safari or Chrome → it's a webview
   if (isIOS && !isSafari && !isChrome) return true
-  // Android webview
   if (isAndroidBrowser) return true
   return false
 }
@@ -41,16 +36,10 @@ export function useAuth() {
 
   const initAuth = (onLogin?: (user: User) => Promise<void>, onLogout?: () => void) => {
     const { $firebase } = useNuxtApp()
-
     onAuthStateChanged($firebase.auth, async (firebaseUser) => {
       user.value = firebaseUser
-
-      if (firebaseUser) {
-        await onLogin?.(firebaseUser)
-      } else {
-        onLogout?.()
-      }
-
+      if (firebaseUser) await onLogin?.(firebaseUser)
+      else onLogout?.()
       authReady.value = true
     })
   }
@@ -59,21 +48,17 @@ export function useAuth() {
     const { $firebase } = useNuxtApp()
     const currentUser = $firebase.auth.currentUser
     if (!currentUser || !currentUser.email) throw new Error('No authenticated user')
-
     const credential = EmailAuthProvider.credential(currentUser.email, password)
     await linkWithCredential(currentUser, credential)
-
     await currentUser.reload()
     await currentUser.getIdToken(true)
     user.value = $firebase.auth.currentUser
-
     await useUserStore().createUser(currentUser.uid, {
       fullName: currentUser.displayName ?? '',
       email: currentUser.email ?? '',
       photoURL: currentUser.photoURL ?? '',
       createdAt: new Date().toISOString(),
     })
-
     const habitStore = useHabitStore()
     await habitStore.fetchHabits()
     await habitStore.resetStaleStreaks()
@@ -85,7 +70,6 @@ export function useAuth() {
     const { doc, getDoc } = await import('firebase/firestore')
     const userDocRef = doc($firebase.db, 'users', firebaseUser.uid)
     const userDoc = await getDoc(userDocRef)
-
     if (userDoc.exists()) {
       if (!allowExisting) {
         throw { code: 'auth/email-already-in-use', customData: { email: firebaseUser.email } }
@@ -102,7 +86,6 @@ export function useAuth() {
         createdAt: new Date().toISOString(),
       })
     }
-
     const habitStore = useHabitStore()
     await habitStore.fetchHabits()
     await habitStore.resetStaleStreaks()
@@ -110,108 +93,101 @@ export function useAuth() {
     user.value = $firebase.auth.currentUser
   }
 
+  // ✅ Same-tab redirect for actual webviews (no window.open support)
   const handleRedirectResult = async () => {
     try {
       const { $firebase } = useNuxtApp()
       const result = await getRedirectResult($firebase.auth)
       if (!result) return
-
-      await processGoogleUser(result.user)
-      window.location.replace('/home')
+      const mode = sessionStorage.getItem('google_auth_mode') ?? 'signin'
+      sessionStorage.removeItem('google_auth_mode')
+      if (mode === 'signup') {
+        const { doc, getDoc } = await import('firebase/firestore')
+        const userDocRef = doc($firebase.db, 'users', result.user.uid)
+        const userDoc = await getDoc(userDocRef)
+        if (userDoc.exists()) {
+          await $firebase.auth.signOut()
+          await navigateTo({ path: '/login', state: { email: result.user.email ?? '', error: 'existing' } }, { replace: true })
+          return
+        }
+        user.value = result.user
+        await navigateTo('/setup-password')
+      } else {
+        await processGoogleUser(result.user)
+        window.location.replace('/home')
+      }
     } catch (error: any) {
       console.error('Google redirect result error:', error)
     }
   }
 
-  // ✅ New: open Google OAuth in a new tab on mobile, wait for auth state to update
-  const signInWithGoogleNewTab = (onSuccess: () => Promise<void>, onError: (err: any) => void) => {
-    const { $firebase } = useNuxtApp()
+  // ✅ Open new tab on mobile — tab uses signInWithRedirect internally (no popup)
+  const signInWithGoogleViaTab = (mode: 'signin' | 'signup'): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      // Must be synchronous — called directly from user gesture handler
+      const authTab = window.open('/auth/google-popup', '_blank')
 
-    // Open the new tab immediately (must be synchronous to avoid popup blockers)
-    const authTab = window.open('/auth/google-popup', '_blank')
-
-    if (!authTab) {
-      // Popup was blocked — fall back to redirect
-      signInWithRedirect($firebase.auth, $firebase.provider)
-      return
-    }
-
-    // Listen for auth state change triggered by the new tab completing OAuth
-    const unsubscribe = onAuthStateChanged($firebase.auth, async (firebaseUser) => {
-      if (!firebaseUser) return
-      unsubscribe()
-      try {
-        await onSuccess()
-      } catch (err) {
-        onError(err)
+      if (!authTab) {
+        // Tab was blocked — fall back to same-tab redirect
+        sessionStorage.setItem('google_auth_mode', mode)
+        const { $firebase } = useNuxtApp()
+        signInWithRedirect($firebase.auth, $firebase.provider)
+        resolve() // resolves immediately; page will reload after redirect
+        return
       }
-    })
 
-    // Clean up listener if tab is closed without signing in
-    const pollClosed = setInterval(() => {
-      if (authTab.closed) {
-        clearInterval(pollClosed)
-        // Give a short grace period in case auth state fires right as tab closes
-        setTimeout(() => unsubscribe(), 2000)
-      }
-    }, 500)
-  }
+      const messageHandler = async (event: MessageEvent) => {
+        if (event.origin !== window.location.origin) return
+        if (!['GOOGLE_AUTH_SUCCESS', 'GOOGLE_AUTH_ERROR'].includes(event.data?.type)) return
 
-  const signUpWithGoogle = async () => {
-    const { $firebase } = useNuxtApp()
+        window.removeEventListener('message', messageHandler)
+        clearInterval(tabClosedPoll)
 
-    if (isWebview()) {
-      await signInWithRedirect($firebase.auth, $firebase.provider)
-      return
-    }
+        if (event.data.type === 'GOOGLE_AUTH_ERROR') {
+          reject({ code: event.data.code })
+          return
+        }
 
-    if (isMobile()) {
-      // ✅ Open in new tab on mobile — avoids iOS Safari popup/redirect issues
-      return new Promise<void>((resolve, reject) => {
-        signInWithGoogleNewTab(
-          async () => {
-            const firebaseUser = $firebase.auth.currentUser
-            if (!firebaseUser) return
+        // ✅ Auth state is already set in Firebase (shared IndexedDB)
+        try {
+          const { $firebase } = useNuxtApp()
+          await $firebase.auth.authStateReady()
+          const firebaseUser = $firebase.auth.currentUser
+          if (!firebaseUser) { resolve(); return }
 
+          if (mode === 'signup') {
             const { doc, getDoc } = await import('firebase/firestore')
+            const { $firebase } = useNuxtApp()
             const userDocRef = doc($firebase.db, 'users', firebaseUser.uid)
             const userDoc = await getDoc(userDocRef)
-
             if (userDoc.exists()) {
               await $firebase.auth.signOut()
-              await navigateTo({
-                path: '/login',
-                state: { email: firebaseUser.email ?? '', error: 'existing' }
-              }, { replace: true })
+              await navigateTo({ path: '/login', state: { email: firebaseUser.email ?? '', error: 'existing' } }, { replace: true })
             } else {
               user.value = firebaseUser
               await navigateTo('/setup-password')
             }
-            resolve()
-          },
-          reject
-        )
-      })
-    }
+          } else {
+            await processGoogleUser(firebaseUser)
+            await navigateTo('/home')
+          }
+          resolve()
+        } catch (err) {
+          reject(err)
+        }
+      }
 
-    // Desktop: popup as before
-    const result = await signInWithPopup($firebase.auth, $firebase.provider)
+      window.addEventListener('message', messageHandler)
 
-    const { doc, getDoc } = await import('firebase/firestore')
-    const userDocRef = doc($firebase.db, 'users', result.user.uid)
-    const userDoc = await getDoc(userDocRef)
-
-    if (userDoc.exists()) {
-      await $firebase.auth.signOut()
-      await navigateTo({
-        path: '/login',
-        state: { email: result.user.email ?? '', error: 'existing' }
-      }, { replace: true })
-      return
-    }
-
-    user.value = result.user
-    await navigateTo('/setup-password')
+      // Clean up if user closes the tab without completing auth
+      const tabClosedPoll = setInterval(() => {
+        if (authTab.closed) {
+          clearInterval(tabClosedPoll)
+          window.removeEventListener('message', messageHandler)
+          resolve() // User cancelled — resolve silently
+        }
+      }, 500)
+    })
   }
 
   const signInWithGoogle = async () => {
@@ -219,33 +195,58 @@ export function useAuth() {
       const { $firebase } = useNuxtApp()
 
       if (isWebview()) {
+        sessionStorage.setItem('google_auth_mode', 'signin')
         await signInWithRedirect($firebase.auth, $firebase.provider)
         return
       }
 
       if (isMobile()) {
-        // ✅ Open in new tab on mobile
-        return new Promise<void>((resolve, reject) => {
-          signInWithGoogleNewTab(
-            async () => {
-              const firebaseUser = $firebase.auth.currentUser
-              if (!firebaseUser) return
-              await processGoogleUser(firebaseUser)
-              await navigateTo('/home')
-              resolve()
-            },
-            reject
-          )
-        })
+        await signInWithGoogleViaTab('signin')
+        return
       }
 
-      // Desktop: popup as before
+      // Desktop — popup works fine
       const result = await signInWithPopup($firebase.auth, $firebase.provider)
       await processGoogleUser(result.user)
       await navigateTo('/home')
     } catch (error: any) {
       if (error.code === 'auth/popup-closed-by-user') return
       console.error('Google sign in error:', error)
+      throw error
+    }
+  }
+
+  const signUpWithGoogle = async () => {
+    try {
+      const { $firebase } = useNuxtApp()
+
+      if (isWebview()) {
+        sessionStorage.setItem('google_auth_mode', 'signup')
+        await signInWithRedirect($firebase.auth, $firebase.provider)
+        return
+      }
+
+      if (isMobile()) {
+        await signInWithGoogleViaTab('signup')
+        return
+      }
+
+      // Desktop
+      const result = await signInWithPopup($firebase.auth, $firebase.provider)
+      const { doc, getDoc } = await import('firebase/firestore')
+      const userDocRef = doc($firebase.db, 'users', result.user.uid)
+      const userDoc = await getDoc(userDocRef)
+      if (userDoc.exists()) {
+        await $firebase.auth.signOut()
+        await navigateTo({ path: '/login', state: { email: result.user.email ?? '', error: 'existing' } }, { replace: true })
+        return
+      }
+      user.value = result.user
+      await navigateTo('/setup-password')
+    } catch (error: any) {
+      if (error.code === 'auth/popup-closed-by-user') return
+      console.error('Google sign up error:', error)
+      throw error
     }
   }
 
@@ -254,18 +255,14 @@ export function useAuth() {
   const signIn = async (email: string, password: string) => {
     try {
       const { $firebase } = useNuxtApp()
-
       const { fetchSignInMethodsForEmail } = await import('firebase/auth')
       await fetchSignInMethodsForEmail($firebase.auth, email)
-
       const result = await signInWithEmailAndPassword($firebase.auth, email, password)
       user.value = result.user
-
       const habitStore = useHabitStore()
       await habitStore.fetchHabits()
       await habitStore.resetStaleStreaks()
       habitsReady.value = true
-
       await navigateTo('/home')
     } catch (error: any) {
       console.error('Sign in error:', error)
