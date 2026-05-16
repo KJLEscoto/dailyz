@@ -1,12 +1,37 @@
 // composables/useAuth.ts
-import { signInWithPopup, signInWithRedirect, getRedirectResult, signInWithEmailAndPassword, onAuthStateChanged, updateProfile, sendPasswordResetEmail, linkWithCredential, EmailAuthProvider } from 'firebase/auth'
+import {
+  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+  updateProfile,
+  sendPasswordResetEmail,
+  linkWithCredential,
+  EmailAuthProvider
+} from 'firebase/auth'
 import type { User } from 'firebase/auth'
 
-// 👇 detect mobile/webview where popups don't work
-const isMobileOrWebview = () => {
+// ✅ Only treat as webview — Safari/Chrome on iOS handles popups fine in new tabs
+const isWebview = () => {
   if (import.meta.server) return false
   const ua = navigator.userAgent
-  return /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(ua)
+  // Detect embedded webviews (not Safari/Chrome themselves)
+  const isIOS = /iPhone|iPad|iPod/i.test(ua)
+  const isSafari = /Safari/i.test(ua) && !/CriOS|FxiOS|OPiOS|EdgiOS/i.test(ua)
+  const isChrome = /CriOS/i.test(ua)
+  const isAndroidBrowser = /Android/i.test(ua) && /wv/i.test(ua)
+
+  // If it's iOS but NOT Safari or Chrome → it's a webview
+  if (isIOS && !isSafari && !isChrome) return true
+  // Android webview
+  if (isAndroidBrowser) return true
+  return false
+}
+
+const isMobile = () => {
+  if (import.meta.server) return false
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
 }
 
 export function useAuth() {
@@ -38,12 +63,10 @@ export function useAuth() {
     const credential = EmailAuthProvider.credential(currentUser.email, password)
     await linkWithCredential(currentUser, credential)
 
-    // ✅ Reload + force token refresh BEFORE any Firestore writes
     await currentUser.reload()
-    await currentUser.getIdToken(true) // 👈 ensures Firestore sees the updated auth token
+    await currentUser.getIdToken(true)
     user.value = $firebase.auth.currentUser
 
-    // Now safe to write to Firestore
     await useUserStore().createUser(currentUser.uid, {
       fullName: currentUser.displayName ?? '',
       email: currentUser.email ?? '',
@@ -65,7 +88,6 @@ export function useAuth() {
 
     if (userDoc.exists()) {
       if (!allowExisting) {
-        // 👇 existing account — throw so register page can redirect
         throw { code: 'auth/email-already-in-use', customData: { email: firebaseUser.email } }
       }
       const existingName = userDoc.data().fullName
@@ -95,29 +117,91 @@ export function useAuth() {
       if (!result) return
 
       await processGoogleUser(result.user)
-      window.location.replace('/home') // 👈 hard nav to bypass middleware race
+      window.location.replace('/home')
     } catch (error: any) {
       console.error('Google redirect result error:', error)
     }
   }
 
+  // ✅ New: open Google OAuth in a new tab on mobile, wait for auth state to update
+  const signInWithGoogleNewTab = (onSuccess: () => Promise<void>, onError: (err: any) => void) => {
+    const { $firebase } = useNuxtApp()
+
+    // Open the new tab immediately (must be synchronous to avoid popup blockers)
+    const authTab = window.open('/auth/google-popup', '_blank')
+
+    if (!authTab) {
+      // Popup was blocked — fall back to redirect
+      signInWithRedirect($firebase.auth, $firebase.provider)
+      return
+    }
+
+    // Listen for auth state change triggered by the new tab completing OAuth
+    const unsubscribe = onAuthStateChanged($firebase.auth, async (firebaseUser) => {
+      if (!firebaseUser) return
+      unsubscribe()
+      try {
+        await onSuccess()
+      } catch (err) {
+        onError(err)
+      }
+    })
+
+    // Clean up listener if tab is closed without signing in
+    const pollClosed = setInterval(() => {
+      if (authTab.closed) {
+        clearInterval(pollClosed)
+        // Give a short grace period in case auth state fires right as tab closes
+        setTimeout(() => unsubscribe(), 2000)
+      }
+    }, 500)
+  }
+
   const signUpWithGoogle = async () => {
     const { $firebase } = useNuxtApp()
 
-    if (isMobileOrWebview()) {
+    if (isWebview()) {
       await signInWithRedirect($firebase.auth, $firebase.provider)
       return
     }
 
+    if (isMobile()) {
+      // ✅ Open in new tab on mobile — avoids iOS Safari popup/redirect issues
+      return new Promise<void>((resolve, reject) => {
+        signInWithGoogleNewTab(
+          async () => {
+            const firebaseUser = $firebase.auth.currentUser
+            if (!firebaseUser) return
+
+            const { doc, getDoc } = await import('firebase/firestore')
+            const userDocRef = doc($firebase.db, 'users', firebaseUser.uid)
+            const userDoc = await getDoc(userDocRef)
+
+            if (userDoc.exists()) {
+              await $firebase.auth.signOut()
+              await navigateTo({
+                path: '/login',
+                state: { email: firebaseUser.email ?? '', error: 'existing' }
+              }, { replace: true })
+            } else {
+              user.value = firebaseUser
+              await navigateTo('/setup-password')
+            }
+            resolve()
+          },
+          reject
+        )
+      })
+    }
+
+    // Desktop: popup as before
     const result = await signInWithPopup($firebase.auth, $firebase.provider)
 
-    // Check if already existing (has Firestore doc)
     const { doc, getDoc } = await import('firebase/firestore')
     const userDocRef = doc($firebase.db, 'users', result.user.uid)
     const userDoc = await getDoc(userDocRef)
 
     if (userDoc.exists()) {
-      // Existing user tried to register — sign them out and redirect
       await $firebase.auth.signOut()
       await navigateTo({
         path: '/login',
@@ -126,7 +210,6 @@ export function useAuth() {
       return
     }
 
-    // New user — don't write to Firestore yet, go to setup
     user.value = result.user
     await navigateTo('/setup-password')
   }
@@ -135,15 +218,31 @@ export function useAuth() {
     try {
       const { $firebase } = useNuxtApp()
 
-      if (isMobileOrWebview()) {
-        // 👇 mobile — use redirect
+      if (isWebview()) {
         await signInWithRedirect($firebase.auth, $firebase.provider)
-      } else {
-        // 👇 desktop — use popup
-        const result = await signInWithPopup($firebase.auth, $firebase.provider)
-        await processGoogleUser(result.user)
-        await navigateTo('/home')
+        return
       }
+
+      if (isMobile()) {
+        // ✅ Open in new tab on mobile
+        return new Promise<void>((resolve, reject) => {
+          signInWithGoogleNewTab(
+            async () => {
+              const firebaseUser = $firebase.auth.currentUser
+              if (!firebaseUser) return
+              await processGoogleUser(firebaseUser)
+              await navigateTo('/home')
+              resolve()
+            },
+            reject
+          )
+        })
+      }
+
+      // Desktop: popup as before
+      const result = await signInWithPopup($firebase.auth, $firebase.provider)
+      await processGoogleUser(result.user)
+      await navigateTo('/home')
     } catch (error: any) {
       if (error.code === 'auth/popup-closed-by-user') return
       console.error('Google sign in error:', error)
@@ -157,11 +256,7 @@ export function useAuth() {
       const { $firebase } = useNuxtApp()
 
       const { fetchSignInMethodsForEmail } = await import('firebase/auth')
-      const methods = await fetchSignInMethodsForEmail($firebase.auth, email)
-
-      // if (methods.includes('google.com') && !methods.includes('password')) {
-      //   throw { code: 'auth/wrong-provider' }
-      // }
+      await fetchSignInMethodsForEmail($firebase.auth, email)
 
       const result = await signInWithEmailAndPassword($firebase.auth, email, password)
       user.value = result.user
@@ -188,9 +283,11 @@ export function useAuth() {
 
   const sendPasswordReset = async (email: string) => {
     const { $firebase } = useNuxtApp()
-    const auth = $firebase.auth
-    await sendPasswordResetEmail(auth, email)
+    await sendPasswordResetEmail($firebase.auth, email)
   }
 
-  return { user, authReady, habitsReady, initAuth, signIn, signInWithGoogle, signOut, signOutSuccess, handleRedirectResult, sendPasswordReset, signUpWithGoogle, linkPassword }
+  return {
+    user, authReady, habitsReady, initAuth, signIn, signInWithGoogle, signOut,
+    signOutSuccess, handleRedirectResult, sendPasswordReset, signUpWithGoogle, linkPassword
+  }
 }

@@ -45,7 +45,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <nav class="fixed bottom-4 left-0 w-full z-50 transition-transform duration-300 ease-in-out"
+  <nav class="fixed bottom-4 left-0 w-full z-50 transition-transform duration-300 ease-in-out select-none"
     :class="isNavVisible ? 'translate-y-0' : 'translate-y-[130%]'">
     <div class="w-full h-fit max-w-xl mx-auto px-4 flex items-stretch gap-3">
       <section
