@@ -2,7 +2,7 @@
 <script setup lang="ts">
 import { Info } from '@lucide/vue'
 
-const { signIn, signInWithGoogle } = useAuth()
+const { signIn, signInWithGoogle, processingRedirect } = useAuth()
 
 const state = import.meta.client ? history.state : {}
 const emailAddress = ref((state?.email as string) ?? '')
@@ -10,7 +10,12 @@ const emailError = ref(state?.error === 'existing' ? 'This account already exist
 const password = ref('')
 const passwordError = ref('')
 const isLoading = ref(false)
-const isGoogleLoading = ref(false)
+
+const isGoogleLoading = computed(() =>
+  _isGoogleLoading.value || processingRedirect.value
+)
+const _isGoogleLoading = ref(false)
+
 const showForgotPassword = ref(false)
 const showGoogleUnavailable = ref(false)
 
@@ -116,14 +121,16 @@ onUnmounted(() => {
 // TODO: Re-enable when Google Sign-In is available
 const handleGoogleLogin = async () => {
   // showGoogleUnavailable.value = true
-  isGoogleLoading.value = true
+  _isGoogleLoading.value = true
   try {
     await signInWithGoogle()
   } catch (error: any) {
     if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') return
     console.error('Google sign in error:', error)
   } finally {
-    isGoogleLoading.value = false
+    if (!processingRedirect.value) {
+      _isGoogleLoading.value = false
+    }
   }
 }
 

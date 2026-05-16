@@ -3,7 +3,7 @@
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
 import type { Auth } from 'firebase/auth'
 
-const { signUpWithGoogle } = useAuth()
+const { signUpWithGoogle, processingRedirect } = useAuth()
 const userStore = useUserStore()
 
 const fullName = ref('')
@@ -15,7 +15,12 @@ const passwordError = ref('')
 const confirmPassword = ref('')
 const confirmPasswordError = ref('')
 const isLoading = ref(false)
-const isGoogleLoading = ref(false) // 👈
+
+const isGoogleLoading = computed(() =>
+  _isGoogleLoading.value || processingRedirect.value
+)
+const _isGoogleLoading = ref(false)
+
 const showGoogleUnavailable = ref(false)
 
 const isAnyLoading = computed(() => isLoading.value || isGoogleLoading.value)
@@ -25,7 +30,7 @@ const handleGoogleSignUp = async () => {
   // showGoogleUnavailable.value = true
   // return
 
-  isGoogleLoading.value = true
+  _isGoogleLoading.value = true
   try {
     await signUpWithGoogle()
   } catch (error: any) {
@@ -45,7 +50,9 @@ const handleGoogleSignUp = async () => {
 
     console.error('Google sign up error:', error)
   } finally {
-    isGoogleLoading.value = false
+    if (!processingRedirect.value) {
+      _isGoogleLoading.value = false
+    }
   }
 }
 
