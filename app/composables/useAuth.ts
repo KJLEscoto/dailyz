@@ -140,8 +140,7 @@ export function useAuth() {
   // ✅ New tab approach — works on both localhost and production
   const signInWithGoogleViaTab = (mode: 'signin' | 'signup'): Promise<void> => {
     return new Promise((resolve, reject) => {
-      // ✅ Always open the production auth domain — works from localhost and mobile
-      const authTab = window.open(AUTH_TAB_URL, '_blank')
+      const authTab = window.open('https://dailyz.netlify.app/auth/google-popup', '_blank')
 
       if (!authTab) {
         reject(new Error('Popup blocked'))
@@ -149,28 +148,20 @@ export function useAuth() {
       }
 
       let settled = false
-      const settle = () => { settled = true }
+      const { $firebase } = useNuxtApp()
 
-      const messageHandler = async (event: MessageEvent) => {
-        // ✅ Accept messages from the production domain
-        if (event.origin !== 'https://dailyz.netlify.app') return
-        if (!['GOOGLE_AUTH_SUCCESS', 'GOOGLE_AUTH_ERROR'].includes(event.data?.type)) return
-
-        window.removeEventListener('message', messageHandler)
+      const finish = async (firebaseUser: import('firebase/auth').User | null) => {
+        if (settled) return
+        settled = true
         clearInterval(tabClosedPoll)
-        settle()
+        window.removeEventListener('message', messageHandler)
 
-        if (event.data.type === 'GOOGLE_AUTH_ERROR') {
-          reject({ code: event.data.code })
+        if (!firebaseUser) {
+          resolve() // cancelled
           return
         }
 
         try {
-          const { $firebase } = useNuxtApp()
-          await $firebase.auth.authStateReady()
-          const firebaseUser = $firebase.auth.currentUser
-          if (!firebaseUser) { resolve(); return }
-
           if (mode === 'signup') {
             const { doc, getDoc } = await import('firebase/firestore')
             const userDocRef = doc($firebase.db, 'users', firebaseUser.uid)
@@ -192,12 +183,35 @@ export function useAuth() {
         }
       }
 
-      window.addEventListener('message', messageHandler)
-
-      const tabClosedPoll = setInterval(() => {
-        if (authTab.closed && !settled) {
+      // ✅ Primary: listen for postMessage (works when COOP header is set)
+      const messageHandler = (event: MessageEvent) => {
+        if (event.origin !== 'https://dailyz.netlify.app') return
+        if (event.data?.type === 'GOOGLE_AUTH_SUCCESS') {
+          $firebase.auth.authStateReady().then(() => finish($firebase.auth.currentUser))
+        } else if (event.data?.type === 'GOOGLE_AUTH_ERROR') {
+          settled = true
           clearInterval(tabClosedPoll)
           window.removeEventListener('message', messageHandler)
+          unsubscribeAuth()
+          resolve() // treat as cancelled
+        }
+      }
+      window.addEventListener('message', messageHandler)
+
+      // ✅ Fallback: poll onAuthStateChanged in case postMessage is blocked by COOP
+      const unsubscribeAuth = onAuthStateChanged($firebase.auth, (firebaseUser) => {
+        if (!firebaseUser) return // ignore sign-out events
+        unsubscribeAuth()
+        finish(firebaseUser)
+      })
+
+      // ✅ Tab closed without auth — user cancelled
+      const tabClosedPoll = setInterval(() => {
+        if (authTab.closed && !settled) {
+          settled = true
+          clearInterval(tabClosedPoll)
+          window.removeEventListener('message', messageHandler)
+          unsubscribeAuth()
           resolve()
         }
       }, 500)

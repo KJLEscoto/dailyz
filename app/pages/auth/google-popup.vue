@@ -11,15 +11,18 @@ onMounted(async () => {
 
     if (result) {
       localStorage.removeItem('google_tab_pending')
-      // ✅ Use '*' so message reaches localhost opener too
-      window.opener?.postMessage({ type: 'GOOGLE_AUTH_SUCCESS' }, '*')
-      setTimeout(() => window.close(), 300)
+      try {
+        window.opener?.postMessage({ type: 'GOOGLE_AUTH_SUCCESS' }, '*')
+      } catch (e) { /* COOP blocks this — main tab polls instead */ }
+      setTimeout(() => window.close(), 500)
       return
     }
 
     if (localStorage.getItem('google_tab_pending')) {
       localStorage.removeItem('google_tab_pending')
-      window.opener?.postMessage({ type: 'GOOGLE_AUTH_ERROR', code: 'no-result' }, '*')
+      try {
+        window.opener?.postMessage({ type: 'GOOGLE_AUTH_ERROR', code: 'no-result' }, '*')
+      } catch (e) { }
       window.close()
       return
     }
@@ -31,7 +34,9 @@ onMounted(async () => {
 
   } catch (error: any) {
     localStorage.removeItem('google_tab_pending')
-    window.opener?.postMessage({ type: 'GOOGLE_AUTH_ERROR', code: error.code ?? 'unknown' }, '*')
+    try {
+      window.opener?.postMessage({ type: 'GOOGLE_AUTH_ERROR', code: error.code ?? 'unknown' }, '*')
+    } catch (e) { }
     window.close()
   }
 })
