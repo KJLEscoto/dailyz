@@ -101,7 +101,7 @@ onUnmounted(() => {
       :message="`Your account will be deleted in ${countdown} second${countdown === 1 ? '' : 's'}.`"
       :visible="deleteLoading" :dismissible="false" :actions="[{ label: 'No, Cancel', onClick: cancelDelete }]" />
 
-    <Modal v-model="showPasswordModal" title="Confirm deletion"
+    <Modal v-model="showPasswordModal" title="Confirm Deletion"
       description="Enter your password to confirm you want to delete your account." primary-label="Confirm Delete"
       cancel-label="Cancel" :dangerous="true" @primary="verifyPassword" @cancel="showPasswordModal = false">
       <FormField v-model="passwordInput" label="your password" type="password" placeholder="••••••••"

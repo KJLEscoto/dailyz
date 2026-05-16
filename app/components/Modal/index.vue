@@ -93,7 +93,7 @@ onUnmounted(() => {
               </p>
             </div>
             <button
-              class="shrink-0 size-8 rounded-xl flex items-center justify-center text-muted hover:text-gray-600 hover:bg-gray-100 transition-all duration-150 cursor-pointer mt-0.5 active:scale-95 ease-in-out"
+              class="shrink-0 size-8 rounded-xl flex items-center justify-center text-muted hover:text-gray-600 hover:bg-gray-100 transition-all duration-150 cursor-pointer mt-0.5 active:scale-95 ease-in-out select-none"
               @click="close" aria-label="Close">
               <X class="size-4 pointer-events-none" />
             </button>
@@ -107,12 +107,12 @@ onUnmounted(() => {
           <!-- Footer -->
           <div class="flex items-center justify-end gap-2 px-6 py-4 border-t border-black/5 shrink-0">
             <button
-              class="px-4 py-2 rounded-xl text-sm font-medium text-muted hover:text-gray-700 hover:bg-gray-100 transition-all duration-150 cursor-pointer active:scale-95 ease-in-out"
+              class="px-4 py-2 rounded-xl text-sm font-medium text-muted hover:text-gray-700 hover:bg-gray-100 transition-all duration-150 cursor-pointer active:scale-95 ease-in-out select-none"
               @click="close">
               {{ cancelLabel }}
             </button>
             <button :disabled="primaryDisabled || primaryLoading" :class="[
-              'px-5 py-2 rounded-xl text-sm font-semibold cursor-pointer flex items-center gap-2 active:scale-95 transition-all duration-150 ease-in-out',
+              'px-5 py-2 rounded-xl text-sm font-semibold cursor-pointer flex items-center gap-2 active:scale-95 transition-all duration-150 ease-in-out select-none',
               dangerous
                 ? 'bg-red-500 hover:bg-red-600 text-white'
                 : 'bg-primary hover:bg-primary/90 text-white',

@@ -57,13 +57,13 @@ const toggleCompletion = (habit: Habit) => habitStore.toggleCompletion(habit)
     <div class="sm:space-y-4 space-y-3">
       <div v-if="!todoHabits.length && !completedHabits.length"
         class="text-center justify-center flex flex-col items-center gap-6">
-        <img src="/images/mascot/no_habits.png" alt="No habits for today"
-          class="max-w-100 w-full h-auto object-contain mix-blend-darken" />
+        <Image src="/images/mascot/no_habits.png" alt="No habits for today"
+          class="max-w-100 w-full h-auto object-contain" />
         <section class="space-y-2">
           <h1 class="md:text-3xl text-xl font-bold text-primary">You don't have any habits yet.</h1>
           <p class="text-muted md:text-lg text-sm">Create one using this button.</p>
         </section>
-        <img src="/images/arrow_to_add.svg" alt="Add habit" class="sm:w-full w-2/3 h-auto object-cover" />
+        <Image src="/images/arrow_to_add.svg" alt="Add habit" class="sm:w-full! w-2/3!" />
       </div>
 
       <Tabs v-if="todoHabits.length || completedHabits.length" v-model="activeTab" :tabs="tabs" />
@@ -74,8 +74,7 @@ const toggleCompletion = (habit: Habit) => habitStore.toggleCompletion(habit)
         <section v-if="activeTab === 'todo'" key="todo" class="sm:space-y-4 space-y-3">
           <div v-if="!todoHabits.length && completedHabits.length"
             class="text-center justify-center flex flex-col items-center gap-6">
-            <img src="/images/mascot/no_todo.png" alt="No habits for today"
-              class="max-w-100 w-full h-auto object-contain" />
+            <Image src="/images/mascot/no_todo.png" alt="No habits for today" class="max-w-100 w-full object-contain" />
             <section class="space-y-2">
               <h1 class="md:text-3xl text-xl font-bold text-primary">No more habits for now!</h1>
               <p class="text-muted md:text-lg text-sm">Take a rest or add more habits later.</p>
@@ -95,8 +94,7 @@ const toggleCompletion = (habit: Habit) => habitStore.toggleCompletion(habit)
         <section v-else key="completed">
           <div v-if="todoHabits.length && !completedHabits.length"
             class="text-center justify-center flex flex-col items-center gap-6">
-            <img src="/images/mascot/no_completions.png" alt="No completed habits"
-              class="max-w-100 w-full h-auto object-contain" />
+            <Image src="/images/mascot/no_completions.png" alt="No completed habits" class="max-w-100 w-full object-contain" />
             <section class="space-y-2">
               <h1 class="md:text-3xl text-xl font-bold text-primary">You haven't completed any habits.</h1>
               <p class="text-muted md:text-lg text-sm">Complete a habit from <span class="font-bold">"To Do"</span> to

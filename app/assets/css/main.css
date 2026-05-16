@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  --font-primary: "National Park", "sans-serif";
+  --font-primary: "SN Pro", "sans-serif";
   /* --font-secondary: "Roboto Condensed", "sans-serif"; */
   --color-primary: #c87235;
   --color-black: #131313;
@@ -16,9 +16,12 @@
   }
 
   /* hide scrollbar */
+  .scrollbar-none {
+    scrollbar-width: none; /* Firefox */
+  }
 
   .scrollbar-none::-webkit-scrollbar {
-    display: none;
+    display: none; /* Chrome, Safari, Edge */
   }
 
   .color-muted {

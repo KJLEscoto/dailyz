@@ -110,8 +110,17 @@ const saveName = async () => {
       </section>
 
       <section class="flex items-center gap-4 w-full">
-        <img :src="photoURL" :alt="user?.displayName ?? undefined" v-if="photoURL"
-          class="sm:size-24 size-20 rounded-full object-cover shrink-0" referrerpolicy="no-referrer" />
+        <span v-if="user?.emailVerified">
+          <Image :src="photoURL" :alt="user?.displayName ?? 'User'" v-if="photoURL"
+            class="sm:size-24! size-20! rounded-full hrink-0" referrerpolicy="no-referrer" />
+        </span>
+
+        <Tooltip v-else text="Sign In with Google to display your photo" position="top">
+          <Image :src="photoURL" :alt="user?.displayName ?? 'User'" v-if="photoURL"
+            class="sm:size-24! size-20! rounded-full shrink-0" referrerpolicy="no-referrer" />
+        </Tooltip>
+
+        
 
         <div class="flex flex-col min-w-0 flex-1">
           <div v-if="isEditingName" class="flex items-center gap-2">
@@ -138,7 +147,7 @@ const saveName = async () => {
           </div>
 
           <p v-if="nameError && isEditingName" class="text-xs text-red-400 mt-1">{{ nameError }}</p>
-          <p class="text-sm text-black/40 truncate">{{ user?.email }}</p>
+          <p class="text-sm text-black/40 truncate select-text">{{ user?.email }}</p>
 
           <span class="mt-1.5">
             <!-- Verified -->

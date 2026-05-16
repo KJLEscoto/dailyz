@@ -2,6 +2,8 @@
 <script setup lang="ts">
 import { Eye, EyeClosed, Info } from '@lucide/vue'
 
+defineOptions({ inheritAttrs: false })
+
 interface Props {
   modelValue?: string | number
   label?: string
@@ -75,14 +77,15 @@ function onBlur(e: FocusEvent) {
       </span>
 
       <!-- Input field -->
-      <input :id="inputId" :type="inputType" :value="modelValue" :placeholder="placeholder" :disabled="disabled" autocomplete="off" :class="[
+      <input v-bind="$attrs" :id="inputId" :type="inputType" :value="modelValue" :placeholder="placeholder"
+        :disabled="disabled" autocomplete="off" :class="[
           'h-11 w-full rounded-xl bg-transparent text-base text-black outline-none placeholder:text-muted/50 font-primary',
           $slots.icon ? 'pl-9' : 'pl-4',
           type === 'password' || $slots.suffix ? 'pr-10' : 'pr-4',
         ]" @input="onInput" @focus="onFocus" @blur="onBlur" />
 
       <!-- Password toggle -->
-      <button v-if="type === 'password'" type="button" :aria-label="showPassword ? 'Hide password' : 'Show password'"
+      <button tabindex="-1" v-if="type === 'password'" type="button" :aria-label="showPassword ? 'Hide password' : 'Show password'"
         class="absolute right-3 flex items-center justify-center rounded-md p-0.5 text-muted transition-colors duration-150 hover:text-black/80 cursor-pointer"
         @click="showPassword = !showPassword">
         <Eye v-if="showPassword" class="size-4" />

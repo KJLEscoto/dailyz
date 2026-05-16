@@ -106,7 +106,7 @@ onUnmounted(() => clearTimer())
           </div>
 
           <!-- Actions -->
-          <div v-if="actions?.length" class="flex items-center justify-end gap-1">
+          <div v-if="actions?.length" class="flex items-center justify-end gap-1 select-none">
             <button v-for="(action, index) in actions" :key="index" @click="action.onClick"
               :class="index === 0 ? config.actionSecondary : config.actionPrimary">
               {{ action.label }}
