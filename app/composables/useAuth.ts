@@ -155,32 +155,31 @@ export function useAuth() {
         settled = true
         clearInterval(tabClosedPoll)
         window.removeEventListener('message', messageHandler)
+        unsubscribeAuth()
 
         if (!firebaseUser) {
-          resolve() // cancelled
+          resolve()
           return
         }
 
-        try {
-          if (mode === 'signup') {
-            const { doc, getDoc } = await import('firebase/firestore')
-            const userDocRef = doc($firebase.db, 'users', firebaseUser.uid)
-            const userDoc = await getDoc(userDocRef)
-            if (userDoc.exists()) {
-              await $firebase.auth.signOut()
-              await navigateTo({ path: '/login', state: { email: firebaseUser.email ?? '', error: 'existing' } }, { replace: true })
-            } else {
-              user.value = firebaseUser
-              await navigateTo('/setup-password')
-            }
+        if (mode === 'signup') {
+          const { doc, getDoc } = await import('firebase/firestore')
+          const userDocRef = doc($firebase.db, 'users', firebaseUser.uid)
+          const userDoc = await getDoc(userDocRef)
+          if (userDoc.exists()) {
+            // Existing user tried to sign up — sign out and redirect to login
+            await $firebase.auth.signOut()
+            window.location.href = '/login?error=existing&email=' + encodeURIComponent(firebaseUser.email ?? '')
           } else {
-            await processGoogleUser(firebaseUser)
-            await navigateTo('/home')
+            // New user — go to setup
+            window.location.href = '/setup-password'
           }
-          resolve()
-        } catch (err) {
-          reject(err)
+        } else {
+          // Sign in — reload and let middleware handle redirect to /home
+          window.location.reload()
         }
+
+        resolve()
       }
 
       // ✅ Primary: listen for postMessage (works when COOP header is set)
