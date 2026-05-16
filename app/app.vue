@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { handleRedirectResult, processingRedirect } = useAuth()
+const { handleRedirectResult } = useAuth()
 onMounted(async () => {
   await handleRedirectResult()
 })

@@ -7,30 +7,31 @@ import {
   updateProfile,
   sendPasswordResetEmail,
   linkWithCredential,
-  EmailAuthProvider
+  EmailAuthProvider,
+  GoogleAuthProvider
 } from 'firebase/auth'
 import type { User } from 'firebase/auth'
 
+// ✅ Only runs client-side, never during SSR
 const isMobile = () => {
   if (import.meta.server) return false
+  if (typeof navigator === 'undefined') return false
   return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+}
+
+const isDev = () => {
+  if (import.meta.server) return false
+  return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '192.168.254.130'
 }
 
 export function useAuth() {
   const user = useState<User | null>('auth-user', () => null)
   const authReady = useState<boolean>('auth-ready', () => false)
   const habitsReady = useState<boolean>('habits-ready', () => false)
-  const processingRedirect = useState<boolean>('processing-redirect', () => {
-    if (import.meta.client) {
-      // ✅ Check if Firebase has a pending redirect result by looking at the URL
-      // Firebase appends a specific fragment when returning from OAuth
-      const isReturningFromOAuth = window.location.href.includes('/__/auth/handler') ||
-        document.referrer.includes('accounts.google.com') ||
-        document.referrer.includes('firebaseapp.com')
-      return isReturningFromOAuth
-    }
-    return false
-  })
+
+  // ✅ Never initialize from client-side check during SSR — always start false
+  // handleRedirectResult in app.vue sets this to true if needed
+  const processingRedirect = useState<boolean>('processing-redirect', () => false)
 
   const initAuth = (onLogin?: (user: User) => Promise<void>, onLogout?: () => void) => {
     const { $firebase } = useNuxtApp()
@@ -93,29 +94,22 @@ export function useAuth() {
 
   const handleRedirectResult = async () => {
     const { $firebase } = useNuxtApp()
-
     try {
-      // ✅ getRedirectResult returns null if no redirect happened
-      // It returns the user if Google just redirected back — no storage needed
       const result = await getRedirectResult($firebase.auth)
-      if (!result) return // Normal page load — do nothing
+      if (!result) return
 
-      // ✅ We have a result — block middleware immediately
+      // ✅ Got a result — block middleware now
       processingRedirect.value = true
 
-      // Determine signup vs signin by checking if Firestore doc exists
-      // New user = no doc = signup flow; existing user = has doc = signin flow
       const { doc, getDoc } = await import('firebase/firestore')
       const userDocRef = doc($firebase.db, 'users', result.user.uid)
       const userDoc = await getDoc(userDocRef)
 
       if (!userDoc.exists()) {
-        // ✅ New user — go to password setup (signup flow)
         user.value = result.user
         processingRedirect.value = false
         await navigateTo('/setup-password', { replace: true })
       } else {
-        // ✅ Existing user — sign in flow
         await processGoogleUser(result.user)
         processingRedirect.value = false
         await navigateTo('/home', { replace: true })
@@ -127,14 +121,24 @@ export function useAuth() {
     }
   }
 
+  // ✅ Get provider with forced account picker
+  const getGoogleProvider = () => {
+    const { $firebase } = useNuxtApp()
+    const provider = $firebase.provider as GoogleAuthProvider
+    provider.setCustomParameters({ prompt: 'select_account' })
+    return provider
+  }
+
   const signInWithGoogle = async () => {
     const { $firebase } = useNuxtApp()
-    if (isMobile()) {
-      await signInWithRedirect($firebase.auth, $firebase.provider)
+
+    if (isMobile() && !isDev()) {
+      await signInWithRedirect($firebase.auth, getGoogleProvider())
       return
     }
+
     try {
-      const result = await signInWithPopup($firebase.auth, $firebase.provider)
+      const result = await signInWithPopup($firebase.auth, getGoogleProvider())
       await processGoogleUser(result.user)
       await navigateTo('/home')
     } catch (error: any) {
@@ -146,12 +150,14 @@ export function useAuth() {
 
   const signUpWithGoogle = async () => {
     const { $firebase } = useNuxtApp()
-    if (isMobile()) {
-      await signInWithRedirect($firebase.auth, $firebase.provider)
+
+    if (isMobile() && !isDev()) {
+      await signInWithRedirect($firebase.auth, getGoogleProvider())
       return
     }
+
     try {
-      const result = await signInWithPopup($firebase.auth, $firebase.provider)
+      const result = await signInWithPopup($firebase.auth, getGoogleProvider())
       const { doc, getDoc } = await import('firebase/firestore')
       const userDocRef = doc($firebase.db, 'users', result.user.uid)
       const userDoc = await getDoc(userDocRef)
