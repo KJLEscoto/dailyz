@@ -1,4 +1,3 @@
-// composables/useAuth.ts
 import {
   signInWithPopup,
   signInWithRedirect,
@@ -12,18 +11,6 @@ import {
 } from 'firebase/auth'
 import type { User } from 'firebase/auth'
 
-const isWebview = () => {
-  if (import.meta.server) return false
-  const ua = navigator.userAgent
-  const isIOS = /iPhone|iPad|iPod/i.test(ua)
-  const isSafari = /Safari/i.test(ua) && !/CriOS|FxiOS|OPiOS|EdgiOS/i.test(ua)
-  const isChrome = /CriOS/i.test(ua)
-  const isAndroidBrowser = /Android/i.test(ua) && /wv/i.test(ua)
-  if (isIOS && !isSafari && !isChrome) return true
-  if (isAndroidBrowser) return true
-  return false
-}
-
 const isMobile = () => {
   if (import.meta.server) return false
   return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
@@ -33,6 +20,7 @@ export function useAuth() {
   const user = useState<User | null>('auth-user', () => null)
   const authReady = useState<boolean>('auth-ready', () => false)
   const habitsReady = useState<boolean>('habits-ready', () => false)
+  const processingRedirect = useState<boolean>('processing-redirect', () => false)
 
   const initAuth = (onLogin?: (user: User) => Promise<void>, onLogout?: () => void) => {
     const { $firebase } = useNuxtApp()
@@ -93,145 +81,66 @@ export function useAuth() {
     user.value = $firebase.auth.currentUser
   }
 
-  // ✅ Same-tab redirect for actual webviews (no window.open support)
   const handleRedirectResult = async () => {
+    const { $firebase } = useNuxtApp()
+
     try {
-      const { $firebase } = useNuxtApp()
+      // ✅ getRedirectResult returns null if no redirect happened
+      // It returns the user if Google just redirected back — no storage needed
       const result = await getRedirectResult($firebase.auth)
-      if (!result) return
-      const mode = sessionStorage.getItem('google_auth_mode') ?? 'signin'
-      sessionStorage.removeItem('google_auth_mode')
-      if (mode === 'signup') {
-        const { doc, getDoc } = await import('firebase/firestore')
-        const userDocRef = doc($firebase.db, 'users', result.user.uid)
-        const userDoc = await getDoc(userDocRef)
-        if (userDoc.exists()) {
-          await $firebase.auth.signOut()
-          await navigateTo({ path: '/login', state: { email: result.user.email ?? '', error: 'existing' } }, { replace: true })
-          return
-        }
+      if (!result) return // Normal page load — do nothing
+
+      // ✅ We have a result — block middleware immediately
+      processingRedirect.value = true
+
+      // Determine signup vs signin by checking if Firestore doc exists
+      // New user = no doc = signup flow; existing user = has doc = signin flow
+      const { doc, getDoc } = await import('firebase/firestore')
+      const userDocRef = doc($firebase.db, 'users', result.user.uid)
+      const userDoc = await getDoc(userDocRef)
+
+      if (!userDoc.exists()) {
+        // ✅ New user — go to password setup (signup flow)
         user.value = result.user
-        await navigateTo('/setup-password')
+        processingRedirect.value = false
+        await navigateTo('/setup-password', { replace: true })
       } else {
+        // ✅ Existing user — sign in flow
         await processGoogleUser(result.user)
-        window.location.replace('/home')
+        processingRedirect.value = false
+        await navigateTo('/home', { replace: true })
       }
     } catch (error: any) {
       console.error('Google redirect result error:', error)
+      processingRedirect.value = false
+      await navigateTo('/login', { replace: true })
     }
   }
 
-  // ✅ Open new tab on mobile — tab uses signInWithRedirect internally (no popup)
-  const signInWithGoogleViaTab = (mode: 'signin' | 'signup'): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      // Must be synchronous — called directly from user gesture handler
-      const authTab = window.open('/auth/google-popup', '_blank')
-
-      if (!authTab) {
-        // Tab was blocked — fall back to same-tab redirect
-        sessionStorage.setItem('google_auth_mode', mode)
-        const { $firebase } = useNuxtApp()
-        signInWithRedirect($firebase.auth, $firebase.provider)
-        resolve() // resolves immediately; page will reload after redirect
-        return
-      }
-
-      const messageHandler = async (event: MessageEvent) => {
-        if (event.origin !== window.location.origin) return
-        if (!['GOOGLE_AUTH_SUCCESS', 'GOOGLE_AUTH_ERROR'].includes(event.data?.type)) return
-
-        window.removeEventListener('message', messageHandler)
-        clearInterval(tabClosedPoll)
-
-        if (event.data.type === 'GOOGLE_AUTH_ERROR') {
-          reject({ code: event.data.code })
-          return
-        }
-
-        // ✅ Auth state is already set in Firebase (shared IndexedDB)
-        try {
-          const { $firebase } = useNuxtApp()
-          await $firebase.auth.authStateReady()
-          const firebaseUser = $firebase.auth.currentUser
-          if (!firebaseUser) { resolve(); return }
-
-          if (mode === 'signup') {
-            const { doc, getDoc } = await import('firebase/firestore')
-            const { $firebase } = useNuxtApp()
-            const userDocRef = doc($firebase.db, 'users', firebaseUser.uid)
-            const userDoc = await getDoc(userDocRef)
-            if (userDoc.exists()) {
-              await $firebase.auth.signOut()
-              await navigateTo({ path: '/login', state: { email: firebaseUser.email ?? '', error: 'existing' } }, { replace: true })
-            } else {
-              user.value = firebaseUser
-              await navigateTo('/setup-password')
-            }
-          } else {
-            await processGoogleUser(firebaseUser)
-            await navigateTo('/home')
-          }
-          resolve()
-        } catch (err) {
-          reject(err)
-        }
-      }
-
-      window.addEventListener('message', messageHandler)
-
-      // Clean up if user closes the tab without completing auth
-      const tabClosedPoll = setInterval(() => {
-        if (authTab.closed) {
-          clearInterval(tabClosedPoll)
-          window.removeEventListener('message', messageHandler)
-          resolve() // User cancelled — resolve silently
-        }
-      }, 500)
-    })
-  }
-
   const signInWithGoogle = async () => {
+    const { $firebase } = useNuxtApp()
+    if (isMobile()) {
+      await signInWithRedirect($firebase.auth, $firebase.provider)
+      return
+    }
     try {
-      const { $firebase } = useNuxtApp()
-
-      if (isWebview()) {
-        sessionStorage.setItem('google_auth_mode', 'signin')
-        await signInWithRedirect($firebase.auth, $firebase.provider)
-        return
-      }
-
-      if (isMobile()) {
-        await signInWithGoogleViaTab('signin')
-        return
-      }
-
-      // Desktop — popup works fine
       const result = await signInWithPopup($firebase.auth, $firebase.provider)
       await processGoogleUser(result.user)
       await navigateTo('/home')
     } catch (error: any) {
-      if (error.code === 'auth/popup-closed-by-user') return
+      if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') return
       console.error('Google sign in error:', error)
       throw error
     }
   }
 
   const signUpWithGoogle = async () => {
+    const { $firebase } = useNuxtApp()
+    if (isMobile()) {
+      await signInWithRedirect($firebase.auth, $firebase.provider)
+      return
+    }
     try {
-      const { $firebase } = useNuxtApp()
-
-      if (isWebview()) {
-        sessionStorage.setItem('google_auth_mode', 'signup')
-        await signInWithRedirect($firebase.auth, $firebase.provider)
-        return
-      }
-
-      if (isMobile()) {
-        await signInWithGoogleViaTab('signup')
-        return
-      }
-
-      // Desktop
       const result = await signInWithPopup($firebase.auth, $firebase.provider)
       const { doc, getDoc } = await import('firebase/firestore')
       const userDocRef = doc($firebase.db, 'users', result.user.uid)
@@ -244,7 +153,7 @@ export function useAuth() {
       user.value = result.user
       await navigateTo('/setup-password')
     } catch (error: any) {
-      if (error.code === 'auth/popup-closed-by-user') return
+      if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') return
       console.error('Google sign up error:', error)
       throw error
     }
@@ -284,7 +193,8 @@ export function useAuth() {
   }
 
   return {
-    user, authReady, habitsReady, initAuth, signIn, signInWithGoogle, signOut,
-    signOutSuccess, handleRedirectResult, sendPasswordReset, signUpWithGoogle, linkPassword
+    user, authReady, habitsReady, processingRedirect, initAuth, signIn,
+    signInWithGoogle, signOut, signOutSuccess, handleRedirectResult,
+    sendPasswordReset, signUpWithGoogle, linkPassword
   }
 }
