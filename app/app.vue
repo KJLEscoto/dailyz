@@ -1,10 +1,7 @@
-<!-- app.vue -->
 <script setup lang="ts">
-const { handleRedirectResult } = useAuth()
+const { handleRedirectResult, processingRedirect } = useAuth()
 onMounted(async () => {
   await handleRedirectResult()
-  console.log('localStorage mode:', localStorage.getItem('google_auth_mode'))
-  console.log('localStorage errorRoute:', localStorage.getItem('google_auth_error_route'))
 })
 </script>
 

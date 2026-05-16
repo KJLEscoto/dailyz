@@ -20,7 +20,17 @@ export function useAuth() {
   const user = useState<User | null>('auth-user', () => null)
   const authReady = useState<boolean>('auth-ready', () => false)
   const habitsReady = useState<boolean>('habits-ready', () => false)
-  const processingRedirect = useState<boolean>('processing-redirect', () => false)
+  const processingRedirect = useState<boolean>('processing-redirect', () => {
+    if (import.meta.client) {
+      // ✅ Check if Firebase has a pending redirect result by looking at the URL
+      // Firebase appends a specific fragment when returning from OAuth
+      const isReturningFromOAuth = window.location.href.includes('/__/auth/handler') ||
+        document.referrer.includes('accounts.google.com') ||
+        document.referrer.includes('firebaseapp.com')
+      return isReturningFromOAuth
+    }
+    return false
+  })
 
   const initAuth = (onLogin?: (user: User) => Promise<void>, onLogout?: () => void) => {
     const { $firebase } = useNuxtApp()
