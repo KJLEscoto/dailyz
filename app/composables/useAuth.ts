@@ -1,6 +1,6 @@
+// useAuth.ts
 import {
   signInWithPopup,
-  signInWithRedirect,
   getRedirectResult,
   signInWithEmailAndPassword,
   onAuthStateChanged,
@@ -12,25 +12,17 @@ import {
 } from 'firebase/auth'
 import type { User } from 'firebase/auth'
 
-// ✅ Only runs client-side, never during SSR
-const isMobile = () => {
-  if (import.meta.server) return false
-  if (typeof navigator === 'undefined') return false
-  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
-}
-
-const isDev = () => {
-  if (import.meta.server) return false
-  return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '192.168.254.130'
-}
+// ❌ Removed isMobile() and isDev() — no longer needed
+// We always use signInWithPopup now, which opens a new tab on mobile
+// just like Claude.ai does. signInWithRedirect causes hydration mismatches.
 
 export function useAuth() {
   const user = useState<User | null>('auth-user', () => null)
   const authReady = useState<boolean>('auth-ready', () => false)
   const habitsReady = useState<boolean>('habits-ready', () => false)
 
-  // ✅ Never initialize from client-side check during SSR — always start false
-  // handleRedirectResult in app.vue sets this to true if needed
+  // Keep this for backward compat but it won't be set to true anymore
+  // since we no longer use signInWithRedirect
   const processingRedirect = useState<boolean>('processing-redirect', () => false)
 
   const initAuth = (onLogin?: (user: User) => Promise<void>, onLogout?: () => void) => {
@@ -92,15 +84,18 @@ export function useAuth() {
     user.value = $firebase.auth.currentUser
   }
 
+  // ✅ This is now a no-op since we don't use signInWithRedirect anymore.
+  // Kept so app.vue doesn't break.
   const handleRedirectResult = async () => {
+    if (import.meta.server) return
     const { $firebase } = useNuxtApp()
     try {
+      // Drain any leftover redirect result from old sessions / pre-migration visits.
+      // After this runs once on a fresh deploy the result will always be null.
       const result = await getRedirectResult($firebase.auth)
       if (!result) return
 
-      // ✅ Got a result — block middleware now
       processingRedirect.value = true
-
       const { doc, getDoc } = await import('firebase/firestore')
       const userDocRef = doc($firebase.db, 'users', result.user.uid)
       const userDoc = await getDoc(userDocRef)
@@ -117,11 +112,11 @@ export function useAuth() {
     } catch (error: any) {
       console.error('Google redirect result error:', error)
       processingRedirect.value = false
-      await navigateTo('/login', { replace: true })
     }
   }
 
-  // ✅ Get provider with forced account picker
+  // ✅ Always use popup — opens as a new tab on mobile (same as Claude.ai)
+  // No page reload = no hydration mismatch
   const getGoogleProvider = () => {
     const { $firebase } = useNuxtApp()
     const provider = $firebase.provider as GoogleAuthProvider
@@ -131,18 +126,16 @@ export function useAuth() {
 
   const signInWithGoogle = async () => {
     const { $firebase } = useNuxtApp()
-
-    if (isMobile() && !isDev()) {
-      await signInWithRedirect($firebase.auth, getGoogleProvider())
-      return
-    }
-
     try {
       const result = await signInWithPopup($firebase.auth, getGoogleProvider())
       await processGoogleUser(result.user)
       await navigateTo('/home')
     } catch (error: any) {
-      if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') return
+      if (
+        error.code === 'auth/popup-closed-by-user' ||
+        error.code === 'auth/cancelled-popup-request' ||
+        error.code === 'auth/popup-blocked'
+      ) return
       console.error('Google sign in error:', error)
       throw error
     }
@@ -150,12 +143,6 @@ export function useAuth() {
 
   const signUpWithGoogle = async () => {
     const { $firebase } = useNuxtApp()
-
-    if (isMobile() && !isDev()) {
-      await signInWithRedirect($firebase.auth, getGoogleProvider())
-      return
-    }
-
     try {
       const result = await signInWithPopup($firebase.auth, getGoogleProvider())
       const { doc, getDoc } = await import('firebase/firestore')
@@ -163,13 +150,20 @@ export function useAuth() {
       const userDoc = await getDoc(userDocRef)
       if (userDoc.exists()) {
         await $firebase.auth.signOut()
-        await navigateTo({ path: '/login', state: { email: result.user.email ?? '', error: 'existing' } }, { replace: true })
+        await navigateTo(
+          { path: '/login', state: { email: result.user.email ?? '', error: 'existing' } },
+          { replace: true }
+        )
         return
       }
       user.value = result.user
       await navigateTo('/setup-password')
     } catch (error: any) {
-      if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') return
+      if (
+        error.code === 'auth/popup-closed-by-user' ||
+        error.code === 'auth/cancelled-popup-request' ||
+        error.code === 'auth/popup-blocked'
+      ) return
       console.error('Google sign up error:', error)
       throw error
     }
