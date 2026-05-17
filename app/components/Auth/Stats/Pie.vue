@@ -100,7 +100,7 @@ const slices = computed<PieSlice[]>(() => {
       <div v-if="habits.length" class="flex flex-col items-center gap-4">
         <!-- Pie SVG -->
         <div
-          class="relative flex flex-col items-center md:scale-100 scale-125 cursor-pointer md:hover:scale-105 hover:scale-120 duration-300 md:active:scale-100 active:scale-115"
+          class="relative flex flex-col items-center md:scale-100 scale-115 cursor-pointer md:hover:scale-105 hover:scale-120 duration-300 md:active:scale-100 active:scale-115"
           @click="showBlocks = true">
 
           <svg :width="SIZE" :height="SIZE" :viewBox="`0 0 ${SIZE} ${SIZE}`">
