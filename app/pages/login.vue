@@ -4,6 +4,14 @@ import { Info } from '@lucide/vue'
 
 const { signIn, signInWithGoogle, processingRedirect } = useAuth()
 
+const route = useRoute()
+onMounted(() => {
+  if (route.query.error === 'existing') {
+    emailError.value = 'This account already exists. Please sign in instead.'
+    emailAddress.value = (route.query.email as string) ?? ''
+  }
+})
+
 const state = import.meta.client ? history.state : {}
 const emailAddress = ref((state?.email as string) ?? '')
 const emailError = ref(state?.error === 'existing' ? 'This account already exists. Please sign in instead.' : '')

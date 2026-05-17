@@ -1,3 +1,9 @@
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cross-Origin-Opener-Policy = "same-origin-allow-popups"
+    Cross-Origin-Embedder-Policy = "unsafe-none"
+
 [[redirects]]
   from = "/__/firebase/*"
   to = "https://dailyz-a3b19.firebaseapp.com/__/firebase/:splat"
