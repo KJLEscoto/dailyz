@@ -1,6 +1,5 @@
-<!-- components/Auth/Stats/Commit.vue -->
 <script setup lang="ts">
-import { format, eachDayOfInterval, startOfDay, startOfYear, endOfYear, getYear } from 'date-fns'
+import { format, eachDayOfInterval, startOfDay, startOfYear, endOfYear, getYear, getMonth } from 'date-fns'
 import { CalendarFold } from '@lucide/vue'
 import type { MenuItem } from '~/components/MainMenu.vue'
 
@@ -19,21 +18,15 @@ const activeDays = computed(() =>
 const availableYears = computed(() => {
   const currentYear = getYear(today)
   if (!habits.value.length) return [currentYear]
-
   const yearsSet = new Set<number>([currentYear])
-
   habits.value.forEach(h => {
-    // Year habit was created
     yearsSet.add(getYear(new Date(h.createdAt)))
-
-    // Years habit had completions
     h.completions?.forEach(c => {
       const d = new Date(getDate(c))
       if (!isNaN(d.getTime())) yearsSet.add(getYear(d))
     })
   })
-
-  return [...yearsSet].sort((a, b) => b - a) // latest first
+  return [...yearsSet].sort((a, b) => b - a)
 })
 
 const selectedYear = ref(getYear(today))
@@ -51,7 +44,6 @@ const yearMenuItems = computed(() =>
   })) as MenuItem[]
 )
 
-// Always full year — Jan 1 to Dec 31
 const rangeStart = computed(() => startOfYear(new Date(selectedYear.value, 0, 1)))
 const rangeEnd = computed(() => endOfYear(new Date(selectedYear.value, 0, 1)))
 
@@ -60,23 +52,18 @@ const days = computed(() => {
   return eachDayOfInterval({ start: rangeStart.value, end: rangeEnd.value }).map(date => {
     const dateStr = format(date, 'yyyy-MM-dd')
     const isFuture = date > today
-
     if (isFuture) {
       return { dateStr, completed: 0, total: 0, ratio: -2, dayOfWeek: date.getDay(), isFuture: true }
     }
-
     const existingHabits = habits.value.filter(h => {
       const created = format(new Date(h.createdAt), 'yyyy-MM-dd')
       return created <= dateStr
     })
-
     const completed = existingHabits.filter(h =>
       h.completions?.some(c => getDate(c) === dateStr)
     ).length
-
     const total = existingHabits.length
     const ratio = total === 0 ? 0 : completed / total
-
     return { dateStr, completed, total, ratio, dayOfWeek: date.getDay(), isFuture: false }
   })
 })
@@ -84,13 +71,11 @@ const days = computed(() => {
 const weeks = computed(() => {
   const chunks: typeof days.value[] = []
   const allDays = [...days.value]
-
   const firstDay = new Date(allDays[0]!.dateStr)
   const padding = firstDay.getDay()
   for (let i = 0; i < padding; i++) {
     allDays.unshift({ dateStr: '', completed: 0, total: 0, ratio: -1, dayOfWeek: -1, isFuture: false })
   }
-
   for (let i = 0; i < allDays.length; i += 7) {
     chunks.push(allDays.slice(i, i + 7))
   }
@@ -100,7 +85,6 @@ const weeks = computed(() => {
 const months = computed(() => {
   const labels: { label: string; col: number }[] = []
   let lastMonth = ''
-
   weeks.value.forEach((week, colIndex) => {
     const firstReal = week.find(d => d.dateStr)
     if (!firstReal) return
@@ -123,6 +107,42 @@ const getColor = (ratio: number, isFuture: boolean) => {
 }
 
 const ROW_LABELS: Record<number, string> = { 1: 'Mon', 3: 'Wed', 5: 'Fri' }
+
+// --- Auto-scroll to current month ---
+const scrollRef = ref<HTMLDivElement>()
+
+// Find the week column index where the current month starts
+const currentMonthCol = computed(() => {
+  const isCurrentYear = selectedYear.value === getYear(today)
+  // For other years default to the start (Jan); for current year find current month
+  const targetMonth = isCurrentYear ? getMonth(today) : 0  // 0 = January
+  const targetMonthStr = format(new Date(selectedYear.value, targetMonth, 1), 'MMM')
+  return months.value.find(m => m.label === targetMonthStr)?.col ?? 0
+})
+
+const scrollToCurrentMonth = async () => {
+  await nextTick()
+  const el = scrollRef.value
+  if (!el) return
+
+  const CELL = 12   // cell width px
+  const GAP = 3     // gap between cells px
+  const colWidth = CELL + GAP
+
+  const colIndex = currentMonthCol.value
+  const colLeft = colIndex * colWidth
+
+  // Center the target month in the visible scroll area
+  const visibleWidth = el.clientWidth
+  const labelColWidth = 32  // approximate width of sticky day-label column
+  const scrollTarget = colLeft - (visibleWidth - labelColWidth) / 2 + colWidth * 2
+
+  el.scrollTo({ left: Math.max(0, scrollTarget), behavior: 'instant' })
+}
+
+// Scroll on mount and whenever the year changes
+onMounted(scrollToCurrentMonth)
+watch(selectedYear, scrollToCurrentMonth)
 </script>
 
 <template>
@@ -131,8 +151,6 @@ const ROW_LABELS: Record<number, string> = { 1: 'Mon', 3: 'Wed', 5: 'Fri' }
       <!-- Header -->
       <div class="flex items-center justify-between">
         <p class="text-sm font-semibold text-black/60">Daily Commits</p>
-
-        <!-- Year filter via MainMenu -->
         <MainMenu :items="yearMenuItems" :menu-width="120">
           <template #trigger>
             <div
@@ -144,10 +162,12 @@ const ROW_LABELS: Record<number, string> = { 1: 'Mon', 3: 'Wed', 5: 'Fri' }
         </MainMenu>
       </div>
 
-      <div class="overflow-x-auto scrollbar-none">
-        <div class="min-w-max flex gap-2">
-          <!-- Day-of-week labels column -->
-          <div class="flex flex-col" style="gap: 3px; padding-top: 18px">
+      <!-- ✅ scrollRef added here -->
+      <div ref="scrollRef" class="overflow-x-auto scrollbar-none">
+        <div class="min-w-max flex gap-2 relative">
+
+          <!-- Sticky day-of-week labels -->
+          <div class="flex flex-col sticky left-0 z-10 bg-white" style="gap: 3px; padding-top: 18px">
             <template v-for="row in 7" :key="row">
               <div class="flex items-center justify-end" style="height: 12px">
                 <span v-if="ROW_LABELS[row - 1]"
@@ -163,7 +183,12 @@ const ROW_LABELS: Record<number, string> = { 1: 'Mon', 3: 'Wed', 5: 'Fri' }
             <!-- Month labels -->
             <div class="flex mb-1" style="gap: 3px">
               <template v-for="(week, i) in weeks" :key="i">
-                <div class="text-[10px] text-black/30 font-semibold" style="min-width: 12px; width: 12px">
+                <div :class="[
+                  'text-[10px] font-semibold',
+                  months.find(m => m.col === i)?.label === format(new Date(selectedYear, getMonth(today), 1), 'MMM') && selectedYear === getYear(today)
+                    ? 'text-primary'
+                    : 'text-black/30'
+                ]" style="min-width: 12px; width: 12px">
                   {{months.find(m => m.col === i)?.label ?? ''}}
                 </div>
               </template>
@@ -174,7 +199,6 @@ const ROW_LABELS: Record<number, string> = { 1: 'Mon', 3: 'Wed', 5: 'Fri' }
               <template v-for="(week, wi) in weeks" :key="wi">
                 <div class="flex flex-col" style="gap: 3px">
                   <template v-for="(day, di) in week" :key="di">
-                    <!-- Real past/today cell -->
                     <Tooltip v-if="day.dateStr && !day.isFuture"
                       :text="day.total === 0
                         ? `0 habits on ${format(new Date(day.dateStr), 'MMM d')}`
@@ -183,16 +207,11 @@ const ROW_LABELS: Record<number, string> = { 1: 'Mon', 3: 'Wed', 5: 'Fri' }
                         :class="['rounded-sm transition-all duration-200 cursor-default', getColor(day.ratio, false)]"
                         style="width: 12px; height: 12px" />
                     </Tooltip>
-
-                    <!-- Future cell -->
                     <Tooltip v-else-if="day.dateStr && day.isFuture"
                       :text="`0 habits on ${format(new Date(day.dateStr), 'MMM d')}`" position="top">
-                      <div
-                        :class="['rounded-sm cursor-default transition-all duration-200', getColor(day.ratio, true)]"
+                      <div :class="['rounded-sm cursor-default transition-all duration-200', getColor(day.ratio, true)]"
                         style="width: 12px; height: 12px" />
                     </Tooltip>
-
-                    <!-- Padding cell -->
                     <div v-else style="width: 12px; height: 12px" />
                   </template>
                 </div>
