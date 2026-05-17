@@ -68,8 +68,17 @@ const startDeleteCountdown = () => {
       const firebaseUser = $firebase.auth.currentUser
       if (!firebaseUser) return
 
-      const { doc, deleteDoc } = await import('firebase/firestore')
+      const { doc, deleteDoc, collection, getDocs } = await import('firebase/firestore')
+
+      // ✅ Delete all habits in the user's subcollection
+      const habitsRef = collection($firebase.db, 'users', firebaseUser.uid, 'habits')
+      const habitsSnap = await getDocs(habitsRef)
+      await Promise.all(habitsSnap.docs.map(d => deleteDoc(d.ref)))
+
+      // ✅ Delete the user document itself
       await deleteDoc(doc($firebase.db, 'users', firebaseUser.uid))
+
+      // ✅ Delete the Firebase Auth account
       await firebaseUser.delete()
 
       deleteAccountSuccess.value = true

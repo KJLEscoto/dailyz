@@ -91,11 +91,15 @@ const handleToggle = async () => {
     <div class="flex items-center gap-1">
       <Tooltip :text="streakStarted" position="top">
         <button :class="[
-          'flex items-center gap-0.5 px-3 py-1.5 rounded-full! text-xs font-bold transition-all duration-200',
+          'flex items-center gap-1 px-3 py-1.5 rounded-full! text-xs font-bold transition-all duration-200',
           habit.streak >= 3 ? 'bg-danger/10 text-danger' : 'bg-emerald-500/10 text-emerald-500',
         ]">
-          <span v-if="habit.streak >= 3">🔥</span>
-          <span v-else>🍀</span>
+          <span v-if="habit.streak >= 3">
+            <Image src="/gif/fire2.gif" alt="Fire" class="w-6! shrink-0 pointer-events-none" />
+          </span>
+          <span v-else>
+            <Image src="/gif/clover.gif" alt="Clover" class="w-6! shrink-0 pointer-events-none" />
+          </span>
           {{ habit.streak }}
         </button>
       </Tooltip>

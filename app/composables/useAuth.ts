@@ -128,8 +128,20 @@ export function useAuth() {
     const { $firebase } = useNuxtApp()
     try {
       const result = await signInWithPopup($firebase.auth, getGoogleProvider())
+      const { doc, getDoc } = await import('firebase/firestore')
+      const userDocRef = doc($firebase.db, 'users', result.user.uid)
+      const userDoc = await getDoc(userDocRef)
+
+      if (!userDoc.exists()) {
+        // ✅ New Google user — go set up a password first
+        user.value = result.user
+        await navigateTo('/setup-password', { replace: true })
+        return
+      }
+
+      // Existing user — load their data and go home
       await processGoogleUser(result.user)
-      await navigateTo('/home')
+      await navigateTo('/home', { replace: true })
     } catch (error: any) {
       if (
         error.code === 'auth/popup-closed-by-user' ||
@@ -148,7 +160,9 @@ export function useAuth() {
       const { doc, getDoc } = await import('firebase/firestore')
       const userDocRef = doc($firebase.db, 'users', result.user.uid)
       const userDoc = await getDoc(userDocRef)
+
       if (userDoc.exists()) {
+        // ✅ Existing user tried to register — sign them out and send to login with error
         await $firebase.auth.signOut()
         await navigateTo(
           { path: '/login', state: { email: result.user.email ?? '', error: 'existing' } },
@@ -156,8 +170,10 @@ export function useAuth() {
         )
         return
       }
+
+      // New user — go set up a password
       user.value = result.user
-      await navigateTo('/setup-password')
+      await navigateTo('/setup-password', { replace: true })
     } catch (error: any) {
       if (
         error.code === 'auth/popup-closed-by-user' ||
