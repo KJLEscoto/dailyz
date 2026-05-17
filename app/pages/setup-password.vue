@@ -1,4 +1,3 @@
-<!-- pages/setup-password.vue -->
 <script setup lang="ts">
 definePageMeta({ middleware: 'setup-password' })
 
@@ -9,7 +8,7 @@ const confirmPassword = ref('')
 const passwordError = ref('')
 const confirmPasswordError = ref('')
 const isLoading = ref(false)
-const isSetupComplete = ref(false) // 👈 guard flag
+const isSetupComplete = ref(false)
 
 const handleSubmit = async () => {
   passwordError.value = ''
@@ -29,13 +28,15 @@ const handleSubmit = async () => {
   isLoading.value = true
   try {
     await linkPassword(password.value)
-    isSetupComplete.value = true // 👈 mark BEFORE navigating so onUnmounted skips cleanup
-    await navigateTo('/home')
+    isSetupComplete.value = true
+    await navigateTo('/home', { replace: true })
   } catch (error: any) {
     if (error.code === 'auth/weak-password') {
       passwordError.value = 'Password is too weak.'
     } else if (error.code === 'auth/requires-recent-login') {
       passwordError.value = 'Session expired. Please sign in with Google again.'
+    } else if (error.code === 'auth/credential-already-in-use') {
+      passwordError.value = 'This password is already linked to another account.'
     } else {
       console.error('Link password error:', error)
     }
@@ -44,26 +45,26 @@ const handleSubmit = async () => {
   }
 }
 
-const cleanupAbandoned = async () => {
-  if (isSetupComplete.value) return // 👈 skip if setup finished successfully
+// If user abandons setup (back button, closes tab), just sign them out cleanly.
+// Their Firebase Auth account stays intact — they can sign in with Google again
+// and will be prompted to finish setup via the middleware.
+const handleAbandon = async () => {
+  if (isSetupComplete.value) return
   const { $firebase } = useNuxtApp()
-  const currentUser = $firebase.auth.currentUser
-  if (currentUser) {
-    try {
-      await currentUser.delete()
-    } catch {
-      // best-effort cleanup
-    }
+  try {
+    await $firebase.auth.signOut()
+  } catch {
+    // best-effort
   }
 }
 
 onMounted(() => {
-  window.addEventListener('beforeunload', cleanupAbandoned)
+  window.addEventListener('beforeunload', handleAbandon)
 })
 
 onUnmounted(() => {
-  window.removeEventListener('beforeunload', cleanupAbandoned)
-  cleanupAbandoned() // only runs if isSetupComplete is still false (back button / router navigation away)
+  window.removeEventListener('beforeunload', handleAbandon)
+  handleAbandon()
 })
 </script>
 

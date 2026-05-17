@@ -135,9 +135,15 @@ const hasCompletion = (date: Date) => completionDates.value.has(format(date, 'yy
               class="flex items-center gap-3 px-4 py-3 rounded-2xl bg-white">
               <span class="size-2.5 rounded-full shrink-0" :style="{ backgroundColor: habit.color }" />
               <span class="text-sm font-medium text-black/70">{{ habit.name }}</span>
-              <span class="ml-auto text-xs" :class="habit.streak >= 3 ? 'text-orange-500' : 'text-green-500'">
-                {{ habit.streak }}<span v-if="habit.streak >= 3">🔥</span><span v-else>🍀</span>
-              </span>
+              <div class="ml-auto flex items-center gap-1 text-xs" :class="habit.streak >= 3 ? 'text-orange-500' : 'text-green-500'">
+                {{ habit.streak }}
+                <span v-if="habit.streak >= 3">
+                  <Image src="/gif/fire2.gif" alt="Fire" class="w-3! shrink-0 pointer-events-none" />
+                </span>
+                <span v-else>
+                  <Image src="/gif/clover.gif" alt="Clover" class="w-3! shrink-0 pointer-events-none" />
+                </span>
+              </div>
             </div>
 
             <!-- Uncompleted -->

@@ -138,7 +138,7 @@ const slices = computed<PieSlice[]>(() => {
         </div>
       </div>
 
-      <div v-else class="rounded-xl px-4 py-6 bg-foreground">
+      <div v-else class="rounded-xl px-4 py-6 bg-foreground h-full">
         <p class="text-sm text-black/50">No habits yet. Add some!</p>
       </div>
 
