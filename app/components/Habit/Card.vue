@@ -193,9 +193,8 @@ onUnmounted(() => {
     </div>
 
     <main :style="cardStyle" :class="[
-      'w-full h-auto rounded-3xl flex items-center justify-center relative p-6 gap-4 select-none',
+      'w-full h-auto rounded-3xl flex items-center justify-center bg-white relative p-6 gap-4 select-none',
       isMouseDragging ? 'cursor-grabbing' : 'cursor-grab',
-      isCompletedToday ? 'bg-[#f1f1f1]' : 'bg-white',
     ]" @mousedown="onMouseDown" @touchstart.passive="onTouchStart" @touchmove="onTouchMove" @touchend="onTouchEnd">
       <div class="w-full">
         <section class="flex items-center gap-4">
