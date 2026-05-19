@@ -6,7 +6,8 @@ const siteDescription =
   "A mindful habit tracker designed to keep you consistent — track your daily habits, celebrate streaks, and stay inspired with a fresh quote and nature photo every day. Designed and developed by KinWebb. © 2026 Kent Joemar Escoto.";
 const siteVerification = "eMMfU0WDt9Hz-TWRGBTQY-mgFsF66m9octorJRumMzQ";
 const siteThumbnail = "https://kinwebb.netlify.app/dailyz_thumbnail.png";
-const siteIcon = "/images/icon.jpg";
+const webIcon = "/images/web_icon.png";
+const iosIcon = "/images/ios_icon.png";
 
 
 export default defineNuxtConfig({
@@ -63,7 +64,10 @@ export default defineNuxtConfig({
         { name: "twitter:description", content: siteDescription },
         // { name: "twitter:image", content: siteThumbnail },
       ],
-      // link: [{ rel: "icon", type: "image/png", href: siteIcon }],
+      link: [
+        { rel: 'icon', type: 'image/png', href: webIcon },
+        { rel: 'apple-touch-icon', href: iosIcon },
+      ],
     },
   },
   runtimeConfig: {  
