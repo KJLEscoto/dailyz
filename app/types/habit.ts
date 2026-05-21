@@ -8,8 +8,10 @@ export interface HabitCompletion {
 
 export interface Habit {
   id: any
-  name: string
-  time: HabitTime
+  name: string,
+  icon: string 
+  time: HabitTime,
+  reminderTime: string | null
   streak: number
   completions: HabitCompletion[]
   color: string

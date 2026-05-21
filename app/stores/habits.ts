@@ -57,7 +57,9 @@ export const useHabitStore = defineStore('habitStore', {
 
       const habit = {
         name: Habit.name,
+        icon: Habit.icon || 'lucide:star',       // 👈
         time: Habit.time as HabitTime,
+        reminderTime: Habit.reminderTime ?? null, // 👈
         streak: 0,
         completions: [],
         color: Habit.color,

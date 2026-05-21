@@ -198,54 +198,56 @@ onUnmounted(() => {
     ]" @mousedown="onMouseDown" @touchstart.passive="onTouchStart" @touchmove="onTouchMove" @touchend="onTouchEnd">
       <div class="w-full">
         <section class="flex items-center gap-4">
-
-          <!-- Toggle button -->
-          <section :class="[
-            'ring-2 ring-black/5 rounded-full! size-12 flex items-center shrink-0 justify-center transition-all duration-200',
-            toggleLoading ? 'cursor-not-allowed opacity-70' : 'cursor-pointer hover:ring-primary/40 hover:bg-primary/10'
-          ]" @click="handleToggle">
-
-            <!-- Loading spinner -->
-            <Loader2 v-if="toggleLoading" class="size-6 text-primary pointer-events-none animate-spin" />
-
-            <!-- Completed -->
-            <div v-else-if="isCompletedToday"
-              class="ring-4 ring-primary rounded-full! size-9 flex items-center justify-center bg-primary">
-              <Check class="size-8 text-white" />
-            </div>
+          <section class="size-14 rounded-xl flex items-center justify-center shrink-0"
+            :style="{ backgroundColor: habit.color + '22' }">
+            <Icon :name="habit.icon || 'lucide:star'" class="size-6!" :style="{ color: habit.color }" />
           </section>
 
-          <section :class="['space-y-1', isCompletedToday ? 'opacity-50' : 'opacity-100']">
+          <section class="space-y-2 w-[80%]">
             <h2
-              :class="['sm:text-xl text-base font-semibold leading-5 line-clamp-2', isCompletedToday ? 'line-through' : '']">
+              :class="['sm:text-xl text-base font-semibold leading-5 line-clamp-1', isCompletedToday ? 'line-through' : '']" :style="{ color: habit.color }">
               {{ habit.name }}
             </h2>
-            <div class="flex items-center gap-2">
+            <!-- <div class="flex items-center gap-2">
               <div class="size-2 rounded-full!" :style="{ backgroundColor: habit.color }" />
               <p class="text-sm text-muted capitalize">{{ habit.time }}</p>
+            </div> -->
+            <div class="flex items-center gap-1">
+              <Tooltip :text="streakStarted" position="top">
+                <button :class="[
+                  'flex items-center gap-1 text-xsfont-bold transition-all duration-200',
+                  habit.streak >= 3 ? 'text-danger' : 'text-green-600',
+                ]">
+                  <span v-if="habit.streak >= 3">
+                    <Image src="/gif/fire2.gif" alt="Fire" class="w-4! shrink-0 pointer-events-none" />
+                  </span>
+                  <span v-else>
+                    <Image src="/gif/clover.gif" alt="Clover" class="w-4! shrink-0 pointer-events-none" />
+                  </span>
+                  {{ habit.streak }}
+                </button>
+              </Tooltip>
             </div>
           </section>
+
         </section>
       </div>
 
-      <div class="flex items-center gap-1">
-        <Tooltip :text="streakStarted" position="top">
-          <button :class="[
-            'flex items-center gap-1 px-3 py-1.5 rounded-full! text-xs border font-bold transition-all duration-200',
-            habit.streak >= 3 ? 'bg-[#FFD0D0] border-[#FFA0A0] text-danger' : 'bg-[#E5F8E0] border-[#B9F1C3] text-green-600',
-          ]">
-            <span v-if="habit.streak >= 3">
-              <Image src="/gif/fire2.gif" alt="Fire" class="w-6! shrink-0 pointer-events-none" />
-            </span>
-            <span v-else>
-              <Image src="/gif/clover.gif" alt="Clover" class="w-6! shrink-0 pointer-events-none" />
-            </span>
-            {{ habit.streak }}
-          </button>
-        </Tooltip>
-        <!-- <HabitMenu v-if="hasMenu !== false" trigger-class="shrink-0" @edit="emit('edit', habit.id)"
-          @delete="showDeleteAlert = true" /> -->
-      </div>
+      <!-- Toggle button -->
+      <section :class="[
+        'ring-2 ring-black/5 rounded-full! size-12 flex items-center shrink-0 justify-center transition-all duration-200',
+        toggleLoading ? 'cursor-not-allowed opacity-70' : 'cursor-pointer hover:ring-primary/40 hover:bg-primary/10'
+      ]" @click="handleToggle">
+
+        <!-- Loading spinner -->
+        <Loader2 v-if="toggleLoading" class="size-6 text-primary pointer-events-none animate-spin" />
+
+        <!-- Completed -->
+        <div v-else-if="isCompletedToday"
+          class="ring-4 ring-primary rounded-full! size-9 flex items-center justify-center bg-primary">
+          <Check class="size-8 text-white" />
+        </div>
+      </section>
     </main>
   </div>
 </template>
