@@ -19,7 +19,7 @@ export default defineNuxtConfig({
       tailwindcss(),
     ],
   },
-  modules: ["@nuxt/fonts", 'kinwebb-attribute', '@pinia/nuxt', ],
+  modules: ["@nuxt/fonts", 'kinwebb-attribute', '@pinia/nuxt', '@nuxt/icon'],
   // fonts: {
   //   families: [
   //     {
