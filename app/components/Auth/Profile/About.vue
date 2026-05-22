@@ -14,7 +14,7 @@ import { ArrowUpRight } from '@lucide/vue';
             <h3 class="text-xl font-bold text-primary">Dailyz</h3>
             <p class="px-2 py-0.5 rounded-full border border-primary/20 text-xs font-bold text-primary bg-primary/10 select-none">BETA</p>
           </div>
-          <p class="text-sm text-black/40">Habit Tracker - v1.0.0</p>
+          <p class="text-sm text-black/40">Habit Tracker - v1.1.0</p>
         </div>
         <p class="text-sm text-black/70 md:leading-relaxed">
           Helps you build mindful daily habits and stay consistent — one day at a time.

@@ -15,6 +15,24 @@
     @apply bg-foreground text-black font-primary selection:text-white selection:bg-primary;
   }
 
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #eeeeee transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: #f5f5f5;
+    border-radius: 999px;
+  }
+
   /* hide scrollbar */
   .scrollbar-none {
     scrollbar-width: none; /* Firefox */
@@ -24,7 +42,4 @@
     display: none; /* Chrome, Safari, Edge */
   }
 
-  .color-muted {
-    @apply text-white/70;
-  }
 }
