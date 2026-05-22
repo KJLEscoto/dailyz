@@ -112,22 +112,7 @@ defineExpose({ addHabit })
       ]" required />
 
       <!-- Reminder time -->
-      <div class="space-y-1.5">
-        <label class="flex items-center gap-1 md:text-sm text-xs font-medium uppercase text-muted select-none">
-          reminder time
-          <span class="text-xs text-black/30">(optional)</span>
-        </label>
-        <input v-model="habitReminderTime" type="time"
-          class="w-full border border-black/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
-        <p class="text-xs text-black/30">
-          {{ habitReminderTime
-            ? `Reminder set for ${new Date('1970-01-01T' + habitReminderTime).toLocaleTimeString([], {
-              hour: '2-digit',
-              minute: '2-digit'
-            })}`
-            : 'No reminder set' }}
-        </p>
-      </div>
+      <FormReminderTime v-model="habitReminderTime" />
 
       <!-- Color -->
       <FormColor v-model="habitColor" label="Color" :error="habitColorError" required />

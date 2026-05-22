@@ -19,7 +19,7 @@ const today = format(new Date(), 'yyyy-MM-dd')
 const showDeleteAlert = ref(false)
 const toggleLoading = ref(false) // 👈
 
-const REVEAL_WIDTH = 170 // px — must match the two button widths combined
+const REVEAL_WIDTH = 174 // px — must match the two button widths combined
 const translateX = ref(0)
 const isRevealed = ref(false)
 const startX = ref(0)
@@ -179,14 +179,14 @@ onUnmounted(() => {
   <div class="relative rounded-3xl overflow-hidden">
 
     <!-- Action buttons (revealed underneath) -->
-    <div class="absolute inset-0 flex items-stretch justify-end pr-1 py-0.5">
+    <div class="absolute inset-0 flex items-stretch justify-end pr-1 py-0.5 gap-1">
       <button @click="handleEdit"
-        class="flex flex-col items-center justify-center gap-1 w-20 bg-blue-500 hover:bg-blue-400 text-white text-xs font-medium cursor-pointer rounded-l-3xl duration-200">
+        class="flex flex-col items-center justify-center gap-1 w-20 bg-gray-400 hover:bg-gray-500 text-white text-xs font-medium cursor-pointer rounded-3xl duration-200">
         <Pencil class="size-5 pointer-events-none" />
         Edit
       </button>
       <button @click="handleDeleteRequest"
-        class="flex flex-col items-center justify-center gap-1 w-20 bg-red-500 hover:bg-red-400 text-white text-xs font-medium cursor-pointer rounded-r-3xl duration-200">
+        class="flex flex-col items-center justify-center gap-1 w-20 bg-red-500 hover:bg-red-600 text-white text-xs font-medium cursor-pointer rounded-3xl duration-200">
         <Trash2 class="size-5 pointer-events-none" />
         Delete
       </button>
@@ -205,7 +205,8 @@ onUnmounted(() => {
 
           <section class="space-y-2 w-[80%]">
             <h2
-              :class="['sm:text-xl text-base font-semibold leading-5 line-clamp-1', isCompletedToday ? 'line-through' : '']" :style="{ color: habit.color }">
+              :class="['sm:text-xl text-base font-semibold leading-5 line-clamp-1', isCompletedToday ? 'line-through' : '']"
+              :style="{ color: habit.color }">
               {{ habit.name }}
             </h2>
             <!-- <div class="flex items-center gap-2">
@@ -235,18 +236,22 @@ onUnmounted(() => {
 
       <!-- Toggle button -->
       <section :class="[
-        'ring-2 ring-black/5 rounded-full! size-12 flex items-center shrink-0 justify-center transition-all duration-200',
-        toggleLoading ? 'cursor-not-allowed opacity-70' : 'cursor-pointer hover:ring-primary/40 hover:bg-primary/10'
-      ]" @click="handleToggle">
+        'ring-2 rounded-full! size-12 flex items-center shrink-0 justify-center transition-all duration-200',
+        toggleLoading ? 'cursor-not-allowed opacity-70' : 'cursor-pointer',
+      ]" :style="{
+        '--habit-color': habit.color,
+        boxShadow: isCompletedToday ? `0 0 0 1px ${habit.color}40` : '0 0 0 2px rgba(0,0,0,0.05)',
+      }" @click="handleToggle">
 
         <!-- Loading spinner -->
-        <Loader2 v-if="toggleLoading" class="size-6 text-primary pointer-events-none animate-spin" />
+        <Loader2 v-if="toggleLoading" class="size-6 pointer-events-none animate-spin" :style="{ color: habit.color }" />
 
         <!-- Completed -->
-        <div v-else-if="isCompletedToday"
-          class="ring-4 ring-primary rounded-full! size-9 flex items-center justify-center bg-primary">
+        <div v-else-if="isCompletedToday" class="ring-4 rounded-full! size-9 flex items-center justify-center"
+          :style="{ backgroundColor: habit.color, boxShadow: `0 0 0 4px ${habit.color}40` }">
           <Check class="size-8 text-white" />
         </div>
+
       </section>
     </main>
   </div>
