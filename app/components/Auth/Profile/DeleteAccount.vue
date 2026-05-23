@@ -125,7 +125,7 @@ onUnmounted(() => {
 
     <template #fallback>
       <section class="bg-white rounded-3xl p-2">
-        <div class="flex items-center gap-3 px-4 py-3">
+        <div class="flex items-center justify-center gap-3 px-4 py-3">
           <Skeleton width="1rem" height="1rem" rounded="9999px" />
           <Skeleton height="1rem" width="40%" />
         </div>

@@ -116,12 +116,12 @@ const toggleCompletion = (habit: Habit) => habitStore.toggleCompletion(habit)
         <!-- habit cards skeleton -->
         <div class="space-y-3">
           <div v-for="i in 3" :key="i" class="flex items-center gap-4 p-6 bg-white rounded-3xl">
-            <Skeleton width="2.5rem" height="2.5rem" rounded="9999px" />
+            <Skeleton width="3.5rem" height="3.5rem" rounded="14px" />
             <div class="flex-1 space-y-2">
               <Skeleton height="1.25rem" :width="`${60 + (i * 7) % 30}%`" />
-              <Skeleton height="0.875rem" width="35%" />
+              <Skeleton height="0.875rem" width="20%" />
             </div>
-            <Skeleton width="3rem" height="1.75rem" rounded="9999px" />
+            <Skeleton width="3rem" height="3rem" rounded="9999px" />
           </div>
         </div>
       </div>
