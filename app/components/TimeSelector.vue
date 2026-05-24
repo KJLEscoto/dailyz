@@ -97,7 +97,7 @@ const periodCol = useColumn(periods, selectedPeriod)
 
 <template>
   <div
-    class="relative flex items-center justify-center gap-1 bg-primary/5 rounded-2xl overflow-hidden h-[220px] select-none">
+    class="relative flex items-center justify-center gap-1 bg-primary/5 rounded-2xl overflow-hidden h-55 select-none">
 
     <!-- Fade top -->
     <div class="absolute inset-x-0 top-0 h-20 bg-linear-to-b from-white to-transparent z-10 pointer-events-none" />
