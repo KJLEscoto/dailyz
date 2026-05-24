@@ -1,31 +1,25 @@
-<!-- Habit/BlockCanvas.vue -->
 <script setup lang="ts">
+import type { Habit } from '~/types/habit'
+
 const props = defineProps<{
   open: boolean
-  blocks: {
-    time: string
-    count: number
-    percentage: number
-    label: string
-    emoji: string
-    color: string
-    bg: string
-  }[]
+  habits: Habit[]
 }>()
 
 const containerRef = ref<HTMLDivElement>()
 const blockEls = ref<HTMLElement[]>([])
 const ready = ref(false)
 
-const items = computed(() => {
-  const result: Array<{ emoji: string; color: string; bg: string; label: string }> = []
-  for (const block of props.blocks) {
-    for (let i = 0; i < block.count; i++) {
-      result.push({ emoji: block.emoji, color: block.color, bg: block.bg, label: block.label })
-    }
-  }
-  return result
-})
+const color = 'white';
+
+// Each habit becomes one block with its own icon + color
+const items = computed(() =>
+  props.habits.map(h => ({
+    icon: h.icon || 'lucide:star',
+    color: color,
+    bg: h.color,
+  }))
+)
 
 interface Body {
   x: number; y: number
@@ -36,9 +30,7 @@ interface Body {
 }
 
 const BLOCK_SIZE = 64
-// Collision distance — slightly larger than block size so squares never visually overlap
 const COLL_DIST = BLOCK_SIZE * 1.08
-// How far apart blocks spawn vertically — large enough that they enter one at a time
 const SPAWN_GAP = BLOCK_SIZE * 2.2
 
 const bodies = ref<Body[]>([])
@@ -57,7 +49,7 @@ const UPRIGHT_D = 0.55
 const EDGE_TILT = 0.016
 const SETTLE_V = 0.07
 const SETTLE_W = 0.003
-const ITERATIONS = 8  // more iterations = tighter separation
+const ITERATIONS = 8
 
 let rafId = 0
 
@@ -68,13 +60,12 @@ const initBodies = () => {
   const w = W()
   const cols = Math.floor(w / (BLOCK_SIZE + 8))
   bodies.value = items.value.map((_, i) => {
-    // Distribute spawn X across columns so blocks don't fight each other on the way down
     const col = i % Math.max(1, cols)
     const colW = w / Math.max(1, cols)
     const spawnX = colW * col + colW / 2 + (Math.random() - 0.5) * 12
     return {
       x: Math.min(Math.max(BLOCK_SIZE / 2, spawnX), w - BLOCK_SIZE / 2),
-      y: -(BLOCK_SIZE / 2 + i * SPAWN_GAP),  // large stagger — later blocks are far above
+      y: -(BLOCK_SIZE / 2 + i * SPAWN_GAP),
       vx: (Math.random() - 0.5) * 0.4,
       vy: 0,
       angle: 0,
@@ -106,7 +97,6 @@ const resolveCollisions = () => {
         const isDragA = dragging.value === i
         const isDragB = dragging.value === j
 
-        // ✅ Wake settled blocks immediately when overlapped
         if (!isDragA && a.settled) { a.settled = false; a.vx = 0; a.vy = 0; a.omega = 0 }
         if (!isDragB && b.settled) { b.settled = false; b.vx = 0; b.vy = 0; b.omega = 0 }
 
@@ -162,16 +152,12 @@ const tick = () => {
     const b = bodies.value[i]!
     if (dragging.value === i) continue
 
-    // ✅ Always unsetttle everything while dragging so collisions propagate
     if (dragging.value !== null && b.settled) {
-      // Check if this settled block is close to the dragged block — wake preemptively
       const drag = bodies.value[dragging.value]!
       const dx = b.x - drag.x
       const dy = b.y - drag.y
       const dist = Math.sqrt(dx * dx + dy * dy)
-      if (dist < COLL_DIST * 1.5) {
-        b.settled = false
-      }
+      if (dist < COLL_DIST * 1.5) b.settled = false
     }
 
     if (b.settled) continue
@@ -197,21 +183,10 @@ const tick = () => {
       b.onGround = true
       if (Math.abs(b.vy) < 0.15) b.vy = 0
     }
-    if (b.x - BLOCK_SIZE / 2 < 0) {
-      b.x = BLOCK_SIZE / 2
-      b.vx = Math.abs(b.vx) * BOUNCE
-      b.omega -= 0.01
-    }
-    if (b.x + BLOCK_SIZE / 2 > w) {
-      b.x = w - BLOCK_SIZE / 2
-      b.vx = -Math.abs(b.vx) * BOUNCE
-      b.omega += 0.01
-    }
-    if (b.y - BLOCK_SIZE / 2 < 0) {
-      if (b.y < -h * 3) b.y = -h * 3
-    }
+    if (b.x - BLOCK_SIZE / 2 < 0) { b.x = BLOCK_SIZE / 2; b.vx = Math.abs(b.vx) * BOUNCE; b.omega -= 0.01 }
+    if (b.x + BLOCK_SIZE / 2 > w) { b.x = w - BLOCK_SIZE / 2; b.vx = -Math.abs(b.vx) * BOUNCE; b.omega += 0.01 }
+    if (b.y - BLOCK_SIZE / 2 < 0) { if (b.y < -h * 3) b.y = -h * 3 }
 
-    // Never settle while dragging is happening
     b.settled =
       dragging.value === null &&
       b.onGround &&
@@ -225,19 +200,15 @@ const tick = () => {
 
   resolveCollisions()
 
-  // ✅ Always write ALL bodies to DOM — settled or not
   for (let i = 0; i < blockEls.value.length; i++) {
     const el = blockEls.value[i]
     const b = bodies.value[i]
     if (!el || !b) continue
     el.style.transform = `translate(${b.x - BLOCK_SIZE / 2}px, ${b.y - BLOCK_SIZE / 2}px) rotate(${b.angle}rad)`
-    el.style.boxShadow = dragging.value === i
-      ? '0 16px 40px rgba(0,0,0,0.16)'
-      : '0 2px 8px rgba(0,0,0,0.08)'
+    el.style.boxShadow = dragging.value === i ? '0 16px 40px rgba(0,0,0,0.16)' : '0 2px 8px rgba(0,0,0,0.08)'
     el.style.zIndex = dragging.value === i ? '20' : '1'
   }
 
-  // Secondary wall clamp
   for (let i = 0; i < bodies.value.length; i++) {
     if (dragging.value === i) continue
     const b = bodies.value[i]!
@@ -246,10 +217,7 @@ const tick = () => {
     if (b.y + BLOCK_SIZE / 2 > h) { b.y = h - BLOCK_SIZE / 2; b.vy = -Math.abs(b.vy) * BOUNCE }
   }
 
-  // ✅ Keep RAF alive the entire time something is being dragged
-  if (anyMoving || dragging.value !== null) {
-    rafId = requestAnimationFrame(tick)
-  }
+  if (anyMoving || dragging.value !== null) rafId = requestAnimationFrame(tick)
 }
 
 const tryInit = async () => {
@@ -276,13 +244,8 @@ watch(() => props.open, (val) => {
   tryInit()
 })
 
-watch(items, () => {
-  if (props.open) tryInit()
-})
-
-onMounted(() => {
-  if (props.open) tryInit()
-})
+watch(items, () => { if (props.open) tryInit() })
+onMounted(() => { if (props.open) tryInit() })
 
 let orientHandler: ((e: DeviceOrientationEvent) => void) | null = null
 
@@ -369,11 +332,7 @@ const endDrag = () => {
   if (dragging.value === null) return
   const i = dragging.value
   const b = bodies.value[i]!
-  bodies.value[i] = {
-    ...b,
-    omega: (b.vx / Math.max(1, BLOCK_SIZE)) * 0.3,
-    settled: false,
-  }
+  bodies.value[i] = { ...b, omega: (b.vx / Math.max(1, BLOCK_SIZE)) * 0.3, settled: false }
   dragging.value = null
   cancelAnimationFrame(rafId)
   rafId = requestAnimationFrame(tick)
@@ -381,22 +340,23 @@ const endDrag = () => {
 </script>
 
 <template>
-  <div ref="containerRef" class="relative w-full select-none touch-none rounded-2xl !scrollbar-none "
+  <div ref="containerRef" class="relative w-full select-none touch-none rounded-2xl"
     style="height: 320px; background: var(--color-background-secondary);" @mousemove="onMove" @mouseup="endDrag"
     @mouseleave="endDrag" @touchmove.prevent="onMove" @touchend="endDrag">
-    <template v-for="(item, i) in items" :key="`${item.label}-${i}`">
+
+    <template v-for="(item, i) in items" :key="i">
       <div v-if="bodies[i]" :ref="el => { if (el) blockEls[i] = el as HTMLElement }"
         class="absolute flex flex-col items-center justify-center rounded-2xl" :style="{
           width: `${BLOCK_SIZE}px`,
           height: `${BLOCK_SIZE}px`,
-          left: 0,
-          top: 0,
-          background: item.bg,
+          left: 0, top: 0,
+          backgroundColor: item.bg,
           cursor: 'grab',
           willChange: 'transform',
           transition: 'box-shadow 0.2s',
         }" @mousedown="startDrag($event, i)" @touchstart.prevent="startDrag($event, i)">
-        <span style="font-size: 1.6rem; line-height: 1; pointer-events: none;">{{ item.emoji }}</span>
+        <!-- Habit icon in habit color -->
+        <Icon :name="item.icon" class="size-6! pointer-events-none" :style="{ color: item.color }" />
       </div>
     </template>
   </div>

@@ -248,10 +248,11 @@ onUnmounted(() => {
 
         <!-- Completed -->
         <div v-else-if="isCompletedToday" class="ring-4 rounded-full! size-9 flex items-center justify-center"
-          :style="{ backgroundColor: habit.color, boxShadow: `0 0 0 4px ${habit.color}40` }">
-          <Check class="size-8 text-white" />
+          :style="{ backgroundColor: habit.color, boxShadow: `0 0 0 4px ${habit.color}` }">
+          <Check class="size-7! text-white" />
         </div>
 
+        <Check v-else class="size-7! text-black/10" />
       </section>
     </main>
   </div>

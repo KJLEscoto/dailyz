@@ -4,6 +4,8 @@ export default defineEventHandler(() => {
       version_number: 'v1.1.0',
       current: true,
       features: [
+        { id: 5, description: 'Added level system' },
+        { id: 4, description: 'Improved home screen layout' },
         { id: 3, description: 'Icon theming on cards' },
         { id: 2, description: 'Drum-roll reminder time picker' },
         { id: 1, description: 'Improved layout and design for habit cards' },

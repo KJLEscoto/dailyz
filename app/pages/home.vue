@@ -8,7 +8,7 @@ definePageMeta({ layout: 'auth' })
 const habitStore = useHabitStore()
 const habits = computed(() => habitStore.habits)
 
-const { todoHabits, completedHabits, todoCount, completedCount } = useHabitStats(habits)
+const { todoHabits, completedHabits, todoCount, completedCount, percentageCompleted, habitsCount } = useHabitStats(habits)
 const { timeLeft } = useDayCountdown()
 
 const modalEditRef = ref()
@@ -41,6 +41,9 @@ const deleteHabit = async (id: Habit['id'], habitName: string) => {
 }
 
 const toggleCompletion = (habit: Habit) => habitStore.toggleCompletion(habit)
+
+const { signOut } = useAuth() // 👈 only signOut needed here
+const { formatted } = useDate()
 </script>
 
 <template>
@@ -54,7 +57,9 @@ const toggleCompletion = (habit: Habit) => habitStore.toggleCompletion(habit)
     :timeout="3000" @dismiss="showDeleteSuccessAlert = false" />
 
   <ClientOnly>
-    <div class="sm:space-y-4 space-y-3">
+    <AuthAppHeader :formatted="formatted" :completed-count="completedCount" :habits-count="habitsCount"
+      :percentage-completed="percentageCompleted" :sign-out="signOut" />
+    <div class="space-y-3">
       <div v-if="!todoHabits.length && !completedHabits.length"
         class="text-center justify-center flex flex-col items-center gap-6">
         <Image src="/images/mascot/no_habits.png" alt="No habits for today"
@@ -109,7 +114,7 @@ const toggleCompletion = (habit: Habit) => habitStore.toggleCompletion(habit)
     </div>
 
     <template #fallback>
-      <div class="sm:space-y-4 space-y-3">
+      <div class="space-y-3">
         <!-- tabs skeleton -->
         <Skeleton height="3.5rem" rounded="0.75rem" />
 

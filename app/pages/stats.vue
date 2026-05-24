@@ -8,6 +8,10 @@ const habits = computed(() => habitStore.habits)
 <template>
   <div class="grid grid-cols-2 gap-4">
 
+    <section class="col-span-2">
+      <PageHeader title="Stats" description="Track your progress and achievements." />
+    </section>
+
     <section class="md:col-span-2 col-span-2 h-full">
       <AuthStatsCommit />
     </section>

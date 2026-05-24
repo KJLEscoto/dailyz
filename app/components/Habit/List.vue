@@ -15,7 +15,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <ul class="sm:space-y-4 space-y-3 w-full">
+  <ul class="space-y-3 w-full">
     <li v-for="habit in props.habits" :key="habit.id">
       <HabitCard :has-menu="props.hasMenu !== false" :habit="habit" @toggle="emit('toggle', $event)"
         @edit="emit('edit', $event)" @delete="(id, name) => emit('delete', id, name)" />

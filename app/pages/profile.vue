@@ -7,6 +7,7 @@ definePageMeta({ layout: 'auth' })
 
 <template>
   <div class="space-y-4">
+    <PageHeader title="Profile" description="Manage your profile information." />
     <AuthProfileInfo />
     <AuthProfileActivity />
     <AuthProfilePassword />
