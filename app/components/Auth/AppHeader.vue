@@ -1,17 +1,36 @@
-<!-- components/Auth/AppHeader.vue -->
 <script setup lang="ts">
-import { Info } from '@lucide/vue';
+import { Info } from '@lucide/vue'
+import { useLevelStore } from '~/stores/level'
 
 const props = defineProps<{
   formatted: string
   completedCount: number
   habitsCount: number
   percentageCompleted: number
-  signOut: () => Promise<void>
 }>()
 
-const { user } = useAuth() // 👈 directly here too
+const { user, habitsReady } = useAuth()
 const firstName = computed(() => user.value?.displayName?.split(' ')[0] ?? 'there')
+
+const levelStore = useLevelStore()
+const tier = computed(() => levelStore.currentTier)
+const nextTier = computed(() => levelStore.nextTier)
+const progress = computed(() => levelStore.progressPercent)
+const xpInto = computed(() => levelStore.xpIntoCurrentTier)
+const xpNeeded = computed(() => levelStore.xpNeededForNextTier)
+
+const sectionBg = computed(() => `${tier.value.color}18`)
+const trackBg = computed(() => `${tier.value.color}30`)
+const textColor = computed(() => tier.value.color)
+
+// only show when auth is ready AND level has been fetched
+const levelReady = computed(() => habitsReady.value && !levelStore.loading)
+
+watch(habitsReady, async (ready) => {
+  if (ready && levelStore.totalXp === 0) {
+    await levelStore.fetchLevel()
+  }
+}, { immediate: true })
 </script>
 
 <template>
@@ -22,9 +41,7 @@ const firstName = computed(() => user.value?.displayName?.split(' ')[0] ?? 'ther
         <ClientOnly>
           <PageHeader :title="`Hi, ${firstName}!`" description="Let's make today a great day!" />
           <template #fallback>
-            <h1 class="md:text-3xl text-2xl font-semibold text-nowrap truncate">
-              Hi, there!
-            </h1>
+            <h1 class="md:text-3xl text-2xl font-semibold text-nowrap truncate">Hi, there!</h1>
           </template>
         </ClientOnly>
       </div>
@@ -33,27 +50,37 @@ const firstName = computed(() => user.value?.displayName?.split(' ')[0] ?? 'ther
       </div>
     </section>
 
-    <section class="bg-green-500/10 rounded-3xl w-full h-auto space-y-3">
+    <!-- skeleton while loading -->
+    <Skeleton v-if="!levelReady" height="7.5rem" rounded="14px" />
+
+    <!-- real level card -->
+    <section v-else class="rounded-3xl w-full h-auto space-y-3 transition-colors duration-500"
+      :style="{ backgroundColor: sectionBg }">
       <div class="flex items-center justify-start gap-3 p-5">
         <section class="shrink-0">
-          <Image src="/svg/badges/Forest.svg" alt="badge" class="w-20! h-auto" />
+          <Image :src="tier.badge" :alt="tier.name" class="w-20! h-auto" />
         </section>
         <section class="w-full h-auto">
           <div class="flex items-center gap-2">
-            <h1 class="sm:text-xl text-base font-semibold text-green-800">Forest</h1>
-            <Info class="size-3.5 text-black/60" />
+            <h1 class="sm:text-xl text-base font-semibold transition-colors duration-500" :style="{ color: textColor }">
+              {{ tier.name }}
+            </h1>
+            <Tooltip text="+15 XP each" position="right">
+              <Info class="size-3.5 text-black/60" />
+            </Tooltip>
           </div>
           <div class="flex items-center justify-between gap-2">
-            <p class="text-sm text-black/60">
-              Get XP by completing habits!
-            </p>
-            <p class="sm:text-sm text-xs text-black/60"><span class="text-green-800 font-semibold">650</span> / 900 XP
+            <p class="text-sm text-black/60">Get XP by completing habits!</p>
+            <p class="sm:text-sm text-xs text-black/60">
+              <span class="font-semibold transition-colors duration-500" :style="{ color: textColor }">{{ xpInto
+              }}</span>
+              / {{ nextTier ? xpNeeded : 'MAX' }} XP
             </p>
           </div>
           <div class="w-full mt-2">
-            <!-- Progress bar -->
-            <div class="w-full bg-green-500/20 rounded-full h-2.5">
-              <div class="bg-green-800 h-2.5 rounded-full" style="width: 72%"></div>
+            <div class="w-full rounded-full h-2.5 transition-colors duration-500" :style="{ backgroundColor: trackBg }">
+              <div class="h-2.5 rounded-full transition-all duration-500"
+                :style="{ width: `${progress}%`, backgroundColor: textColor }" />
             </div>
           </div>
         </section>

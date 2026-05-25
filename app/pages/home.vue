@@ -44,6 +44,8 @@ const toggleCompletion = (habit: Habit) => habitStore.toggleCompletion(habit)
 
 const { signOut } = useAuth() // 👈 only signOut needed here
 const { formatted } = useDate()
+
+
 </script>
 
 <template>
@@ -57,8 +59,11 @@ const { formatted } = useDate()
     :timeout="3000" @dismiss="showDeleteSuccessAlert = false" />
 
   <ClientOnly>
-    <AuthAppHeader :formatted="formatted" :completed-count="completedCount" :habits-count="habitsCount"
-      :percentage-completed="percentageCompleted" :sign-out="signOut" />
+    <span v-if="todoHabits.length || completedHabits.length">
+      <AuthAppHeader :formatted="formatted" :completed-count="completedCount" :habits-count="habitsCount"
+        :percentage-completed="percentageCompleted" />
+    </span>
+
     <div class="space-y-3">
       <div v-if="!todoHabits.length && !completedHabits.length"
         class="text-center justify-center flex flex-col items-center gap-6">
@@ -116,6 +121,7 @@ const { formatted } = useDate()
     <template #fallback>
       <div class="space-y-3">
         <!-- tabs skeleton -->
+        <Skeleton class="mt-16" height="14rem" rounded="0.75rem" />
         <Skeleton height="3.5rem" rounded="0.75rem" />
 
         <!-- habit cards skeleton -->

@@ -11,6 +11,7 @@ import {
   GoogleAuthProvider
 } from 'firebase/auth'
 import type { User } from 'firebase/auth'
+import { useLevelStore } from '~/stores/level'
 
 // ❌ Removed isMobile() and isDev() — no longer needed
 // We always use signInWithPopup now, which opens a new tab on mobile
@@ -51,8 +52,10 @@ export function useAuth() {
       createdAt: new Date().toISOString(),
     })
     const habitStore = useHabitStore()
+    const levelStore = useLevelStore() // 👈 add
     await habitStore.fetchHabits()
     await habitStore.resetStaleStreaks()
+    await levelStore.fetchLevel() // 👈 add
     habitsReady.value = true
   }
 
@@ -78,8 +81,10 @@ export function useAuth() {
       })
     }
     const habitStore = useHabitStore()
+    const levelStore = useLevelStore() // 👈 add
     await habitStore.fetchHabits()
     await habitStore.resetStaleStreaks()
+    await levelStore.fetchLevel() // 👈 add
     habitsReady.value = true
     user.value = $firebase.auth.currentUser
   }
@@ -195,8 +200,10 @@ export function useAuth() {
       const result = await signInWithEmailAndPassword($firebase.auth, email, password)
       user.value = result.user
       const habitStore = useHabitStore()
+      const levelStore = useLevelStore() // 👈 add
       await habitStore.fetchHabits()
       await habitStore.resetStaleStreaks()
+      await levelStore.fetchLevel() // 👈 add
       habitsReady.value = true
       await navigateTo('/home')
     } catch (error: any) {

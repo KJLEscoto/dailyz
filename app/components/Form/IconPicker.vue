@@ -49,7 +49,7 @@ onMounted(() => {
       <Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0"
         leave-active-class="transition duration-150 ease-in" leave-to-class="opacity-0">
         <div v-if="!atTop"
-          class="absolute inset-x-0 top-0 h-10 bg-linear-to-b from-white to-transparent z-10 pointer-events-none rounded-t-2xl" />
+          class="absolute inset-x-0 top-0 h-10 bg-linear-to-b from-white to-transparent z-10 pointer-events-none" />
       </Transition>
 
       <!-- Grid -->
@@ -75,7 +75,7 @@ onMounted(() => {
       <Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0"
         leave-active-class="transition duration-150 ease-in" leave-to-class="opacity-0">
         <div v-if="!atBottom"
-          class="absolute inset-x-0 bottom-0 h-10 bg-linear-to-t from-white to-transparent z-10 pointer-events-none rounded-b-2xl" />
+          class="absolute inset-x-0 bottom-0 h-10 bg-linear-to-t from-white to-transparent z-10 pointer-events-none" />
       </Transition>
 
     </div>
