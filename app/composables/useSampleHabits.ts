@@ -6,12 +6,36 @@ const defaultSampleHabits: Habit[] = [
   {
     id: 'sample-1',
     name: 'Morning Meditation',
+    icon: 'lucide:sun',
     time: 'morning',
     streak: 0,
     completions: [],
-    color: '#a8d8a8',
+    color: '#c87235',
+    reminderTime: null,
     createdAt: new Date().toISOString(),
   },
+  // {
+  //   id: 'sample-2',
+  //   name: 'Read for 20 mins',
+  //   icon: 'lucide:book-open',
+  //   time: 'evening',
+  //   streak: 0,
+  //   completions: [],
+  //   color: '#f4a261',
+  //   reminderTime: null,
+  //   createdAt: new Date().toISOString(),
+  // },
+  // {
+  //   id: 'sample-3',
+  //   name: 'Drink 8 glasses of water',
+  //   icon: 'lucide:droplets',
+  //   time: 'anytime',
+  //   streak: 0,
+  //   completions: [],
+  //   color: '#74b9ff',
+  //   reminderTime: null,
+  //   createdAt: new Date().toISOString(),
+  // },
 ]
 
 // 👈 helper to safely get date string from any completion format

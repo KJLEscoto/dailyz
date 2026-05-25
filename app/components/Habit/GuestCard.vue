@@ -11,6 +11,19 @@ const { toggleCompletion } = useSampleHabits()
 const today = format(new Date(), 'yyyy-MM-dd')
 const toggleLoading = ref(false)
 
+const REVEAL_WIDTH = 0 // no actions for guest, keep swipe disabled
+const translateX = ref(0)
+const isRevealed = ref(false)
+const startX = ref(0)
+const isDragging = ref(false)
+const isAnimating = ref(false)
+const isMouseDragging = ref(false)
+
+const cardStyle = computed(() => ({
+  transform: `translateX(${translateX.value}px)`,
+  transition: isAnimating.value ? 'transform 0.25s ease' : 'none',
+}))
+
 const isCompletedToday = computed(() =>
   props.habit.completions?.some(c =>
     typeof c === 'string' ? c === today : c.date === today
@@ -56,53 +69,64 @@ const handleToggle = async () => {
 </script>
 
 <template>
-  <main :class="[
-    'w-full h-auto rounded-3xl flex items-center justify-center relative p-6 gap-4 select-none',
-    isCompletedToday ? 'bg-[#f1f1f1]' : 'bg-white',
-  ]">
-    <div class="w-full">
-      <section class="flex items-center gap-4">
+  <div class="relative rounded-3xl overflow-hidden">
 
-        <!-- Toggle button -->
-        <section :class="[
-          'ring-2 ring-black/5 rounded-full! size-12 flex items-center shrink-0 justify-center transition-all duration-200',
-          toggleLoading ? 'cursor-not-allowed opacity-70' : 'cursor-pointer hover:ring-primary/40 hover:bg-primary/10'
-        ]" @click="handleToggle">
-          <Loader2 v-if="toggleLoading" class="size-6 text-primary pointer-events-none animate-spin" />
-          <div v-else-if="isCompletedToday"
-            class="ring-4 ring-primary rounded-full! size-9 flex items-center justify-center bg-primary">
-            <Check class="size-8 text-white" />
-          </div>
-        </section>
+    <main :style="cardStyle" :class="[
+      'w-full h-auto rounded-3xl flex items-center justify-center bg-white relative p-6 gap-4 select-none cursor-default',
+    ]">
+      <div class="w-full">
+        <section class="flex items-center gap-4">
 
-        <section :class="['space-y-1', isCompletedToday ? 'opacity-50' : 'opacity-100']">
-          <h2
-            :class="['sm:text-xl text-base font-semibold leading-5 line-clamp-2', isCompletedToday ? 'line-through' : '']">
-            {{ habit.name }}
-          </h2>
-          <div class="flex items-center gap-2">
-            <div class="size-2 rounded-full!" :style="{ backgroundColor: habit.color }" />
-            <p class="text-sm text-muted capitalize">{{ habit.time }}</p>
-          </div>
+          <!-- Icon -->
+          <section class="size-14 rounded-xl flex items-center justify-center shrink-0"
+            :style="{ backgroundColor: habit.color + '22' }">
+            <Icon :name="habit.icon || 'lucide:star'" class="size-6!" :style="{ color: habit.color }" />
+          </section>
+
+          <section class="space-y-2 w-[80%]">
+            <h2
+              :class="['sm:text-xl text-base font-semibold leading-5 line-clamp-1', isCompletedToday ? 'line-through' : '']"
+              :style="{ color: habit.color }">
+              {{ habit.name }}
+            </h2>
+            <div class="flex items-center gap-1">
+              <Tooltip :text="streakStarted" position="top">
+                <button :class="[
+                  'flex items-center gap-1 text-xs font-bold transition-all duration-200',
+                  habit.streak >= 3 ? 'text-danger' : 'text-green-600',
+                ]">
+                  <span v-if="habit.streak >= 3">
+                    <Image src="/gif/fire2.gif" alt="Fire" class="w-4! shrink-0 pointer-events-none" />
+                  </span>
+                  <span v-else>
+                    <Image src="/gif/clover.gif" alt="Clover" class="w-4! shrink-0 pointer-events-none" />
+                  </span>
+                  {{ habit.streak }}
+                </button>
+              </Tooltip>
+            </div>
+          </section>
+
         </section>
+      </div>
+
+      <!-- Toggle button -->
+      <section :class="[
+        'ring-2 rounded-full! size-12 flex items-center shrink-0 justify-center transition-all duration-200',
+        toggleLoading ? 'cursor-not-allowed opacity-70' : 'cursor-pointer',
+      ]" :style="{
+        boxShadow: isCompletedToday ? `0 0 0 1px ${habit.color}40` : '0 0 0 2px rgba(0,0,0,0.05)',
+      }" @click="handleToggle">
+
+        <Loader2 v-if="toggleLoading" class="size-6 pointer-events-none animate-spin" :style="{ color: habit.color }" />
+
+        <div v-else-if="isCompletedToday" class="ring-4 rounded-full! size-9 flex items-center justify-center"
+          :style="{ backgroundColor: habit.color, boxShadow: `0 0 0 4px ${habit.color}` }">
+          <Check class="size-7! text-white" />
+        </div>
+
+        <Check v-else class="size-7! text-black/10" />
       </section>
-    </div>
-
-    <div class="flex items-center gap-1">
-      <Tooltip :text="streakStarted" position="top">
-        <button :class="[
-          'flex items-center gap-1 px-3 py-1.5 rounded-full! text-xs font-bold transition-all duration-200',
-          habit.streak >= 3 ? 'bg-danger/10 text-danger' : 'bg-emerald-500/10 text-emerald-500',
-        ]">
-          <span v-if="habit.streak >= 3">
-            <Image src="/gif/fire2.gif" alt="Fire" class="w-6! shrink-0 pointer-events-none" />
-          </span>
-          <span v-else>
-            <Image src="/gif/clover.gif" alt="Clover" class="w-6! shrink-0 pointer-events-none" />
-          </span>
-          {{ habit.streak }}
-        </button>
-      </Tooltip>
-    </div>
-  </main>
+    </main>
+  </div>
 </template>
