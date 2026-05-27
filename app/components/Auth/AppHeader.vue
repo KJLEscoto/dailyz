@@ -39,13 +39,13 @@ watch(habitsReady, async (ready) => {
       <div class="md:space-y-2 space-y-1 max-w-1/2 w-full text-nowrap">
         <UppercaseTitle size="sm">{{ formatted }}</UppercaseTitle>
         <ClientOnly>
-          <PageHeader :title="`Hi, ${firstName}!`" description="Let's make today a great day!" />
+          <PageHeader :title="`Hi, ${firstName}`" description="Let's make today a great day!" />
           <template #fallback>
             <h1 class="md:text-3xl text-2xl font-semibold text-nowrap truncate">Hi, there!</h1>
           </template>
         </ClientOnly>
       </div>
-      <div class="w-full place-items-end">
+      <div class="w-full flex justify-end">
         <Image src="/images/mascot/welcome.png" alt="welcome" class="w-[80%] h-auto" />
       </div>
     </section>

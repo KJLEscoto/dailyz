@@ -106,7 +106,7 @@ const saveName = async () => {
         <div class="absolute inset-0">
           <NatureImage class="w-full h-full" />
         </div>
-        <div class="absolute inset-0 bg-linear-to-r pointer-events-none from-black/80 via-black/50 to-transparent" />
+        <div class="absolute inset-0 bg-linear-to-r pointer-events-none from-black via-black/70 to-transparent" />
       </section>
 
       <section class="flex items-center gap-4 w-full">

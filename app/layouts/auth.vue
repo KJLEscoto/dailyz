@@ -5,6 +5,8 @@
 <template>
   <div class="w-full max-w-xl mx-auto px-4 pt-4 pb-26 relative select-none">
     <slot />
-    <AuthBottomNav />
+    <ClientOnly>
+      <AuthBottomNav />
+    </ClientOnly>
   </div>
 </template>

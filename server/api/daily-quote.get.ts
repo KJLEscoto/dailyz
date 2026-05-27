@@ -19,12 +19,12 @@ export default defineEventHandler(async () => {
   } catch {}
 
   // Try 3: qapi
-  try {
-    const data = await $fetch<{ quote: string; author: string }>(
-      'https://qapi.vercel.app/api/random'
-    )
-    if (data?.quote) return { quote: data.quote, author: data.author }
-  } catch {}
+  // try {
+  //   const data = await $fetch<{ quote: string; author: string }>(
+  //     'https://qapi.vercel.app/api/random'
+  //   )
+  //   if (data?.quote) return { quote: data.quote, author: data.author }
+  // } catch {}
 
   // Fallback: curated local list
   const FALLBACK = [

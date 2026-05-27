@@ -21,9 +21,9 @@ const { imageUrl, author, authorLink, loading, error } = useDailyNature()
       <template v-else>
         <Image v-if="imageUrl" :src="imageUrl" alt="Daily Nature" class="w-full h-full" />
         <a v-if="author && authorLink" :href="authorLink" target="_blank"
-          class="absolute top-4 right-4 text-xs text-nowrap text-transparent group-hover:text-white transition-all duration-200">
-          Photo by {{ author }} on Unsplash
-          <ArrowUpRight class="size-4 inline-block" />
+          class="absolute top-4 right-4 text-xs text-nowrap md:text-transparent text-white group-hover:text-white transition-all duration-200">
+          <span class="md:inline-block hidden">Photo by {{ author }} on Unsplash</span>
+          <ArrowUpRight class="size-4 inline-block ml-1" />
         </a>
       </template>
 

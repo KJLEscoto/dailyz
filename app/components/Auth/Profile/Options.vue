@@ -2,6 +2,8 @@
 <script setup lang="ts">
 import { LogOut, RotateCcw } from '@lucide/vue'
 
+const levelStore = useLevelStore()
+
 const { handleSignOut, cancelSignOut, signOutLoading, countdown } = useSignOut()
 const habitStore = useHabitStore()
 
@@ -16,6 +18,17 @@ const resetHabits = async () => {
   resetLoading.value = true
   try {
     await Promise.all(habitStore.habits.map(h => habitStore.deleteHabit(h.id)))
+
+    // 👇 reset XP to 0
+    const { $firebase } = useNuxtApp()
+    const { doc, setDoc } = await import('firebase/firestore')
+    const uid = ($firebase.auth as any).currentUser?.uid
+    if (uid) {
+      const levelRef = doc($firebase.db, 'users', uid, 'level', 'data')
+      await setDoc(levelRef, { totalXp: 0 })
+      levelStore.totalXp = 0
+    }
+
     showResetSuccess.value = true
   } finally {
     resetLoading.value = false
@@ -36,7 +49,7 @@ const cancelReset = () => { showResetConfirm.value = false }
 
     <!-- Reset confirm -->
     <Alert type="danger" title="Reset all habits?"
-      message="This will permanently delete all your habit records. This cannot be undone." :visible="showResetConfirm"
+      message="This will permanently delete all your habits and level. This cannot be undone." :visible="showResetConfirm"
       :dismissible="false" :actions="[
         { label: 'Yes, Delete All', onClick: resetHabits },
         { label: 'No, Cancel', onClick: cancelReset },

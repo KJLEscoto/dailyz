@@ -27,13 +27,15 @@ const createdAt = computed(() => {
         <h3 class="text-sm font-semibold text-black/70">Account Activity</h3>
       </div>
 
-      <div class="flex flex-col gap-2">
+      <div class="flex flex-col gap-3">
         <div class="flex items-center justify-between">
           <span class="text-sm text-black/50">Last login</span>
           <span class="text-sm font-medium text-black/70">{{ lastLogin ?? '—' }}</span>
         </div>
 
-        <div class="flex items-center justify-between pt-2 border-t border-black/5">
+        <hr class="border-black/5" />
+
+        <div class="flex items-center justify-between">
           <span class="text-sm text-black/50">Member since</span>
           <span class="text-sm font-medium text-black/70">{{ createdAt ?? '—' }}</span>
         </div>

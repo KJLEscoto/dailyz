@@ -125,7 +125,7 @@ defineExpose({ addHabit, dailyLimitReached }) // 👈 expose so parent can disab
     :timeout="4000" @dismiss="showLimitAlert = false" />
 
   <Modal v-model="showAddHabitModal" title="New Habit"
-    description="Daily routine? Anything you want to do consistently!" primary-label="Add Habit"
+    description="Daily routine? Anything you want to do consistently! Up to 5 habits per day" primary-label="Add Habit"
     :primary-loading="addLoading" :primary-disabled="addLoading" @primary="confirmAdd" @cancel="cancelAdd">
 
     <form class="space-y-6">

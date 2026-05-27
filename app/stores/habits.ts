@@ -94,9 +94,37 @@ export const useHabitStore = defineStore('habitStore', {
     async deleteHabit(id: Habit['id']) {
       if (!import.meta.client) return
 
+      const habit = this.habits.find(h => h.id === id)
+
       const docRef = this.getHabitDoc(id)
       await deleteDoc(docRef)
-      this.habits = this.habits.filter((habit) => habit.id !== id)
+      this.habits = this.habits.filter(h => h.id !== id)
+
+      // 👇 deduct XP only for completions that happened today on this habit
+      if (habit) {
+        const today = format(new Date(), 'yyyy-MM-dd')
+        const completionsToday = habit.completions?.filter(c => c.date === today).length ?? 0
+
+        if (completionsToday > 0) {
+          try {
+            const { $firebase } = useNuxtApp()
+            const { doc, getDoc, setDoc } = await import('firebase/firestore')
+            const uid = ($firebase.auth as any).currentUser?.uid
+            if (!uid) return
+
+            const levelRef = doc($firebase.db, 'users', uid, 'level', 'data')
+            const snap = await getDoc(levelRef)
+            const currentXp = snap.exists() ? (snap.data().totalXp ?? 0) : 0
+            const newXp = Math.max(0, currentXp - (completionsToday * 15))
+
+            const levelStore = useLevelStore()
+            levelStore.totalXp = newXp
+            await setDoc(levelRef, { totalXp: newXp })
+          } catch (e) {
+            console.error('XP deduct on delete error:', e)
+          }
+        }
+      }
     },
 
     async toggleCompletion(habit: Habit) {

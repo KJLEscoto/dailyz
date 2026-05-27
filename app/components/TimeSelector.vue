@@ -3,6 +3,7 @@ const props = defineProps<{ modelValue: string }>()
 const emit = defineEmits<{ 'update:modelValue': [value: string] }>()
 
 const ITEM_HEIGHT = 44
+const VISIBLE_HEIGHT = 220
 
 const hours = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0'))
 const minutes = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'))
@@ -30,9 +31,7 @@ const emitValue = () => {
   emit('update:modelValue', `${String(h).padStart(2, '0')}:${selectedMinute.value}`)
 }
 
-// 👇 emit on mount so parent immediately has a value — fixes required validation
 onMounted(() => emitValue())
-
 watch([selectedHour, selectedMinute, selectedPeriod], emitValue)
 
 const useColumn = (items: string[], selected: Ref<string>) => {
@@ -62,32 +61,56 @@ const useColumn = (items: string[], selected: Ref<string>) => {
     offset.value = -(i >= 0 ? i : 0) * ITEM_HEIGHT
   })
 
-  const onPointerDown = (e: PointerEvent) => {
+  // --- unified start/move/end used by both pointer and touch ---
+  const onStart = (y: number) => {
     isDragging.value = true
     isSnapping.value = false
-    startY.value = e.clientY
+    startY.value = y
     startOffset.value = offset.value
-      ; (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
   }
 
-  const onPointerMove = (e: PointerEvent) => {
+  const onMove = (y: number) => {
     if (!isDragging.value) return
-    offset.value = startOffset.value + (e.clientY - startY.value)
+    offset.value = startOffset.value + (y - startY.value)
   }
 
-  const onPointerUp = () => {
+  const onEnd = () => {
     if (!isDragging.value) return
     isDragging.value = false
     snapTo(Math.round(-clampedOffset.value / ITEM_HEIGHT))
   }
 
+  // Pointer (desktop + some mobile)
+  const onPointerDown = (e: PointerEvent) => {
+    onStart(e.clientY)
+    try { (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId) } catch { }
+  }
+  const onPointerMove = (e: PointerEvent) => onMove(e.clientY)
+  const onPointerUp = () => onEnd()
+
+  // Touch (iOS Safari)
+  const onTouchStart = (e: TouchEvent) => {
+    e.preventDefault() // 👈 stops iOS scroll from stealing the drag
+    onStart(e.touches[0]!.clientY)
+  }
+  const onTouchMove = (e: TouchEvent) => {
+    e.preventDefault()
+    onMove(e.touches[0]!.clientY)
+  }
+  const onTouchEnd = () => onEnd()
+
   const style = computed(() => ({
     transform: `translateY(${clampedOffset.value}px)`,
     transition: isSnapping.value ? 'transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94)' : 'none',
     cursor: isDragging.value ? 'grabbing' : 'grab',
+    touchAction: 'none', // 👈 critical for iOS
   }))
 
-  return { style, currentIndex, onPointerDown, onPointerMove, onPointerUp }
+  return {
+    style, currentIndex,
+    onPointerDown, onPointerMove, onPointerUp,
+    onTouchStart, onTouchMove, onTouchEnd,
+  }
 }
 
 const hourCol = useColumn(hours, selectedHour)
@@ -96,8 +119,8 @@ const periodCol = useColumn(periods, selectedPeriod)
 </script>
 
 <template>
-  <div
-    class="relative flex items-center justify-center gap-1 bg-primary/5 rounded-2xl overflow-hidden h-55 select-none">
+  <div class="relative flex items-center justify-center gap-1 bg-primary/5 rounded-2xl overflow-hidden h-55 select-none"
+    style="touch-action: none;">
 
     <!-- Fade top -->
     <div class="absolute inset-x-0 top-0 h-20 bg-linear-to-b from-white to-transparent z-10 pointer-events-none" />
@@ -110,8 +133,10 @@ const periodCol = useColumn(periods, selectedPeriod)
 
     <!-- Hour -->
     <div class="relative flex-1 h-full overflow-hidden" @pointerdown="hourCol.onPointerDown"
-      @pointermove="hourCol.onPointerMove" @pointerup="hourCol.onPointerUp" @pointercancel="hourCol.onPointerUp">
-      <div :style="{ ...hourCol.style.value, paddingTop: `${220 / 2 - ITEM_HEIGHT / 2}px` }"
+      @pointermove="hourCol.onPointerMove" @pointerup="hourCol.onPointerUp" @pointercancel="hourCol.onPointerUp"
+      @touchstart.prevent="hourCol.onTouchStart" @touchmove.prevent="hourCol.onTouchMove"
+      @touchend="hourCol.onTouchEnd">
+      <div :style="{ ...hourCol.style.value, paddingTop: `${VISIBLE_HEIGHT / 2 - ITEM_HEIGHT / 2}px` }"
         class="flex flex-col items-center">
         <div v-for="(h, i) in hours" :key="h" :style="{ height: ITEM_HEIGHT + 'px' }" :class="['flex items-center justify-center transition-all duration-150 w-full shrink-0',
           hourCol.currentIndex.value === i ? 'text-lg font-bold text-primary' : 'text-sm font-medium text-black/25'
@@ -126,8 +151,10 @@ const periodCol = useColumn(periods, selectedPeriod)
 
     <!-- Minute -->
     <div class="relative flex-1 h-full overflow-hidden" @pointerdown="minuteCol.onPointerDown"
-      @pointermove="minuteCol.onPointerMove" @pointerup="minuteCol.onPointerUp" @pointercancel="minuteCol.onPointerUp">
-      <div :style="{ ...minuteCol.style.value, paddingTop: `${220 / 2 - ITEM_HEIGHT / 2}px` }"
+      @pointermove="minuteCol.onPointerMove" @pointerup="minuteCol.onPointerUp" @pointercancel="minuteCol.onPointerUp"
+      @touchstart.prevent="minuteCol.onTouchStart" @touchmove.prevent="minuteCol.onTouchMove"
+      @touchend="minuteCol.onTouchEnd">
+      <div :style="{ ...minuteCol.style.value, paddingTop: `${VISIBLE_HEIGHT / 2 - ITEM_HEIGHT / 2}px` }"
         class="flex flex-col items-center">
         <div v-for="(m, i) in minutes" :key="m" :style="{ height: ITEM_HEIGHT + 'px' }" :class="['flex items-center justify-center transition-all duration-150 w-full shrink-0',
           minuteCol.currentIndex.value === i ? 'text-lg font-bold text-primary' : 'text-sm font-medium text-black/25'
@@ -139,8 +166,10 @@ const periodCol = useColumn(periods, selectedPeriod)
 
     <!-- AM/PM -->
     <div class="relative flex-1 h-full overflow-hidden" @pointerdown="periodCol.onPointerDown"
-      @pointermove="periodCol.onPointerMove" @pointerup="periodCol.onPointerUp" @pointercancel="periodCol.onPointerUp">
-      <div :style="{ ...periodCol.style.value, paddingTop: `${220 / 2 - ITEM_HEIGHT / 2}px` }"
+      @pointermove="periodCol.onPointerMove" @pointerup="periodCol.onPointerUp" @pointercancel="periodCol.onPointerUp"
+      @touchstart.prevent="periodCol.onTouchStart" @touchmove.prevent="periodCol.onTouchMove"
+      @touchend="periodCol.onTouchEnd">
+      <div :style="{ ...periodCol.style.value, paddingTop: `${VISIBLE_HEIGHT / 2 - ITEM_HEIGHT / 2}px` }"
         class="flex flex-col items-center">
         <div v-for="(p, i) in periods" :key="p" :style="{ height: ITEM_HEIGHT + 'px' }" :class="['flex items-center justify-center transition-all duration-150 w-full shrink-0',
           periodCol.currentIndex.value === i ? 'text-lg font-bold text-primary' : 'text-sm font-medium text-black/25'

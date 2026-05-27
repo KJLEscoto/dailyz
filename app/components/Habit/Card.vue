@@ -31,6 +31,7 @@ const isMouseDragging = ref(false)
 
 const onMouseDown = (e: MouseEvent) => {
   e.preventDefault() // 👈 stops text selection and image drag during swipe
+  activate()
   startX.value = e.clientX
   isMouseDragging.value = true
   isDragging.value = true
@@ -70,6 +71,7 @@ const snapTo = (target: number) => {
 const onTouchStart = (e: TouchEvent) => {
   const touch = e.touches[0]
   if (!touch) return
+  activate()
   startX.value = touch.clientX
   isDragging.value = true
   isAnimating.value = false
@@ -97,6 +99,7 @@ const onTouchEnd = (e: TouchEvent) => {
 }
 
 const closeActions = () => snapTo(0)
+const { activate } = useSwipeCard(props.habit.id, () => snapTo(0))
 
 const handleEdit = () => {
   closeActions()
