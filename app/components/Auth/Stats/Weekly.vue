@@ -65,7 +65,7 @@ const weeklyData = computed(() => {
             {{ day.percentage }}%
           </div>
 
-          <div class="w-full rounded-t-md relative flex items-end bg-primary/5" style="height: 64px">
+          <div class="w-full rounded-t-md relative flex items-end bg-primary/5 min-h-16 h-full" style="height: 64px">
             <div class="w-full rounded-t-md transition-all duration-500"
               :class="day.isToday ? 'bg-primary' : 'bg-primary/20'" :style="{ height: `${day.percentage}%` }" />
           </div>

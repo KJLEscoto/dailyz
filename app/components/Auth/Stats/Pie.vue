@@ -74,7 +74,7 @@ const slices = computed(() => {
         </div>
 
         <!-- Legend: color dot + count -->
-        <div class="flex flex-col gap-1 w-full">
+        <div class="grid grid-cols-2 gap-1 w-full">
           <div v-for="seg in segments" :key="seg.color" class="flex items-center gap-2">
             <div class="size-2.5 rounded-full shrink-0" :style="{ backgroundColor: seg.color }" />
             <span class="text-sm font-medium text-black/60">{{ seg.count }} 

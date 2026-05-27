@@ -1,4 +1,3 @@
-<!-- components/Auth/BottomNav.vue -->
 <script setup lang="ts">
 import { Home, BarChart2, User2, Plus } from '@lucide/vue'
 
@@ -9,28 +8,34 @@ const navItems = [
 ]
 
 const modalAddRef = ref()
-const addHabit = () => modalAddRef.value?.addHabit()
+const showLimitAlert = ref(false) // 👈
+
+const addHabit = () => {
+  if (modalAddRef.value?.dailyLimitReached) {
+    showLimitAlert.value = true // 👈 show alert instead
+    return
+  }
+  modalAddRef.value?.addHabit()
+}
+
+const dailyLimitReached = computed(() => modalAddRef.value?.dailyLimitReached ?? false)
+const habitsAddedToday = computed(() => modalAddRef.value?.habitsAddedToday ?? 0)
 
 const isNavVisible = ref(true)
 const lastScrollY = ref(0)
 
 const handleScroll = () => {
   const currentScrollY = window.scrollY
-
-  // Keep nav visible near the top
   if (currentScrollY < 4) {
     isNavVisible.value = true
     lastScrollY.value = currentScrollY
     return
   }
-
-  // Hide on scroll down, show on scroll up
   if (currentScrollY > lastScrollY.value) {
     isNavVisible.value = false
   } else {
     isNavVisible.value = true
   }
-
   lastScrollY.value = currentScrollY
 }
 
@@ -45,6 +50,11 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
+  <!-- 👇 daily limit alert -->
+  <Alert type="danger" title="Daily limit reached (5/5)!"
+    :message="`You've added 5 habits today. Come back tomorrow to add more!`"
+    :visible="showLimitAlert" :timeout="4000" @dismiss="showLimitAlert = false" />
+
   <nav class="fixed bottom-4 left-0 w-full z-50 transition-transform duration-300 ease-in-out select-none"
     :class="isNavVisible ? 'translate-y-0' : 'translate-y-[130%]'">
     <div class="w-full h-fit max-w-xl mx-auto px-4 flex items-stretch gap-3">
@@ -58,8 +68,12 @@ onBeforeUnmount(() => {
         </NuxtLink>
       </section>
 
-      <button @click="addHabit"
-        class="bg-primary flex items-center justify-center py-4 px-8 rounded-3xl cursor-pointer shadow-2xl self-stretch min-w-[20%] w-auto border border-black/40 active:scale-95 transition-all duration-150 ease-in-out">
+      <button @click="addHabit" :class="[
+        'flex items-center justify-center py-4 px-8 rounded-3xl shadow-2xl self-stretch min-w-[20%] w-auto border active:scale-95 transition-all duration-150 ease-in-out',
+        dailyLimitReached
+          ? 'bg-muted border-black/20 cursor-not-allowed'
+          : 'bg-primary border-black/40 cursor-pointer'
+      ]">
         <Plus class="size-6 text-white pointer-events-none shrink-0" />
       </button>
     </div>

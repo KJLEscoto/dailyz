@@ -35,8 +35,8 @@ watch(habitsReady, async (ready) => {
 
 <template>
   <header class="md:py-5 py-3">
-    <section class="flex items-center justify-between gap-5">
-      <div class="md:space-y-2 space-y-1 max-w-1/2 w-full">
+    <section class="flex md:items-center justify-between gap-5">
+      <div class="md:space-y-2 space-y-1 max-w-1/2 w-full text-nowrap">
         <UppercaseTitle size="sm">{{ formatted }}</UppercaseTitle>
         <ClientOnly>
           <PageHeader :title="`Hi, ${firstName}!`" description="Let's make today a great day!" />
@@ -56,7 +56,7 @@ watch(habitsReady, async (ready) => {
     <!-- real level card -->
     <section v-else class="rounded-3xl w-full h-auto space-y-3 transition-colors duration-500"
       :style="{ backgroundColor: sectionBg }">
-      <div class="flex items-center justify-start gap-3 p-5">
+      <div class="flex items-center justify-start gap-3 md:p-5 p-4">
         <section class="shrink-0">
           <Image :src="tier.badge" :alt="tier.name" class="w-20! h-auto" />
         </section>
@@ -65,12 +65,12 @@ watch(habitsReady, async (ready) => {
             <h1 class="sm:text-xl text-base font-semibold transition-colors duration-500" :style="{ color: textColor }">
               {{ tier.name }}
             </h1>
-            <Tooltip text="+15 XP each" position="right">
+            <Tooltip text="+15 XP per completed habits" position="top">
               <Info class="size-3.5 text-black/60" />
             </Tooltip>
           </div>
           <div class="flex items-center justify-between gap-2">
-            <p class="text-sm text-black/60">Get XP by completing habits!</p>
+            <!-- <p class="text-sm text-black/60">Get XP by completing habits!</p> -->
             <p class="sm:text-sm text-xs text-black/60">
               <span class="font-semibold transition-colors duration-500" :style="{ color: textColor }">{{ xpInto
               }}</span>

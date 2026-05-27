@@ -56,11 +56,21 @@ export const useHabitStore = defineStore('habitStore', {
     async addHabit(Habit: Habit) {
       if (!import.meta.client) return
 
+      // 👇 check daily limit
+      const today = format(new Date(), 'yyyy-MM-dd')
+      const addedToday = this.habits.filter(h => 
+        h.createdAt && format(new Date(h.createdAt), 'yyyy-MM-dd') === today
+      ).length
+
+      if (addedToday >= 5) {
+        throw new Error('DAILY_LIMIT_REACHED')
+      }
+
       const habit = {
         name: Habit.name,
-        icon: Habit.icon || 'lucide:star',       // 👈
+        icon: Habit.icon || 'lucide:star',
         time: Habit.time as HabitTime,
-        reminderTime: Habit.reminderTime ?? null, // 👈
+        reminderTime: Habit.reminderTime ?? null,
         streak: 0,
         completions: [],
         color: Habit.color,

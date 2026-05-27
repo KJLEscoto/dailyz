@@ -83,8 +83,8 @@ const { formatted } = useDate()
 
         <section v-if="activeTab === 'todo'" key="todo" class="sm:space-y-4 space-y-3">
           <div v-if="!todoHabits.length && completedHabits.length"
-            class="text-center justify-center flex flex-col items-center gap-6">
-            <Image src="/images/mascot/no_todo.png" alt="No habits for today" class="max-w-100 w-full object-contain" />
+            class="text-center justify-center flex flex-col items-center gap-6 py-14">
+            <!-- <Image src="/images/mascot/no_todo.png" alt="No habits for today" class="max-w-100 w-full object-contain" /> -->
             <section class="space-y-2">
               <h1 class="md:text-3xl text-xl font-bold text-primary">No more habits for now!</h1>
               <p class="text-muted md:text-lg text-sm">Take a rest or add more habits later.</p>
@@ -103,8 +103,8 @@ const { formatted } = useDate()
 
         <section v-else key="completed">
           <div v-if="todoHabits.length && !completedHabits.length"
-            class="text-center justify-center flex flex-col items-center gap-6">
-            <Image src="/images/mascot/no_completions.png" alt="No completed habits" class="max-w-100 w-full object-contain" />
+            class="text-center justify-center flex flex-col items-center gap-6 py-14">
+            <!-- <Image src="/images/mascot/no_completions.png" alt="No completed habits" class="max-w-100 w-full object-contain" /> -->
             <section class="space-y-2">
               <h1 class="md:text-3xl text-xl font-bold text-primary">You haven't completed any habits.</h1>
               <p class="text-muted md:text-lg text-sm">Complete a habit from <span class="font-bold">"To Do"</span> to

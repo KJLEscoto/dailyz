@@ -9,11 +9,12 @@ const habitIconError = ref('')
 const habitTime = ref<HabitTime | ''>('')
 const habitTimeError = ref('')
 const habitReminderTime = ref('')
-const habitReminderTimeError = ref('')  // 👈
+const habitReminderTimeError = ref('')
 const habitColor = ref('')
 const habitColorError = ref('')
 const addLoading = ref(false)
 const showSuccessAlert = ref(false)
+const showLimitAlert = ref(false) // 👈
 const addedHabitName = ref('')
 
 // --- Refs for focus ---
@@ -24,6 +25,17 @@ const fieldReminder = ref<HTMLElement | null>(null)
 const fieldColor = ref<HTMLElement | null>(null)
 
 const habitStore = useHabitStore()
+
+// 👇 computed so it reactively updates
+const habitsAddedToday = computed(() => {
+  const today = new Date().toISOString().slice(0, 10)
+  return habitStore.habits.filter(h =>
+    h.createdAt && h.createdAt.slice(0, 10) === today
+  ).length
+})
+
+const DAILY_LIMIT = 5
+const dailyLimitReached = computed(() => habitsAddedToday.value >= DAILY_LIMIT)
 
 const addHabit = () => { showAddHabitModal.value = true }
 
@@ -71,6 +83,11 @@ const confirmAdd = async () => {
     resetForm()
     showAddHabitModal.value = false
     showSuccessAlert.value = true
+  } catch (e: any) {
+    if (e.message === 'DAILY_LIMIT_REACHED') {
+      showAddHabitModal.value = false // 👈 close modal first
+      showLimitAlert.value = true
+    }
   } finally {
     addLoading.value = false
   }
@@ -94,13 +111,18 @@ const cancelAdd = () => {
   showAddHabitModal.value = false
 }
 
-defineExpose({ addHabit })
+defineExpose({ addHabit, dailyLimitReached }) // 👈 expose so parent can disable the add button
 </script>
 
 <template>
   <Alert type="success" title="New habit added!"
     :message="`&quot;${addedHabitName}&quot; is on your list. Start your streak today!`" :visible="showSuccessAlert"
     :timeout="3000" @dismiss="showSuccessAlert = false" />
+
+  <!-- 👇 daily limit alert -->
+  <Alert type="danger" title="Daily limit reached!"
+    :message="`You can only add ${DAILY_LIMIT} habits per day. Come back tomorrow to add more!`" :visible="showLimitAlert"
+    :timeout="4000" @dismiss="showLimitAlert = false" />
 
   <Modal v-model="showAddHabitModal" title="New Habit"
     description="Daily routine? Anything you want to do consistently!" primary-label="Add Habit"
