@@ -100,7 +100,7 @@ const saveName = async () => {
 
     <section class="bg-white rounded-3xl md:p-6 p-4 flex flex-col items-center gap-4">
       <section class="w-full rounded-2xl h-full min-h-40 overflow-hidden relative">
-        <div class="relative z-10 p-4 md:w-1/2 w-3/4 pointer-events-none">
+        <div class="relative z-10 p-4 md:w-2/3 w-3/4 pointer-events-none">
           <DailyQuote />
         </div>
         <div class="absolute inset-0">
