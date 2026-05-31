@@ -16,7 +16,7 @@ export const LEVEL_TIERS: LevelMeta[] = [
   { name: 'Forest', color: '#46840f', badge: '/svg/badges/Forest.svg',   minXp: 350,  maxXp: 699  },
   { name: 'Grove Guardian', color: '#055963', badge: '/svg/badges/Grove Guardian.svg',  minXp: 700,  maxXp: 1199 },
   { name: 'Mystic Oak', color: '#6130b5', badge: '/svg/badges/Mystic Oak.svg',  minXp: 1200,  maxXp: 1499 },
-  { name: 'Royal Crest', color: '#f49f12', badge: '/svg/badges/Royal Crest.svg',   minXp: 1500, maxXp: -1   },
+  { name: 'Royal Crest', color: '#e58a00', badge: '/svg/badges/Royal Crest.svg',   minXp: 1500, maxXp: -1   },
 ]
 
 export const XP_PER_COMPLETION = 15

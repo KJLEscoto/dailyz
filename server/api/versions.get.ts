@@ -4,7 +4,8 @@ export default defineEventHandler(() => {
       version_number: 'v1.1.0',
       current: true,
       features: [
-        { id: 5, description: 'Added level system' },
+        { id: 6, description: 'Import/Export data functionality' },
+        { id: 5, description: 'Level-based XP and color theme' },
         { id: 4, description: 'Improved home screen layout' },
         { id: 3, description: 'Icon theming on cards' },
         { id: 2, description: 'Drum-roll reminder time picker' },

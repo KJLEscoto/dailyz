@@ -1,8 +1,20 @@
+// stores/level.ts
 import { defineStore } from 'pinia'
+import { watch } from 'vue'
 import { doc, getDoc, setDoc, type Firestore } from 'firebase/firestore'
 import type { Auth } from 'firebase/auth'
 import type { Level, LevelMeta } from '~/types/level'
 import { LEVEL_TIERS, XP_PER_COMPLETION } from '~/types/level'
+
+const DEFAULT_PRIMARY = '#c87235'
+
+const applyLevelColor = (color: string) => {
+  if (import.meta.client) {
+    document.documentElement.style.setProperty('--color-primary', color)
+  }
+}
+
+let tierWatcherStarted = false  // module-level flag — survives store resets
 
 export const useLevelStore = defineStore('levelStore', {
   state: () => ({
@@ -11,15 +23,15 @@ export const useLevelStore = defineStore('levelStore', {
   }),
 
   getters: {
-    currentTier(state) {
+    currentTier(state): LevelMeta {
       return [...LEVEL_TIERS].reverse().find(t => state.totalXp >= t.minXp) ?? LEVEL_TIERS[0]!
     },
-    nextTier(state): LevelMeta | null {
+    nextTier(): LevelMeta | null {
       const idx = LEVEL_TIERS.findIndex(t => t === this.currentTier)
       return LEVEL_TIERS[idx + 1] ?? null
     },
-    xpIntoCurrentTier(state): number {
-      return state.totalXp - this.currentTier.minXp
+    xpIntoCurrentTier(): number {
+      return this.totalXp - this.currentTier.minXp
     },
     xpNeededForNextTier(): number {
       if (!this.nextTier) return 1
@@ -41,6 +53,16 @@ export const useLevelStore = defineStore('levelStore', {
       return doc(db, 'users', uid, 'level', 'data')
     },
 
+    _startTierWatcher() {
+      if (tierWatcherStarted || !import.meta.client) return
+      tierWatcherStarted = true
+      watch(
+        () => this.currentTier,
+        (tier) => applyLevelColor(tier.color),
+        { immediate: true }
+      )
+    },
+
     async fetchLevel() {
       if (!import.meta.client) return
       this.loading = true
@@ -49,10 +71,10 @@ export const useLevelStore = defineStore('levelStore', {
         if (snap.exists()) {
           this.totalXp = (snap.data() as Level).totalXp ?? 0
         } else {
-          // first time — create the doc
           await setDoc(this.getLevelDoc(), { totalXp: 0 })
           this.totalXp = 0
         }
+        this._startTierWatcher()  // 👈 registers once, reacts forever after
       } catch (e) {
         console.error('fetchLevel error:', e)
       } finally {
@@ -64,9 +86,15 @@ export const useLevelStore = defineStore('levelStore', {
       const newXp = Math.max(0, this.totalXp + delta)
       this.totalXp = newXp
       await setDoc(this.getLevelDoc(), { totalXp: newXp })
+      // no need to call applyLevelColor here — the watcher handles it
     },
 
     async addXp()    { await this._adjustXp(+XP_PER_COMPLETION) },
     async removeXp() { await this._adjustXp(-XP_PER_COMPLETION) },
+
+    resetLevelColor() {
+      tierWatcherStarted = false  // allow re-registration on next login
+      applyLevelColor(DEFAULT_PRIMARY)
+    },
   },
 })

@@ -143,7 +143,7 @@ const changePassword = async () => {
       <KeyRound class="size-4 text-black/40" />
       <span class="text-sm font-medium text-black/70">Change Password</span>
       <span class="ml-auto text-sm text-black/30 shrink-0">
-        {{ countdown > 0 ? formattedCountdown : resetSent ? 'Resend' : 'Reset' }}
+        {{ countdown > 0 ? formattedCountdown : resetSent ? 'Resend' : 'via Email' }}
       </span>
     </button>
 
