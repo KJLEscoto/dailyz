@@ -7,10 +7,13 @@ import type { Level, LevelMeta } from '~/types/level'
 import { LEVEL_TIERS, XP_PER_COMPLETION } from '~/types/level'
 
 const DEFAULT_PRIMARY = '#c87235'
+const COOKIE_KEY = 'level-color'
 
 const applyLevelColor = (color: string) => {
   if (import.meta.client) {
     document.documentElement.style.setProperty('--color-primary', color)
+    const cookie = useCookie(COOKIE_KEY, { maxAge: 60 * 60 * 24 * 365 })
+    cookie.value = color
   }
 }
 
@@ -64,7 +67,7 @@ export const useLevelStore = defineStore('levelStore', {
     },
 
     async fetchLevel() {
-      if (!import.meta.client) return
+      if (!import.meta.client || this.loading) return
       this.loading = true
       try {
         const snap = await getDoc(this.getLevelDoc())
@@ -74,7 +77,7 @@ export const useLevelStore = defineStore('levelStore', {
           await setDoc(this.getLevelDoc(), { totalXp: 0 })
           this.totalXp = 0
         }
-        this._startTierWatcher()  // 👈 registers once, reacts forever after
+        this._startTierWatcher()
       } catch (e) {
         console.error('fetchLevel error:', e)
       } finally {
@@ -93,7 +96,9 @@ export const useLevelStore = defineStore('levelStore', {
     async removeXp() { await this._adjustXp(-XP_PER_COMPLETION) },
 
     resetLevelColor() {
-      tierWatcherStarted = false  // allow re-registration on next login
+      tierWatcherStarted = false
+      const cookie = useCookie(COOKIE_KEY)
+      cookie.value = null
       applyLevelColor(DEFAULT_PRIMARY)
     },
   },

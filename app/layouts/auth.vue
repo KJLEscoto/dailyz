@@ -1,5 +1,13 @@
 <!-- layouts/auth.vue -->
 <script setup lang="ts">
+const levelStore = useLevelStore()
+const { habitsReady } = useAuth()
+
+watch(habitsReady, async (ready) => {
+  if (ready) {
+    await levelStore.fetchLevel()
+  }
+}, { immediate: true })
 </script>
 
 <template>

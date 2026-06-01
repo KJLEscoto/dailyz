@@ -91,17 +91,16 @@ const exportData = async () => {
     <Alert type="success" title="All habits deleted!" message="Your habit records have been successfully removed."
       :visible="showResetSuccess" :timeout="3000" @dismiss="showResetSuccess = false" />
 
-      <!-- Verify email alert -->
-    <Alert type="info" title="Unverified Email"
-      message="Please verify your email address before exporting your data." :visible="showVerifyAlert" :timeout="4000"
-      @dismiss="showVerifyAlert = false" />
+    <!-- Verify email alert -->
+    <Alert type="info" title="Unverified Email" message="Please verify your email address before exporting your data."
+      :visible="showVerifyAlert" :timeout="4000" @dismiss="showVerifyAlert = false" />
 
     <section class="bg-white rounded-3xl p-2 flex flex-col">
       <button @click="exportData"
         class="flex items-center gap-3 justify-between px-4 py-3 rounded-2xl hover:bg-black/5 transition-colors text-left cursor-pointer">
         <div class="flex items-center gap-3">
           <Download class="size-4 text-black/40" />
-          <span class="text-sm font-medium text-black/70">Export Data as JSON</span>
+          <span class="text-sm font-medium text-black/70">Export Data</span>
         </div>
         <div class="px-2 py-1 bg-primary/10 rounded-full pointer-events-none">
           <Gem class="size-3 text-primary" />

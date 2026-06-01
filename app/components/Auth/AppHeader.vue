@@ -25,12 +25,6 @@ const textColor = computed(() => tier.value.color)
 
 // only show when auth is ready AND level has been fetched
 const levelReady = computed(() => habitsReady.value && !levelStore.loading)
-
-watch(habitsReady, async (ready) => {
-  if (ready && levelStore.totalXp === 0) {
-    await levelStore.fetchLevel()
-  }
-}, { immediate: true })
 </script>
 
 <template>
