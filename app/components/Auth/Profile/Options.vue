@@ -48,11 +48,22 @@ const exportData = async () => {
   }
 
   const uid = ($firebase.auth as any).currentUser?.uid ?? null
+  const totalXp = levelStore.totalXp
+
+  // hash the xp value so it can't be tampered with
+  const encoder = new TextEncoder()
+  const data = encoder.encode(`${uid}:${totalXp}`)
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+  const hashArray = Array.from(new Uint8Array(hashBuffer))
+  const hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
 
   const payload = {
     exportedAt: new Date().toISOString(),
     uid,
-    level: { totalXp: levelStore.totalXp },
+    level: {
+      totalXp,
+      hash, // SHA-256 of `${uid}:${totalXp}`
+    },
     habits: habitStore.habits,
   }
 
@@ -60,7 +71,7 @@ const exportData = async () => {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `habit-data-${new Date().toISOString().slice(0, 10)}.json`
+  a.download = `dailyz-${uid}-${new Date().toISOString().slice(0, 10)}.json`
   a.click()
   URL.revokeObjectURL(url)
 }
@@ -79,8 +90,8 @@ const exportData = async () => {
     <Alert type="danger" title="Reset all habits?"
       message="This will permanently delete all your habits and level. This cannot be undone."
       :visible="showResetConfirm" :dismissible="false" :actions="[
-        { label: 'Yes, Delete All', onClick: resetHabits },
         { label: 'No, Cancel', onClick: cancelReset },
+        { label: 'Yes, Delete All', onClick: resetHabits },
       ]" />
 
     <!-- Reset progress -->

@@ -202,8 +202,8 @@ onUnmounted(() => {
       <div class="w-full">
         <section class="flex items-center gap-4">
           <section class="size-14 rounded-xl flex items-center justify-center shrink-0"
-            :style="{ backgroundColor: habit.color + '22' }">
-            <Icon :name="habit.icon || 'lucide:star'" class="size-6!" :style="{ color: habit.color }" />
+            :style="{ backgroundColor: habit.color }">
+            <Icon :name="habit.icon || 'lucide:star'" class="size-6! text-white!" :style="{ color: habit.color }" />
           </section>
 
           <section class="space-y-2 w-[80%]">
@@ -251,8 +251,8 @@ onUnmounted(() => {
 
         <!-- Completed -->
         <div v-else-if="isCompletedToday" class="ring-4 rounded-full! size-9 flex items-center justify-center"
-          :style="{ backgroundColor: habit.color, boxShadow: `0 0 0 4px ${habit.color}` }">
-          <Check class="size-7! text-white" />
+          :style="{ backgroundColor: habit.color + 40, boxShadow: `0 0 0 4px ${habit.color}40` }">
+          <Check class="size-7!" :style="{ color: habit.color }" />
         </div>
 
         <Check v-else class="size-7! text-black/10" />
