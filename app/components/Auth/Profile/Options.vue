@@ -40,6 +40,10 @@ const resetHabits = async () => {
 const cancelReset = () => { showResetConfirm.value = false }
 
 const showVerifyAlert = ref(false)
+const showExportSuccess = ref(false)
+const showIosAlert = ref(false)
+
+const isIos = () => /iphone|ipad|ipod/i.test(navigator.userAgent)
 
 const exportData = async () => {
   if (!isEmailVerified.value) {
@@ -47,24 +51,28 @@ const exportData = async () => {
     return
   }
 
+  if (isIos()) {
+    showIosAlert.value = true
+    return
+  }
+
   const uid = ($firebase.auth as any).currentUser?.uid ?? null
   const totalXp = levelStore.totalXp
+  const habits = habitStore.habits
 
-  // hash the xp value so it can't be tampered with
   const encoder = new TextEncoder()
-  const data = encoder.encode(`${uid}:${totalXp}`)
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data)
-  const hashArray = Array.from(new Uint8Array(hashBuffer))
-  const hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+  const raw = JSON.stringify({ uid, totalXp, habits })
+  const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(raw))
+  const hash = Array.from(new Uint8Array(hashBuffer))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('')
 
   const payload = {
     exportedAt: new Date().toISOString(),
     uid,
-    level: {
-      totalXp,
-      hash, // SHA-256 of `${uid}:${totalXp}`
-    },
-    habits: habitStore.habits,
+    hash,
+    level: { totalXp },
+    habits,
   }
 
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
@@ -74,6 +82,8 @@ const exportData = async () => {
   a.download = `dailyz-${uid}-${new Date().toISOString().slice(0, 10)}.json`
   a.click()
   URL.revokeObjectURL(url)
+
+  showExportSuccess.value = true
 }
 </script>
 
@@ -85,6 +95,15 @@ const exportData = async () => {
       :dismissible="false" :actions="[
         { label: 'No, stay logged in', onClick: cancelSignOut },
       ]" />
+
+      <!-- iOS maintenance alert -->
+    <Alert type="danger" title="Ongoing Maintenance for iOS"
+      message="Export is currently unavailable on iOS. We're working on a fix. Please use a desktop browser to export your data."
+      :visible="showIosAlert" :timeout="5000" @dismiss="showIosAlert = false" />
+
+    <!-- Export success -->
+    <Alert type="success" title="Data Exported!" message="Your habit data has been successfully exported."
+      :visible="showExportSuccess" :timeout="3000" @dismiss="showExportSuccess = false" />
 
     <!-- Reset confirm -->
     <Alert type="danger" title="Reset all habits?"
