@@ -55,14 +55,14 @@ const levelReady = computed(() => habitsReady.value && !levelStore.loading)
           <Image :src="tier.badge" :alt="tier.name" class="w-20! h-auto" />
         </section>
         <section class="w-full h-auto">
+          <Tooltip text="+15 XP per completed habits" position="top">
           <div class="flex items-center gap-2">
             <h1 class="sm:text-xl text-base font-semibold transition-colors duration-500" :style="{ color: textColor }">
               {{ tier.name }}
             </h1>
-            <Tooltip text="+15 XP per completed habits" position="top">
-              <Info class="size-3.5 text-black/60" />
-            </Tooltip>
-          </div>
+              <Info class="size-3.5 text-black/60 pointer-events-none" />
+            </div>
+          </Tooltip>
           <div class="flex items-center justify-between gap-2">
             <!-- <p class="text-sm text-black/60">Get XP by completing habits!</p> -->
             <p class="sm:text-sm text-xs text-black/60">
